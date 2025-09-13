@@ -43,7 +43,8 @@ validate_domain() {
 # Function to validate app name
 validate_app_name() {
     local name="$1"
-    if [[ $name =~ ^[a-zA-Z0-9_-]+$ ]] && [ ${#name} -ge 3 ] && [ ${#name} -le 30 ]; then
+    # Check if name is not empty, length is valid, and contains only valid characters
+    if [[ -n "$name" ]] && [ ${#name} -ge 1 ] && [ ${#name} -le 30 ] && [[ $name =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
         return 0
     else
         return 1
@@ -68,57 +69,68 @@ echo -e "${GREEN}📋 Configuration Setup${NC}"
 echo ""
 
 # App Name
-while true; do
-    APP_NAME=$(read_input "Enter application name" "earnfromadsbd")
-    if validate_app_name "$APP_NAME"; then
-        break
-    else
-        echo -e "${RED}❌ Invalid app name. Use only letters, numbers, hyphens, and underscores (3-30 chars)${NC}"
-    fi
+echo -e "${CYAN}Enter application name ${YELLOW}[earnfromadsbd]${NC}: "
+read APP_NAME
+APP_NAME=${APP_NAME:-earnfromadsbd}
+
+while ! validate_app_name "$APP_NAME"; do
+    echo -e "${RED}❌ Invalid app name. Use only letters, numbers, hyphens, and underscores (1-30 chars)${NC}"
+    echo -e "${CYAN}Enter application name: ${NC}"
+    read APP_NAME
 done
 
 # Domain Name
-while true; do
-    DOMAIN=$(read_input "Enter your domain name" "example.com")
-    if [ "$DOMAIN" = "localhost" ] || validate_domain "$DOMAIN"; then
-        break
-    else
-        echo -e "${RED}❌ Invalid domain format. Please enter a valid domain (e.g., example.com)${NC}"
-    fi
+echo -e "${CYAN}Enter your domain name ${YELLOW}[example.com]${NC}: "
+read DOMAIN
+DOMAIN=${DOMAIN:-example.com}
+
+while [ "$DOMAIN" != "localhost" ] && ! validate_domain "$DOMAIN"; do
+    echo -e "${RED}❌ Invalid domain format. Please enter a valid domain (e.g., example.com)${NC}"
+    echo -e "${CYAN}Enter your domain name: ${NC}"
+    read DOMAIN
 done
 
 # Node.js Version
-NODE_VERSION=$(read_input "Enter Node.js version" "18")
+echo -e "${CYAN}Enter Node.js version ${YELLOW}[18]${NC}: "
+read NODE_VERSION
+NODE_VERSION=${NODE_VERSION:-18}
 
 # Port
-while true; do
-    PORT=$(read_input "Enter application port" "3000")
-    if [[ $PORT =~ ^[0-9]+$ ]] && [ $PORT -ge 1000 ] && [ $PORT -le 65535 ]; then
-        break
-    else
-        echo -e "${RED}❌ Invalid port. Please enter a number between 1000-65535${NC}"
-    fi
+echo -e "${CYAN}Enter application port ${YELLOW}[3000]${NC}: "
+read PORT
+PORT=${PORT:-3000}
+
+while ! [[ $PORT =~ ^[0-9]+$ ]] || [ $PORT -lt 1000 ] || [ $PORT -gt 65535 ]; do
+    echo -e "${RED}❌ Invalid port. Please enter a number between 1000-65535${NC}"
+    echo -e "${CYAN}Enter application port: ${NC}"
+    read PORT
 done
 
 # Environment
-ENV=$(read_input "Enter environment" "production")
+echo -e "${CYAN}Enter environment ${YELLOW}[production]${NC}: "
+read ENV
+ENV=${ENV:-production}
 
 # Git Repository (optional)
-GIT_REPO=$(read_input "Enter Git repository URL (optional)" "")
+echo -e "${CYAN}Enter Git repository URL (optional): ${NC}"
+read GIT_REPO
 
 # SSL Setup
-echo ""
-echo -e "${CYAN}Do you want to setup SSL certificate? (y/n)${NC}"
-read -r SSL_SETUP
+echo -e "${CYAN}Do you want to setup SSL certificate? (y/n) ${YELLOW}[n]${NC}: "
+read SSL_SETUP
 SSL_SETUP=${SSL_SETUP:-n}
 
 # Email for SSL (if SSL is enabled)
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
-    EMAIL=$(read_input "Enter email for SSL certificate" "admin@$DOMAIN")
+    echo -e "${CYAN}Enter email for SSL certificate ${YELLOW}[admin@$DOMAIN]${NC}: "
+    read EMAIL
+    EMAIL=${EMAIL:-admin@$DOMAIN}
 fi
 
 # PM2 instances
-INSTANCES=$(read_input "Enter number of PM2 instances (max for cluster mode)" "max")
+echo -e "${CYAN}Enter number of PM2 instances ${YELLOW}[max]${NC}: "
+read INSTANCES
+INSTANCES=${INSTANCES:-max}
 
 # Configuration
 APP_DIR="/var/www/$APP_NAME"
