@@ -343,10 +343,10 @@ pm2 save
 pm2 startup
 
 # Setup firewall
-echo -e "${BLUE}🔥 Configuring firewall...${NC}"
-sudo ufw allow ssh
-sudo ufw allow 'Nginx Full'
-sudo ufw --force enable
+#echo -e "${BLUE}🔥 Configuring firewall...${NC}"
+#sudo ufw allow ssh
+#sudo ufw allow 'Nginx Full'
+#sudo ufw --force enable
 
 
 # Create update script
