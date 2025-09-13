@@ -109,7 +109,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       <div className="task-container">
         <i className="fab fa-telegram task-icon"></i>
         <h3>Join our Telegram Channel</h3>
-        <p>চ্যানেলে জয়েন করুন, তারপর ফিরে এসে "Check & Claim" দিন।</p>
+        <p>চ্যানেলে জয়েন করুন, তারপর ফিরে এসে &quot;Check &amp; Claim&quot; দিন।</p>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="action-btn" onClick={openChannel}>
             <span>Open Channel</span>
@@ -131,7 +131,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       <div className="task-container">
         <i className="fab fa-youtube task-icon"></i>
         <h3>Subscribe our YouTube</h3>
-        <p>Open YouTube এ ক্লিক করুন, সাবস্ক্রাইব করুন, তারপর "Check & Claim" দিন।</p>
+        <p>Open YouTube এ ক্লিক করুন, সাবস্ক্রাইব করুন, তারপর &quot;Check &amp; Claim&quot; দিন।</p>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="action-btn" onClick={openYoutube}>
             <span>Open YouTube</span>

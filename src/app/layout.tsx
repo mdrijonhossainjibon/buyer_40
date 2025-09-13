@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
+import { Nunito } from 'next/font/google'
 import './globals.css'
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Earn From Ads BD',
@@ -15,13 +22,10 @@ export default function RootLayout({
     <html lang="bn">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
         <script src="https://telegram.org/js/telegram-web-app.js" async></script>
       </head>
-      <body>
+      <body className={nunito.className}>
         {children}
       </body>
     </html>

@@ -8,12 +8,14 @@ import TasksPage from '@/components/pages/TasksPage'
 import SupportPage from '@/components/pages/SupportPage'
 import WithdrawPage from '@/components/pages/WithdrawPage'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import NewsModal from '@/components/NewsModal'
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState('home')
   const [isLoading, setIsLoading] = useState(true)
+  const [showNewsModal, setShowNewsModal] = useState(false)
   const [userState, setUserState] = useState({
-    userId: null,
+    userId: null as number | null,
     balanceTK: 0,
     referralCount: 0,
     dailyAdLimit: 10,
@@ -43,6 +45,8 @@ export default function Home() {
     // Simulate loading
     setTimeout(() => {
       setIsLoading(false)
+      // Show news modal after loading completes
+      setShowNewsModal(true)
     }, 2000)
   }, [])
 
@@ -71,6 +75,10 @@ export default function Home() {
         </main>
         <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
       </div>
+      <NewsModal 
+        isOpen={showNewsModal} 
+        onClose={() => setShowNewsModal(false)}
+      />
     </>
   )
 }

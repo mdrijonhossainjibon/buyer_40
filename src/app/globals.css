@@ -463,3 +463,133 @@ body.dark-theme .share-telegram-btn {
   opacity: 0.9;
   line-height: 1.5;
 }
+
+/* News Modal Styles */
+.news-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.news-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2001;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--secondary-bg-light);
+  border: 1px solid var(--border-color-light);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+body.dark-theme .news-modal {
+  background: var(--secondary-bg-dark);
+  border-color: var(--border-color-dark);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.news-hero {
+  position: relative;
+  padding: 24px 20px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color-light), #5856d6);
+  color: #fff;
+}
+
+body.dark-theme .news-hero {
+  background: linear-gradient(135deg, var(--primary-color-dark), #5856d6);
+}
+
+.news-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.news-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.news-hero h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.news-emoji {
+  font-size: 2.5rem;
+  margin-top: 8px;
+}
+
+.news-body {
+  padding: 20px;
+  color: var(--text-color-light);
+  line-height: 1.6;
+}
+
+body.dark-theme .news-body {
+  color: var(--text-color-dark);
+}
+
+.news-body p {
+  margin-bottom: 12px;
+}
+
+.news-body p:last-child {
+  margin-bottom: 0;
+}
+
+.news-foot {
+  padding: 16px 20px 20px;
+  text-align: center;
+}
+
+.btn-ok {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary-color-light);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+body.dark-theme .btn-ok {
+  background: var(--primary-color-dark);
+}
+
+.btn-ok:hover {
+  opacity: 0.9;
+}
