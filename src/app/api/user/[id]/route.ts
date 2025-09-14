@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheQuery, revalidateTag } from '@/lib/cache'
 
-// GET user data with caching
+// GET user data
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -9,32 +8,21 @@ export async function GET(
   const userId = params.id
 
   try {
-    // Cache user data for 5 minutes
-    const userData = await cacheQuery(
-      `user:${userId}`,
-      async () => {
-        // Simulate database query
-        // Replace with your actual database call
-        return {
-          id: userId,
-          balanceTK: Math.floor(Math.random() * 1000),
-          referralCount: Math.floor(Math.random() * 50),
-          dailyAdLimit: 10,
-          watchedToday: Math.floor(Math.random() * 10),
-          telegramBonus: Math.floor(Math.random() * 100),
-          youtubeBonus: Math.floor(Math.random() * 100),
-          isBotVerified: Math.random() > 0.5 ? 1 : 0,
-          lastUpdated: new Date().toISOString()
-        }
-      },
-      300 // 5 minutes TTL
-    )
+    // Simulate database query
+    // Replace with your actual database call
+    const userData = {
+      id: userId,
+      balanceTK: Math.floor(Math.random() * 1000),
+      referralCount: Math.floor(Math.random() * 50),
+      dailyAdLimit: 10,
+      watchedToday: Math.floor(Math.random() * 10),
+      telegramBonus: Math.floor(Math.random() * 100),
+      youtubeBonus: Math.floor(Math.random() * 100),
+      isBotVerified: Math.random() > 0.5 ? 1 : 0,
+      lastUpdated: new Date().toISOString()
+    }
 
-    const response = NextResponse.json(userData)
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
-    response.headers.set('X-Cache-Tags', `user,user:${userId}`)
-    
-    return response
+    return NextResponse.json(userData)
   } catch (error) {
     console.error('Error fetching user data:', error)
     return NextResponse.json(
@@ -44,7 +32,7 @@ export async function GET(
   }
 }
 
-// PUT update user data and invalidate cache
+// PUT update user data
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -61,10 +49,6 @@ export async function PUT(
       ...body,
       lastUpdated: new Date().toISOString()
     }
-
-    // Invalidate related caches
-    revalidateTag(`user:${userId}`)
-    revalidateTag('user')
 
     return NextResponse.json(updatedUser)
   } catch (error) {

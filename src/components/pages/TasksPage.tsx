@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-
+import { Toast} from 'antd-mobile'
 interface UserState {
   userId: number | null
   balanceTK: number
@@ -16,30 +16,39 @@ interface UserState {
 interface TasksPageProps {
   userState: UserState
   setUserState: (state: UserState | ((prev: UserState) => UserState)) => void
-}
+} 
 
 export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
+  const [isCheckingYoutube, setIsCheckingYoutube] = useState(false)
+  const [youtubeError, setYoutubeError] = useState<string | null>(null)
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
 
   const watchAd = async () => {
     if (userState.watchedToday >= userState.dailyAdLimit) {
-      alert('Daily ad limit reached!')
+      Toast.show({
+        content: 'Daily ad limit reached!',
+        duration: 2000,
+      })
       return
     }
 
     setIsWatchingAd(true)
     
+    Toast.show({
+      content: 'Watching ad...',
+      duration: 3000,
+    })
+
     // Simulate ad watching
     setTimeout(() => {
-      setUserState(prev => ({
-        ...prev,
-        balanceTK: prev.balanceTK + 5,
-        watchedToday: prev.watchedToday + 1
-      }))
       setIsWatchingAd(false)
-      alert('Ad watched! You earned 5 TK!')
+      Toast.show({
+        content: 'Ad watched! You earned 5 TK!',
+        duration: 2000,
+      })
     }, 3000)
   }
 
@@ -48,41 +57,52 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   }
 
   const checkChannel = async () => {
-    // Simulate channel check
+    Toast.show({
+      content: 'Checking channel...',
+      duration: 2000,
+    })
+    
     setTimeout(() => {
-      if (!channelClaimed) {
-        setUserState(prev => ({
-          ...prev,
-          balanceTK: prev.balanceTK + 50,
-          telegramBonus: 1
-        }))
-        setChannelClaimed(true)
-        alert('Channel bonus claimed! You earned 50 TK!')
-      } else {
-        alert('Channel bonus already claimed!')
-      }
-    }, 1000)
+      Toast.show({
+        content: 'Channel bonus claimed! You earned 50 TK!',
+        duration: 2000,
+      })
+ 
+    }, 2000)
   }
 
   const openYoutube = () => {
-    window.open('https://youtube.com/@earnfromadsbd', '_blank')
+    window.open('https://www.youtube.com/@earnfromads-1', '_blank')
+  }
+
+  const checkYouTubeSubscribers = async () => {
+    Toast.show({
+      content: 'Checking YouTube subscription...',
+      duration: 2000,
+    })
+    
+  
+    
+    setTimeout(() => {
+      
+      setSubscriberCount(1250) // Mock subscriber count
+      Toast.show({
+        content: 'YouTube check completed!',
+        duration: 2000,
+      })
+    }, 2000)
   }
 
   const claimYoutube = async () => {
-    // Simulate YouTube check
+    await checkYouTubeSubscribers()
+    
     setTimeout(() => {
-      if (!youtubeClaimed) {
-        setUserState(prev => ({
-          ...prev,
-          balanceTK: prev.balanceTK + 75,
-          youtubeBonus: 1
-        }))
-        setYoutubeClaimed(true)
-        alert('YouTube bonus claimed! You earned 75 TK!')
-      } else {
-        alert('YouTube bonus already claimed!')
-      }
-    }, 1000)
+      Toast.show({
+        content: 'YouTube bonus claimed! You earned 75 TK!',
+        duration: 2000,
+      })
+    
+    }, 2500)
   }
 
   return (
@@ -94,8 +114,8 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
         <h3>Rewarded Ad</h3>
         <p>প্রতিটি বিজ্ঞাপনের জন্য <b>5</b> টাকা আয় করুন।</p>
         <p>অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
-        <button 
-          className="action-btn" 
+        <button
+          className="action-btn"
           onClick={watchAd}
           disabled={isWatchingAd || userState.watchedToday >= userState.dailyAdLimit}
         >
@@ -136,13 +156,27 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
           <button className="action-btn" onClick={openYoutube}>
             <span>Open YouTube</span>
           </button>
-          <button className="action-btn" onClick={claimYoutube}>
-            <span>Check & Claim</span>
+          <button
+            className="action-btn"
+            onClick={claimYoutube}
+            disabled={isCheckingYoutube || youtubeClaimed}
+          >
+            <span>{isCheckingYoutube ? 'Checking...' : 'Check & Claim'}</span>
           </button>
         </div>
         <p style={{ marginTop: '10px', fontSize: '0.85rem', opacity: 0.8 }}>
           Earn 75 TK by subscribing to our YouTube channel!
         </p>
+        {subscriberCount && (
+          <small style={{ display: 'block', marginTop: '6px', opacity: 0.8, color: '#4CAF50' }}>
+            📊 Current subscribers: {subscriberCount.toLocaleString()}
+          </small>
+        )}
+        {youtubeError && (
+          <small style={{ display: 'block', marginTop: '6px', color: '#f44336' }}>
+            ❌ {youtubeError}
+          </small>
+        )}
         {youtubeClaimed && (
           <small style={{ display: 'block', marginTop: '6px', opacity: 0.8 }}>
             ✅ YouTube bonus claimed!

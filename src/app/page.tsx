@@ -15,9 +15,9 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [showNewsModal, setShowNewsModal] = useState(false)
   const [userState, setUserState] = useState({
-    userId: null as number | null,
-    balanceTK: 0,
-    referralCount: 0,
+    userId: 123456789,
+    balanceTK: 200000,
+    referralCount: 50,
     dailyAdLimit: 10,
     watchedToday: 0,
     telegramBonus: 0,
@@ -53,21 +53,21 @@ export default function Home() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage userState={userState} setUserState={setUserState} />
+        return <HomePage userState={userState} setUserState={setUserState as any} />
       case 'tasks':
-        return <TasksPage userState={userState} setUserState={setUserState} />
+        return <TasksPage userState={userState} setUserState={setUserState as any} />
       case 'support':
         return <SupportPage />
       case 'withdraw':
         return <WithdrawPage userState={userState} />
       default:
-        return <HomePage userState={userState} setUserState={setUserState} />
+        return <HomePage userState={userState} setUserState={setUserState as any} />
     }
   }
 
   return (
     <>
-      {isLoading && <LoadingOverlay />}
+      {isLoading && <LoadingOverlay visible />}
       <div id="app" style={{ visibility: isLoading ? 'hidden' : 'visible' }}>
         <Header userState={userState} />
         <main id="main-content">

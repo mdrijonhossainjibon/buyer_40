@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito } from 'next/font/google'
 import './globals.css'
-import SWRProvider from '@/components/providers/SWRProvider'
-
+ 
 const nunito = Nunito({
   subsets: ['latin'],
   weight: ['400', '600', '700'],
@@ -27,9 +26,9 @@ export default function RootLayout({
         <script src="https://telegram.org/js/telegram-web-app.js" async></script>
       </head>
       <body className={nunito.className}>
-        <SWRProvider>
+      
           {children}
-        </SWRProvider>
+         
       </body>
     </html>
   )
