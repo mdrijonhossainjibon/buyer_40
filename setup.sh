@@ -115,6 +115,31 @@ ENV=${ENV:-production}
 echo -e "${CYAN}Enter Git repository URL (optional): ${NC}"
 read GIT_REPO
 
+# MongoDB Setup
+echo -e "${CYAN}Do you want to setup MongoDB? (y/n) ${YELLOW}[y]${NC}: "
+read MONGODB_SETUP
+MONGODB_SETUP=${MONGODB_SETUP:-y}
+
+# MongoDB credentials (if MongoDB is enabled)
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+    echo -e "${CYAN}Enter MongoDB database name ${YELLOW}[$APP_NAME]${NC}: "
+    read DB_NAME
+    DB_NAME=${DB_NAME:-$APP_NAME}
+    
+    echo -e "${CYAN}Enter MongoDB username ${YELLOW}[admin]${NC}: "
+    read DB_USER
+    DB_USER=${DB_USER:-admin}
+    
+    echo -e "${CYAN}Enter MongoDB password: ${NC}"
+    read -s DB_PASS
+    echo
+    
+    if [ -z "$DB_PASS" ]; then
+        DB_PASS=$(openssl rand -base64 32)
+        echo -e "${YELLOW}Generated random password: $DB_PASS${NC}"
+    fi
+fi
+
 # SSL Setup
 echo -e "${CYAN}Do you want to setup SSL certificate? (y/n) ${YELLOW}[n]${NC}: "
 read SSL_SETUP
@@ -148,6 +173,11 @@ echo -e "${YELLOW}Environment:${NC} $ENV"
 echo -e "${YELLOW}PM2 Instances:${NC} $INSTANCES"
 if [ -n "$GIT_REPO" ]; then
     echo -e "${YELLOW}Git Repository:${NC} $GIT_REPO"
+fi
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}MongoDB:${NC} Enabled (Database: $DB_NAME)"
+else
+    echo -e "${YELLOW}MongoDB:${NC} Disabled"
 fi
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}SSL:${NC} Enabled (${EMAIL})"
@@ -191,6 +221,27 @@ sudo npm install -g pm2
 echo -e "${BLUE}📦 Installing Nginx...${NC}"
 sudo apt install -y nginx
 
+# Install MongoDB (if enabled)
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}📦 Installing MongoDB...${NC}"
+    
+    # Import MongoDB GPG key
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+    
+    # Add MongoDB repository
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    
+    # Update package list and install MongoDB
+    sudo apt update
+    sudo apt install -y mongodb-org
+    
+    # Start and enable MongoDB
+    sudo systemctl start mongod
+    sudo systemctl enable mongod
+    
+    echo -e "${GREEN}✅ MongoDB installed and started${NC}"
+fi
+
 
 # Create application directory
 echo -e "${BLUE}📁 Creating application directory...${NC}"
@@ -219,24 +270,60 @@ yarn install
 echo -e "${BLUE}🔨 Building Next.js application...${NC}"
 yarn build
 
+# Configure MongoDB (if enabled)
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}🔧 Configuring MongoDB...${NC}"
+    
+    # Create MongoDB admin user
+    mongosh --eval "
+    use admin;
+    db.createUser({
+      user: '$DB_USER',
+      pwd: '$DB_PASS',
+      roles: [
+        { role: 'userAdminAnyDatabase', db: 'admin' },
+        { role: 'readWriteAnyDatabase', db: 'admin' }
+      ]
+    });
+    
+    use $DB_NAME;
+    db.createUser({
+      user: '$DB_USER',
+      pwd: '$DB_PASS',
+      roles: [
+        { role: 'readWrite', db: '$DB_NAME' }
+      ]
+    });
+    "
+    
+    # Enable authentication in MongoDB config
+    sudo sed -i 's/#security:/security:\n  authorization: enabled/' /etc/mongod.conf
+    
+    # Restart MongoDB to apply authentication
+    sudo systemctl restart mongod
+    
+    echo -e "${GREEN}✅ MongoDB configured with authentication${NC}"
+    echo -e "${YELLOW}Database: $DB_NAME${NC}"
+    echo -e "${YELLOW}Username: $DB_USER${NC}"
+    echo -e "${YELLOW}Password: $DB_PASS${NC}"
+fi
+
 # Create PM2 ecosystem file
 echo -e "${BLUE}⚙️  Creating PM2 configuration...${NC}"
 cat > ecosystem.config.js << EOF
 module.exports = {
   apps: [{
     name: '$APP_NAME',
-    script: 'yarn',
+    script: 'node_modules/next/dist/bin/next',
     args: 'start',
     cwd: '$APP_DIR',
     instances: '$INSTANCES',
     exec_mode: 'cluster',
     env: {
       NODE_ENV: '$ENV',
-      PORT: $PORT
+      PORT: $PORT$(if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then echo ",
+      MONGODB_URI: 'mongodb://$DB_USER:$DB_PASS@localhost:27017/$DB_NAME?authSource=admin'"; fi)
     },
-    error_file: '/var/log/pm2/$APP_NAME-error.log',
-    out_file: '/var/log/pm2/$APP_NAME-out.log',
-    log_file: '/var/log/pm2/$APP_NAME.log',
     time: true
   }]
 }
@@ -420,6 +507,10 @@ echo -e "  • Nginx config: ${YELLOW}/etc/nginx/sites-available/$APP_NAME${NC}"
 echo -e "  • PM2 logs: ${YELLOW}/var/log/pm2/${NC}"
 echo -e "  • Update script: ${YELLOW}$APP_DIR/update.sh${NC}"
 echo -e "  • Backup script: ${YELLOW}$APP_DIR/backup.sh${NC}"
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+echo -e "  • MongoDB config: ${YELLOW}/etc/mongod.conf${NC}"
+echo -e "  • MongoDB logs: ${YELLOW}/var/log/mongodb/mongod.log${NC}"
+fi
 echo ""
 echo -e "${BLUE}🔧 Useful Commands:${NC}"
 echo -e "  • Update app: ${CYAN}$APP_DIR/update.sh${NC}"
@@ -428,6 +519,10 @@ echo -e "  • View logs: ${CYAN}pm2 logs $APP_NAME${NC}"
 echo -e "  • Monitor app: ${CYAN}pm2 monit${NC}"
 echo -e "  • Nginx reload: ${CYAN}sudo systemctl reload nginx${NC}"
 echo -e "  • Check status: ${CYAN}pm2 status${NC}"
+if [[ $MONGODB_SETUP =~ ^[Yy]$ ]]; then
+echo -e "  • MongoDB status: ${CYAN}sudo systemctl status mongod${NC}"
+echo -e "  • MongoDB shell: ${CYAN}mongosh -u $DB_USER -p $DB_PASS --authenticationDatabase admin $DB_NAME${NC}"
+fi
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
 echo -e "  • SSL renewal: ${CYAN}sudo certbot renew${NC}"
 fi
