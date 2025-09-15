@@ -42,7 +42,7 @@ export default function Home() {
   useEffect(() => {
     if (isInitialized) return
     const initializeApp = async () => {
-      let currentUserId = 123456789 // Default user ID
+ 
 
       // Initialize Telegram WebApp
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -50,17 +50,17 @@ export default function Home() {
         tg.ready()
         tg.expand()
 
-        console.log(tg)
+        
 
         // Get user data from Telegram
         const user = tg.initDataUnsafe?.user
         if (user) {
-          currentUserId = user.id
+          dispatch(fetchUserDataRequest(user.id))
         }
       }
 
       // Dispatch saga action to fetch user data
-      dispatch(fetchUserDataRequest(currentUserId))
+     
       
       setIsInitialized(true)
     }
