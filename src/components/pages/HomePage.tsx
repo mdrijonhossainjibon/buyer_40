@@ -8,12 +8,13 @@ import { fetchBotStatusRequest } from '@/store/modules/botStatus'
  
  
 
-export default function HomePage({ userState, setUserState } :any) {
+export default function HomePage() {
   const dispatch = useDispatch()
   const botStatus = useSelector((state: RootState) => state.botStatus)
+  const user = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(false)
  
-  const referralLink = `https://t.me/${botStatus.botUsername}/?startapp=${userState.referralCode}`
+  const referralLink = `https://t.me/${botStatus.botUsername || 'earnfromadsbd_bot'}/?startapp=${user.referralCode || ''}`
 
   // Dispatch Redux saga to get bot status
   const getBotStatus = () => {
@@ -81,7 +82,7 @@ export default function HomePage({ userState, setUserState } :any) {
             {isLoading ? (
               <Skeleton.Title animated className="w-20 mx-auto" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{userState.watchedToday} / {userState.dailyAdLimit}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.watchedToday} / 10</p>
             )}
           </div>
           <div className="p-5 rounded-xl text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -89,7 +90,7 @@ export default function HomePage({ userState, setUserState } :any) {
             {isLoading ? (
               <Skeleton.Title animated className="w-16 mx-auto" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{userState.referralCount}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.referralCount}</p>
             )}
           </div>
         </div>

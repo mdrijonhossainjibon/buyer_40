@@ -3,25 +3,14 @@
 import { useState } from 'react'
 import { BellOutline } from 'antd-mobile-icons'
 import NotificationPopup from './NotificationPopup'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
 
-interface UserState {
-  userId: number | null
-  balanceTK: number
-  referralCount: number
-  dailyAdLimit: number
-  watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
-  isBotVerified: number
-}
+ 
 
-interface HeaderProps {
-  userState: UserState
-}
-
-export default function Header({ userState }: HeaderProps) {
+export default function Header( ) {
   const [showNotificationPopup, setShowNotificationPopup] = useState(false)
-
+  const user = useSelector((state: RootState) => state.user)
   return (
     <header className="px-4 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="flex items-center gap-4">
@@ -32,10 +21,10 @@ export default function Header({ userState }: HeaderProps) {
         />
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-            User {userState.userId || 'Guest'} 
+            User {user.userId || 'Guest'} 
             <i className="fas fa-check-circle text-base text-blue-600 dark:text-blue-400"></i>
           </h1>
-          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">ব্যালেন্স: <span className="text-blue-600 dark:text-blue-400">{userState.balanceTK}</span> টাকা 💰</p>
+          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">ব্যালেন্স: <span className="text-blue-600 dark:text-blue-400">{user.balanceTK}</span> টাকা 💰</p>
         </div>
       </div>
       <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">

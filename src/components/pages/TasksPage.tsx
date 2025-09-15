@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Toast} from 'antd-mobile'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { RootState } from '@/store'
+import { useSelector } from 'react-redux'
 interface UserState {
   userId: number | null
   balanceTK: number
@@ -14,19 +16,16 @@ interface UserState {
   status: 'active' | 'suspend'
 }
 
-interface TasksPageProps {
-  userState: UserState
-  setUserState: (state: UserState | ((prev: UserState) => UserState)) => void
-} 
  
-export default function TasksPage({ userState, setUserState }: TasksPageProps) {
+ 
+export default function TasksPage( ) {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
- 
+  const user = useSelector((state: RootState) => state.user)
 
   const watchAd = async () => {
-    if (userState.watchedToday >= userState.dailyAdLimit) {
+    if (user.watchedToday >= 5000) {
       Toast.show({
         content: 'Daily ad limit reached!',
         duration: 2000,
@@ -34,7 +33,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       return
     }
 
-    if (userState.status === 'suspend') {
+    if (user.status === 'suspend') {
       Toast.show({
         content: 'Your account has been suspended!',
         duration: 2000,
@@ -57,18 +56,12 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
             method: 'POST',
             url: '/tasks/watch-ad',
             body: {
-              userId: userState.userId,
-              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              userId: user.userId,
+              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
 
           if (response && response.success) {
-            setUserState(prev => ({
-              ...prev,
-              balanceTK: response.data.newBalance,
-              watchedToday: response.data.watchedToday
-            }))
-            
             Toast.show({
               content: response.message,
               duration: 2000,
@@ -103,7 +96,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   }
 
   const checkChannel = async () => {
-    if (userState.telegramBonus > 0) {
+    if (user.telegramBonus > 0) {
       Toast.show({
         content: 'already claimed!',
         duration: 2000,
@@ -124,18 +117,13 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
             method: 'POST',
             url: '/tasks/telegram-bonus',
             body: {
-              userId: userState.userId,
-              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              userId: user.userId,
+              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
 
           if (response && response.success) {
-            setUserState(prev => ({
-              ...prev,
-              balanceTK: response.data.newBalance,
-              telegramBonus: response.data.telegramBonus
-            }))
-            
+          
             setChannelClaimed(true)
             Toast.show({
               content: response.message,
@@ -166,26 +154,21 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   const openYoutube = () => {
     window.open('https://www.youtube.com/@earnfromads-1', '_blank')
   }
-
-  const checkYouTubeSubscribers = async () => {
-    Toast.show({
-      content: 'Checking subscription...',
-      duration: 2000,
-      icon: 'loading'
-    })
-     
-  }
-
+ 
   const claimYoutube = async () => {
-    if (userState.youtubeBonus > 0) {
+    if (user.youtubeBonus > 0) {
       Toast.show({
         content: 'already claimed!',
         duration: 2000,
       })
       return
     }
-
-    await checkYouTubeSubscribers()
+ 
+    Toast.show({
+      content: 'Checking subscription...',
+      duration: 2000,
+      icon: 'loading'
+    })
     
     try {
       setTimeout(async () => {
@@ -194,20 +177,13 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
             method: 'POST',
             url: '/tasks/youtube-bonus',
             body: {
-              userId: userState.userId,
-              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              
+              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
 
           if (response && response.success) {
-            setUserState(prev => ({
-              ...prev,
-              balanceTK: response.data.newBalance,
-              youtubeBonus: response.data.youtubeBonus
-            }))
-            
-            setYoutubeClaimed(true)
-            
+             
             Toast.show({
               content: response.message,
               duration: 3000,
@@ -246,7 +222,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
         <button
           className="w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={watchAd}
-          disabled={isWatchingAd || userState.watchedToday >= userState.dailyAdLimit}
+          disabled={isWatchingAd || user.watchedToday >= 5000000}
         >
           <span>{isWatchingAd ? 'Watching Ad...' : 'Watch Ad'}</span>
         </button>

@@ -1,8 +1,10 @@
 'use client'
 
+import { RootState } from '@/store'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 
-interface UserState {
+interface user {
   userId: number | null
   balanceTK: number
   referralCount: number
@@ -13,14 +15,12 @@ interface UserState {
   isBotVerified: number
 }
 
-interface WithdrawPageProps {
-  userState: UserState
-}
-
-export default function WithdrawPage({ userState }: WithdrawPageProps) {
+ 
+export default function WithdrawPage( ) {
   const [withdrawMethod, setWithdrawMethod] = useState('Bkash')
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('')
+  const user = useSelector((state: RootState) => state.user)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const minWithdraw = 1500
@@ -29,17 +29,17 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (userState.balanceTK < minWithdraw) {
+    if (user.balanceTK < minWithdraw) {
       alert(`Minimum withdrawal amount is ${minWithdraw} TK`)
       return
     }
     
-    if (userState.referralCount < requiredReferrals) {
+    if (user.referralCount < requiredReferrals) {
       alert(`You need at least ${requiredReferrals} referrals to withdraw`)
       return
     }
 
-    if (parseInt(amount) > userState.balanceTK) {
+    if (parseInt(amount) > user.balanceTK) {
       alert('Insufficient balance!')
       return
     }
@@ -102,7 +102,7 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
             onChange={(e) => setAmount(e.target.value)}
             placeholder="1500"
             min={minWithdraw}
-            max={userState.balanceTK}
+            max={user.balanceTK}
             className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             required
           />

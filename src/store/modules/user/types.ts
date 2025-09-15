@@ -3,11 +3,11 @@ export interface UserState {
   userId: number
   balanceTK: number
   referralCount: number
-  dailyAdLimit: number
   watchedToday: number
   telegramBonus: number
   youtubeBonus: number
-  isBotVerified: number
+  status: 'active' | 'suspend';
+  referralCode : string;
   isLoading: boolean
   error: string | null
 }

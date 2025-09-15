@@ -5,12 +5,12 @@ const initialState: UserState = {
   userId: 123456789,
   balanceTK: 0,
   referralCount: 0,
-  dailyAdLimit: 10,
   watchedToday: 0,
   telegramBonus: 0,
   youtubeBonus: 0,
-  isBotVerified: 0,
   isLoading: true,
+  status: 'active',
+  referralCode: '',
   error: null
 }
 

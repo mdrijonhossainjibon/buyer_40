@@ -68,15 +68,15 @@ export default function Home() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage userState={userState} setUserState={handleUserStateUpdate} />
+        return <HomePage />
       case 'tasks':
-        return <TasksPage userState={userState} setUserState={handleUserStateUpdate} />
+        return <TasksPage />
       case 'support':
         return <SupportPage />
       case 'withdraw':
-        return <WithdrawPage userState={userState} />
+        return <WithdrawPage  />
       default:
-        return <HomePage userState={userState} setUserState={handleUserStateUpdate} />
+        return <HomePage   />
     }
   }
 
@@ -90,7 +90,7 @@ export default function Home() {
               id="app"
               className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 ${userState.isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
             >
-              <Header userState={userState} />
+              <Header   />
               <main id="main-content" className="px-4 py-4">
                 {renderCurrentPage()}
               </main>
