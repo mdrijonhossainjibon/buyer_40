@@ -11,44 +11,7 @@ interface UserRequest {
   hash: string
 }
 
-interface UserResponse {
-  success: boolean
-  data?: {
-    userId: number
-    balanceTK: number
-    referralCount: number
-    dailyAdLimit: number
-    watchedToday: number
-    telegramBonus: number
-    youtubeBonus: number
-    isBotVerified: number
-    username?: string
-    profile: {
-      firstName?: string
-      lastName?: string
-      avatar?: string
-    }
-    totalEarned: number
-    availableBalance: number
-    referralCode: string
-    recentActivities: Array<{
-      _id: string
-      activityType: string
-      description: string
-      amount: number
-      status: string
-      createdAt: Date
-      metadata?: any
-    }>
-    activityStats: {
-      todayActivities: number
-      totalActivities: number
-      totalEarnings: number
-    }
-  }
-  message?: string
-}
-
+ 
 export async function POST(request: NextRequest) {
   try {
     const body: UserRequest = await request.json()
@@ -64,7 +27,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
-       const { userId , start_param } = JSON.parse(result.data  as string)
+       const { userId , start_param , username } = JSON.parse(result.data  as string)
     // Connect to database
     await dbConnect()
 
@@ -76,7 +39,7 @@ export async function POST(request: NextRequest) {
       const now = new Date()
       const currentHour = now.getHours()
       const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
-      const feastBonus = isFeastTime ? 100 : 50 // 100 TK during feast time, 50 TK regular
+      const feastBonus = isFeastTime ? 25 : 3  
 
       // Handle referral logic if start_param is provided
       let referrerBonus = 0
@@ -137,19 +100,11 @@ export async function POST(request: NextRequest) {
         userId,
         balanceTK: feastBonus,
         referralCount: 0,
-        dailyAdLimit: 10,
-        watchedToday: 0,
         telegramBonus: 0,
         youtubeBonus: 0,
-        isBotVerified: 0,
         totalEarned: feastBonus,
-        withdrawnAmount: 0,
         profile: {},
-        settings: {
-          notifications: true,
-          language: 'en',
-          timezone: 'Asia/Dhaka'
-        }
+        username
       })
 
       // Create welcome notification
@@ -178,7 +133,7 @@ export async function POST(request: NextRequest) {
           isRead: false,
           metadata: {
             bonusType: 'feast_time',
-            extraBonus: 50,
+            extraBonus: 10,
             feastTimeHours: 'সকাল ৬-১০টা ও সন্ধ্যা ৬-১১টা'
           }
         })
@@ -243,7 +198,7 @@ export async function POST(request: NextRequest) {
     const activityStats = await Activity.getUserActivityStats(userId, 30)
     const totalEarnings = activityStats.reduce((sum: number, stat: any) => sum + stat.totalAmount, 0)
 
-    const response: UserResponse = {
+    const response  = {
       success: true,
       data: {
         userId: user.userId,
@@ -255,6 +210,7 @@ export async function POST(request: NextRequest) {
         youtubeBonus: user.youtubeBonus,
         isBotVerified: user.isBotVerified,
         username: user.username,
+        status: user.status,
         profile: {
           firstName: user.profile?.firstName,
           lastName: user.profile?.lastName,

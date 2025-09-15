@@ -53,11 +53,11 @@ export default function Home() {
         // Get user data from Telegram
         const user = tg.initDataUnsafe?.user
         if (user) {
-          dispatch(fetchUserDataRequest(user.id , tg.initDataUnsafe.start_param));
+          dispatch(fetchUserDataRequest(user.id , tg.initDataUnsafe.start_param , tg.initDataUnsafe.user?.username));
           dispatch(fetchBotStatusRequest())
         }
       }
-       //dispatch(fetchUserDataRequest(123456789))
+        //dispatch(fetchUserDataRequest(123456789))
       // Dispatch saga action to fetch user data
      
       
