@@ -20,11 +20,7 @@ export default function HomePage() {
   const getBotStatus = () => {
     dispatch(fetchBotStatusRequest())
   }
-
-  useEffect(() => {
-    getBotStatus()
-  }, [])
-
+ 
   const onRefresh = async () => {
     setIsLoading(true)
     try {

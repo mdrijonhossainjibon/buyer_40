@@ -1,6 +1,6 @@
 // User state interface
 export interface UserState {
-  userId: number
+  userId: number | null
   balanceTK: number
   referralCount: number
   watchedToday: number

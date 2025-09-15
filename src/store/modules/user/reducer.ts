@@ -2,7 +2,7 @@ import { UserState, UserActionTypes, USER_ACTIONS } from './types'
 
 // Initial state
 const initialState: UserState = {
-  userId: 123456789,
+  userId: null,
   balanceTK: 0,
   referralCount: 0,
   watchedToday: 0,

@@ -16,6 +16,7 @@ import TelegramPopup from '@/components/TelegramPopup'
 
 import { RootState } from '@/store'
 import {  fetchUserDataRequest } from '@/store/modules/user'
+import { fetchBotStatusRequest } from '@/store/modules/botStatus';
 
 export default function Home() {
   const dispatch = useDispatch()
@@ -55,10 +56,11 @@ export default function Home() {
         // Get user data from Telegram
         const user = tg.initDataUnsafe?.user
         if (user) {
-          dispatch(fetchUserDataRequest(user.id))
+          dispatch(fetchUserDataRequest(user.id));
+          dispatch(fetchBotStatusRequest())
         }
       }
-
+      //dispatch(fetchUserDataRequest(123456789))
       // Dispatch saga action to fetch user data
      
       

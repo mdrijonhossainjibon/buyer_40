@@ -1,7 +1,6 @@
 'use client'
 
-import { SpinLoading } from 'antd-mobile'
-
+ 
 interface LoadingOverlayProps {
   visible: boolean
   onClose?: () => void
@@ -17,19 +16,9 @@ export default function LoadingOverlay({ visible, onClose }: LoadingOverlayProps
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg animate-pulse">
           <i className="fa-solid fa-bolt text-4xl text-gray-900"></i>
         </div>
+ 
 
-        {/* Loading spinner */}
-        <SpinLoading 
-          style={{ 
-            '--size': '48px',
-            '--color': '#f0b90b',
-          }} 
-        />
-
-        {/* Title */}
-        <div className="text-xl font-semibold text-white mb-2">
-          Loading Dashboard
-        </div>
+      
 
         {/* Subtitle */}
         <div className="text-sm text-gray-300 leading-relaxed max-w-xs">
