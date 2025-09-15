@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
-       const { userId } = JSON.parse(result.data  as string)
+       const { userId , start_param } = JSON.parse(result.data  as string)
     // Connect to database
     await dbConnect()
 
@@ -77,6 +77,60 @@ export async function POST(request: NextRequest) {
       const currentHour = now.getHours()
       const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
       const feastBonus = isFeastTime ? 100 : 50 // 100 TK during feast time, 50 TK regular
+
+      // Handle referral logic if start_param is provided
+      let referrerBonus = 0
+      if (start_param) {
+        try {
+          const referrerId = parseInt(start_param)
+          const referrer = await User.findOne({ userId: referrerId })
+          
+          if (referrer) {
+            // Update referrer's referral count and give bonus
+            referrerBonus = 25 // 25 TK bonus for referrer
+            await User.findOneAndUpdate(
+              { userId: referrerId },
+              { 
+                $inc: { 
+                  referralCount: 1,
+                  balanceTK: referrerBonus,
+                  totalEarned: referrerBonus
+                }
+              }
+            )
+
+            // Create referral notification for referrer
+            await Notification.create({
+              userId: referrerId,
+              title: '🎁 রেফারেল বোনাস!',
+              message: `অভিনন্দন! আপনার রেফারেলের মাধ্যমে একজন নতুন ব্যবহারকারী যোগ দিয়েছেন। আপনি ${referrerBonus} টাকা বোনাস পেয়েছেন!`,
+              type: 'success',
+              priority: 'high',
+              isRead: false,
+              metadata: {
+                bonusAmount: referrerBonus,
+                referredUserId: userId,
+                bonusType: 'referral'
+              }
+            })
+
+            // Log referral activity for referrer
+            await Activity.create({
+              userId: referrerId,
+              activityType: 'referral',
+              description: `রেফারেল বোনাস: নতুন ব্যবহারকারী (${userId}) যোগদান`,
+              amount: referrerBonus,
+              status: 'completed',
+              metadata: {
+                referredUserId: userId,
+                bonusType: 'referral'
+              }
+            })
+          }
+        } catch (error) {
+          console.log('Referral processing error:', error)
+        }
+      }
 
       // Create new user with default values and feast bonus
       user = await User.create({
@@ -134,13 +188,14 @@ export async function POST(request: NextRequest) {
       await Activity.create({
         userId,
         activityType: 'signup',
-        description: `ব্যবহারকারী রেজিস্ট্রেশন করেছেন এবং ${feastBonus} টাকা বোনাস পেয়েছেন${isFeastTime ? ' (ভোজের সময়)' : ''}`,
+        description: `ব্যবহারকারী রেজিস্ট্রেশন করেছেন এবং ${feastBonus} টাকা বোনাস পেয়েছেন${isFeastTime ? ' (ভোজের সময়)' : ''}${start_param ? ' (রেফারেল)' : ''}`,
         amount: feastBonus,
         status: 'completed',
         metadata: {
           isFirstLogin: true,
           isFeastTime,
           bonusAmount: feastBonus,
+          referredBy: start_param || null,
           userAgent: request.headers.get('user-agent'),
           ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
         }
