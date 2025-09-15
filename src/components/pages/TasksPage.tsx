@@ -5,6 +5,7 @@ import { Toast} from 'antd-mobile'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
+import { LoadAds } from '@/lib/ads'
 interface UserState {
   userId: number | null
   balanceTK: number
@@ -48,47 +49,53 @@ export default function TasksPage( ) {
       duration: 3000,
     })
 
-    try {
-      // Simulate ad watching delay
-      setTimeout(async () => {
-        try {
-          const { response } = await API_CALL({
-            method: 'POST',
-            url: '/tasks/watch-ad',
-            body: {
-              userId: user.userId,
-              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+    // Rewarded interstitial
+    
+     LoadAds('9486612').then(() => {
+      try {
+        // Simulate ad watching delay
+        setTimeout(async () => {
+          try {
+            const { response } = await API_CALL({
+              method: 'POST',
+              url: '/tasks/watch-ad',
+              body: {
+                userId: user.userId,
+                ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              }
+            })
+  
+            if (response && response.success) {
+              Toast.show({
+                content: response.message,
+                duration: 2000,
+              })
+            } else {
+              Toast.show({
+                content: response?.message || 'Failed to watch ad',
+                duration: 2000,
+              })
             }
-          })
-
-          if (response && response.success) {
+          } catch (error) {
+            console.error('Watch ad error:', error)
             Toast.show({
-              content: response.message,
+              content: 'Failed to process ad watching',
               duration: 2000,
             })
-          } else {
-            Toast.show({
-              content: response?.message || 'Failed to watch ad',
-              duration: 2000,
-            })
+          } finally {
+            setIsWatchingAd(false)
           }
-        } catch (error) {
-          console.error('Watch ad error:', error)
-          Toast.show({
-            content: 'Failed to process ad watching',
-            duration: 2000,
-          })
-        } finally {
-          setIsWatchingAd(false)
-        }
-      }, 3000)
-    } catch (error) {
-      setIsWatchingAd(false)
-      Toast.show({
-        content: 'Failed to start ad watching',
-        duration: 2000,
-      })
-    }
+        }, 3000)
+      } catch (error) {
+        setIsWatchingAd(false)
+        Toast.show({
+          content: 'Failed to start ad watching',
+          duration: 2000,
+        })
+      }
+    })
+
+   
   }
 
   const openChannel = () => {
