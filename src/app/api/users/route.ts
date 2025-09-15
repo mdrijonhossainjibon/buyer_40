@@ -82,14 +82,14 @@ export async function POST(request: NextRequest) {
       let referrerBonus = 0
       if (start_param) {
         try {
-          const referrerId = parseInt(start_param)
-          const referrer = await User.findOne({ userId: referrerId })
+            
+          const referrer = await User.findOne({ referralCode : start_param})
           
           if (referrer) {
             // Update referrer's referral count and give bonus
             referrerBonus = 25 // 25 TK bonus for referrer
             await User.findOneAndUpdate(
-              { userId: referrerId },
+              { referralCode : start_param },
               { 
                 $inc: { 
                   referralCount: 1,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
             // Create referral notification for referrer
             await Notification.create({
-              userId: referrerId,
+              userId: referrer.userId,
               title: '🎁 রেফারেল বোনাস!',
               message: `অভিনন্দন! আপনার রেফারেলের মাধ্যমে একজন নতুন ব্যবহারকারী যোগ দিয়েছেন। আপনি ${referrerBonus} টাকা বোনাস পেয়েছেন!`,
               type: 'success',
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
             // Log referral activity for referrer
             await Activity.create({
-              userId: referrerId,
+              userId:  referrer.userId,
               activityType: 'referral',
               description: `রেফারেল বোনাস: নতুন ব্যবহারকারী (${userId}) যোগদান`,
               amount: referrerBonus,
