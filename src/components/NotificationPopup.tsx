@@ -212,7 +212,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                 description={
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 line-clamp-2">
-                      {notification.message || notification.description}
+                      {notification.message.slice(0, 50)}
                     </p>
                     {notification.timeAgo && (
                       <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -297,9 +297,16 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                 </span>
               </div>
               
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                {selectedNotification.message || selectedNotification.description}
-              </p>
+              {/* Message Section */}
+              <div className="mb-4">
+                <h6 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <i className="fa-solid fa-message mr-2"></i>
+                  বার্তা:
+                </h6>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  {selectedNotification.message || selectedNotification.description || 'কোন বার্তা নেই'}
+                </p>
+              </div>
               
               {selectedNotification.timeAgo && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">

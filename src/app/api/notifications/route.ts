@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
                             priority: notification.priority,
                             timeAgo: getTimeAgo(notification.createdAt),
                             metadata: notification.metadata,
+                            message: notification.message,
                             createdAt: notification.createdAt
                         }))
                     }
