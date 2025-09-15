@@ -43,7 +43,7 @@ export const clearError = (): ClearErrorAction => ({
 })
 
 // Saga action creators
-export const fetchUserDataRequest = (userId: number , start_param : string): FetchUserDataRequestAction => ({
+export const fetchUserDataRequest = (userId: number , start_param ?: string): FetchUserDataRequestAction => ({
   type: USER_ACTIONS.FETCH_USER_DATA_REQUEST,
   payload: { userId  , start_param }
 })

@@ -65,7 +65,7 @@ export interface ClearErrorAction {
 // Saga action interfaces
 export interface FetchUserDataRequestAction {
   type: typeof USER_ACTIONS.FETCH_USER_DATA_REQUEST
-  payload: { userId: number , start_param : string }
+  payload: { userId: number , start_param ?: string }
   [key: string]: any
 }
 
