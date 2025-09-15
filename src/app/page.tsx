@@ -42,17 +42,11 @@ export default function Home() {
 
   useEffect(() => {
     if (isInitialized) return
-    const initializeApp = async () => {
- 
-
+      
       // Initialize Telegram WebApp
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp
-        tg.ready()
-        tg.expand()
-
-        
-
+        console.log(tg.initDataUnsafe.start_param)
         // Get user data from Telegram
         const user = tg.initDataUnsafe?.user
         if (user) {
@@ -65,9 +59,8 @@ export default function Home() {
      
       
       setIsInitialized(true)
-    }
-
-    initializeApp()
+    
+     
   }, [isInitialized])
 
  
