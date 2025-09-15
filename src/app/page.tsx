@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { ConfigProvider } from 'antd-mobile';
+ 
 import Header from '@/components/Header'
 import Navigation from '@/components/Navigation'
 import HomePage from '@/components/pages/HomePage'
@@ -13,7 +15,7 @@ import NewsModal from '@/components/NewsModal'
 import TelegramPopup from '@/components/TelegramPopup'
 
 import { RootState } from '@/store'
-import { setUserData, fetchUserDataRequest } from '@/store/modules/user'
+import {  fetchUserDataRequest } from '@/store/modules/user'
 
 export default function Home() {
   const dispatch = useDispatch()
@@ -23,16 +25,19 @@ export default function Home() {
   const [showNewsModal, setShowNewsModal] = useState(false)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
-
-  // Wrapper function to handle state updates via Redux
-  const handleUserStateUpdate = (newState: any) => {
-    if (typeof newState === 'function') {
-      const updatedState = newState(userState)
-      dispatch(setUserData(updatedState))
-    } else {
-      dispatch(setUserData(newState))
+ 
+  useLayoutEffect(() => {
+    // Check if document element has dark class and sync with state
+    const hasDarkClass = document.documentElement.classList.contains('dark')
+    
+    if (hasDarkClass) {
+      document.documentElement.setAttribute('data-prefers-color-scheme','dark')
     }
-  }
+    else{
+      document.documentElement.setAttribute('data-prefers-color-scheme','light')
+    } 
+     
+  }, [ ])
 
   useEffect(() => {
     if (isInitialized) return
@@ -61,9 +66,7 @@ export default function Home() {
     initializeApp()
   }, [isInitialized])
 
-
  
-   
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -81,31 +84,39 @@ export default function Home() {
   }
 
   return (
-    <>
-      {userState.isLoading && <LoadingOverlay visible />}
-      {
-        showTelegramPopup ? <TelegramPopup isOpen onClose={() => setShowTelegramPopup(false)} miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} /> :
-          (
-            <><div
-              id="app"
-              className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 ${userState.isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
-            >
-              <Header   />
-              <main id="main-content" className="px-4 py-4">
-                {renderCurrentPage()}
-              </main>
-              <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
-            </div>
+   
+      <div 
+        className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+       
+      >
+        {userState.isLoading && <LoadingOverlay visible />}
+        {
+          showTelegramPopup ? (
+            <TelegramPopup 
+              isOpen 
+              onClose={() => setShowTelegramPopup(false)} 
+              miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} 
+            />
+          ) : (
+            <>
+              <div
+                id="app"
+                className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 bg-white dark:bg-gray-800 shadow-lg dark:shadow-2xl ${userState.isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
+              >
+                <Header />
+                <main id="main-content" className="px-4 py-4 bg-gray-50 dark:bg-gray-900">
+                  {renderCurrentPage()}
+                </main>
+                <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+              </div>
               <NewsModal
                 isOpen={showNewsModal}
                 onClose={() => setShowNewsModal(false)}
               />
             </>
           )
-
-      }
-
-
-    </>
+        }
+      </div>
+ 
   )
 }

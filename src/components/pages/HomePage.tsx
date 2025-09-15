@@ -73,7 +73,7 @@ export default function HomePage() {
 
   return (
     <PullToRefresh onRefresh={onRefresh}>
-      <div className="block animate-fade-in">
+      <div className="block animate-fade-in bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Dashboard</h2>
 
         <div className="grid grid-cols-2 gap-4 mt-5">
@@ -113,22 +113,22 @@ export default function HomePage() {
           <div className="flex justify-center gap-3 mt-2.5 flex-wrap">
             {isLoading ? (
               <>
-                <Skeleton.Title animated className="flex-1 min-w-[150px] h-12 rounded-lg" />
-                <Skeleton.Title animated className="flex-1 min-w-[150px] h-12 rounded-lg" />
+                <Skeleton.Title animated className="flex-1 min-w-[150px] h-12 rounded-lg dark:bg-gray-700" />
+                <Skeleton.Title animated className="flex-1 min-w-[150px] h-12 rounded-lg dark:bg-gray-700" />
               </>
             ) : (
               <>
                 <button 
-                  className="flex-1 min-w-[150px] px-3 py-3 border-none rounded-lg text-white cursor-pointer font-semibold bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200" 
+                  className="flex-1 min-w-[150px] px-3 py-3 border-none rounded-lg text-white cursor-pointer font-semibold bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 shadow-md dark:shadow-lg" 
                   onClick={copyReferralLink}
                 >
                   Copy Referral Link
                 </button>
                 <button 
-                  className="flex-1 min-w-[150px] px-3 py-3 border-none rounded-lg text-white cursor-pointer font-semibold bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200" 
+                  className="flex-1 min-w-[150px] px-3 py-3 border-none rounded-lg text-white cursor-pointer font-semibold bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 shadow-md dark:shadow-lg" 
                   onClick={shareOnTelegram}
                 >
-                  <i className="fas fa-share-alt mr-2"></i> Share Now
+                  <i className="fas fa-share-alt mr-2 dark:text-white"></i> Share Now
                 </button>
               </>
             )}

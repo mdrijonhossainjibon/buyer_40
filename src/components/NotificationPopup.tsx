@@ -1,6 +1,6 @@
 'use client'
 
-import { Popup, Button, List } from 'antd-mobile'
+import { Popup, Button, List  } from 'antd-mobile'
 import { BellOutline, CloseOutline } from 'antd-mobile-icons'
 
 interface NotificationItem {
@@ -129,18 +129,14 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
       visible={isOpen}
       onMaskClick={onClose}
       onClose={onClose}
+      position="right"
       bodyStyle={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         width: '100vw',
         height: '100vh',
-        margin: 0,
         padding: 0,
-        borderRadius: 0,
-        maxWidth: 'none'
+        maxWidth: 'none',
+        backgroundColor: 'var(--adm-color-background)',
+        color: 'var(--adm-color-text)'
       }}
       maskStyle={{
         backgroundColor: 'rgba(0, 0, 0, 0.9)'
@@ -157,7 +153,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
             <CloseOutline className="text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center justify-center mb-2">
-            <BellOutline />
+            <BellOutline className="text-gray-700 dark:text-gray-300" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">নোটিফিকেশন</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -166,8 +162,8 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
         </div>
 
         {/* Notification List */}
-        <div className="px-4 py-2">
-          <List>
+        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900">
+          <List className="dark:bg-gray-900">
             {notifications.map((notification) => (
               <List.Item
                 key={notification.id}
@@ -183,13 +179,17 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                     )}
                   </div>
                 }
-                className={`!mb-2 !rounded-lg ${getBackgroundColor(notification.type)}`}
+                className={`!mb-2 !rounded-lg border border-gray-200 dark:border-gray-700 ${getBackgroundColor(notification.type)} hover:shadow-md dark:hover:shadow-lg transition-all duration-200`}
+                style={{
+                  '--adm-color-background': 'transparent',
+                  '--adm-color-text': 'inherit'
+                } as React.CSSProperties}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-gray-900 dark:text-white flex-1">
                     {notification.title}
                   </div>
-                  <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getTagColor(notification.type)}`}>
+                  <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full border ${getTagColor(notification.type)}`}>
                     {getTagText(notification.type)}
                   </span>
                 </div>
