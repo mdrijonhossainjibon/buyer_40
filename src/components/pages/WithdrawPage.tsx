@@ -56,30 +56,21 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
   }
 
   return (
-    <div className="page active">
-      <h2>Withdraw (টাকা)</h2>
-      <p>
+    <div className="block animate-fade-in">
+      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Withdraw (টাকা)</h2>
+      <p className="text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
         ন্যূনতম <b>{minWithdraw}</b> টাকা এবং কমপক্ষে <b>{requiredReferrals}</b> টি রেফারেল প্রয়োজন।
       </p>
       
-      <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-        <div style={{ marginBottom: '14px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '700' }}>
+      <form onSubmit={handleSubmit} className="mt-5">
+        <div className="mb-3.5">
+          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
             Method:
           </label>
           <select 
             value={withdrawMethod}
             onChange={(e) => setWithdrawMethod(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              outline: 'none',
-              border: '1px solid var(--border-color-light)',
-              background: 'var(--secondary-bg-light)',
-              color: 'var(--text-color-light)'
-            }}
+            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             required
           >
             <option value="Bkash">Bkash</option>
@@ -87,8 +78,8 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
           </select>
         </div>
         
-        <div style={{ marginBottom: '14px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '700' }}>
+        <div className="mb-3.5">
+          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
             Account Number:
           </label>
           <input 
@@ -96,22 +87,13 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
             value={accountNumber}
             onChange={(e) => setAccountNumber(e.target.value)}
             placeholder="01XXXXXXXXX"
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              outline: 'none',
-              border: '1px solid var(--border-color-light)',
-              background: 'var(--secondary-bg-light)',
-              color: 'var(--text-color-light)'
-            }}
+            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             required
           />
         </div>
         
-        <div style={{ marginBottom: '14px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '700' }}>
+        <div className="mb-3.5">
+          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
             Amount (টাকা):
           </label>
           <input 
@@ -121,25 +103,15 @@ export default function WithdrawPage({ userState }: WithdrawPageProps) {
             placeholder="1500"
             min={minWithdraw}
             max={userState.balanceTK}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              outline: 'none',
-              border: '1px solid var(--border-color-light)',
-              background: 'var(--secondary-bg-light)',
-              color: 'var(--text-color-light)'
-            }}
+            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             required
           />
         </div>
         
         <button 
           type="submit" 
-          className="action-btn"
+          className="mt-2 w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           disabled={isSubmitting}
-          style={{ marginTop: '8px', width: '100%' }}
         >
           <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
         </button>

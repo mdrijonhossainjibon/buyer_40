@@ -15,7 +15,7 @@
     "@types/redis": "^4.0.11",
     "antd-mobile": "^5.39.0",
     "antd-mobile-icons": "^0.3.0",
-    "auth-fingerprint": "^1.0.12",
+    "auth-fingerprint": "^1.0.19",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.1",
     "ioredis": "^5.7.0",

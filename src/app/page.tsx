@@ -9,15 +9,18 @@ import SupportPage from '@/components/pages/SupportPage'
 import WithdrawPage from '@/components/pages/WithdrawPage'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import NewsModal from '@/components/NewsModal'
+import TelegramPopup from '@/components/TelegramPopup'
+import { fetchUserData } from '@/lib/clientSignature'
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState('home')
   const [isLoading, setIsLoading] = useState(true)
   const [showNewsModal, setShowNewsModal] = useState(false)
+  const [showTelegramPopup, setShowTelegramPopup] = useState(false)
   const [userState, setUserState] = useState({
     userId: 123456789,
-    balanceTK: 200000,
-    referralCount: 50,
+    balanceTK: 0,
+    referralCount: 0,
     dailyAdLimit: 10,
     watchedToday: 0,
     telegramBonus: 0,
@@ -25,29 +28,54 @@ export default function Home() {
     isBotVerified: 0
   })
 
+
   useEffect(() => {
-    // Initialize Telegram WebApp
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
-      tg.expand()
-      
-      // Get user data from Telegram
-      const user = tg.initDataUnsafe?.user
-      if (user) {
+    const initializeApp = async () => {
+      let currentUserId = 123456789 // Default user ID
+
+      // Initialize Telegram WebApp
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp
+        tg.ready()
+        tg.expand()
+
+        // Get user data from Telegram
+        const user = tg.initDataUnsafe?.user
+        if (user) {
+          currentUserId = user.id
+        }
+      }
+
+      // Fetch user data from API
+      try {
+        const userData = await fetchUserData(currentUserId)
+        if (userData) {
+          setUserState(userData)
+        } else {
+          // If API fails, set the userId at least
+          setUserState(prev => ({
+            ...prev,
+            userId: currentUserId,
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error)
+        // Fallback to default state with current user ID
         setUserState(prev => ({
           ...prev,
-          userId: user.id,
+          userId: currentUserId,
         }))
       }
+
+      // Complete loading
+      setTimeout(() => {
+        setIsLoading(false)
+        // Show news modal after loading completes
+        setShowNewsModal(true)
+      }, 1000)
     }
 
-    // Simulate loading
-    setTimeout(() => {
-      setIsLoading(false)
-      // Show news modal after loading completes
-      setShowNewsModal(true)
-    }, 2000)
+    initializeApp()
   }, [])
 
   const renderCurrentPage = () => {
@@ -68,17 +96,29 @@ export default function Home() {
   return (
     <>
       {isLoading && <LoadingOverlay visible />}
-      <div id="app" style={{ visibility: isLoading ? 'hidden' : 'visible' }}>
-        <Header userState={userState} />
-        <main id="main-content">
-          {renderCurrentPage()}
-        </main>
-        <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      </div>
-      <NewsModal 
-        isOpen={showNewsModal} 
-        onClose={() => setShowNewsModal(false)}
-      />
+      {
+        showTelegramPopup ? <TelegramPopup isOpen onClose={() => setShowTelegramPopup(false)} miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} /> :
+          (
+            <><div
+              id="app"
+              className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 ${isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
+            >
+              <Header userState={userState} />
+              <main id="main-content" className="px-4 py-4">
+                {renderCurrentPage()}
+              </main>
+              <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            </div>
+              <NewsModal
+                isOpen={showNewsModal}
+                onClose={() => setShowNewsModal(false)}
+              />
+            </>
+          )
+
+      }
+
+
     </>
   )
 }
