@@ -40,22 +40,3 @@ export default function RootLayout({
 
 
 
-{/* <Script
-          src="//libtl.com/sdk.js"
-          data-zone={AdsSettings.monetagZoneId}
-          data-sdk={`show_${AdsSettings.monetagZoneId}`}
-          strategy="afterInteractive"
-          onLoad={() => {
-            console.log('Monetag ads script loaded successfully');
-            // Ensure the function is available before calling
-            const functionName = `show_${AdsSettings.monetagZoneId}`;
-            if (typeof window !== 'undefined' && window[functionName as keyof Window]) {
-              console.log(`Monetag function ${functionName} is available`);
-            } else {
-              console.warn(`Monetag function ${functionName} not found on window`);
-            }
-          }}
-          onError={(e) => {
-            console.error('Failed to load Monetag ads script:', e);
-          }}
-        /> */}
