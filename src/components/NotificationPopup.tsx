@@ -1,14 +1,25 @@
 'use client'
 
-import { Popup, Button, List  } from 'antd-mobile'
+import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { Popup, Button, List, Toast } from 'antd-mobile'
 import { BellOutline, CloseOutline } from 'antd-mobile-icons'
+import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { RootState } from '@/store'
 
 interface NotificationItem {
   id: string
   title: string
   description: string
   type: 'info' | 'success' | 'warning' | 'error'
-  timestamp?: string
+  timeAgo: string
+  isRead: boolean
+  priority: 'low' | 'medium' | 'high'
+  metadata?: {
+    actionUrl?: string
+    actionText?: string
+    category?: string
+  }
 }
 
 interface NotificationPopupProps {
@@ -17,65 +28,74 @@ interface NotificationPopupProps {
 }
 
 export default function NotificationPopup({ isOpen, onClose }: NotificationPopupProps) {
- 
-    const notifications: NotificationItem[] = [
-        {
-          id: '1',
-          title: 'নতুন বিজ্ঞাপন উপলব্ধ!',
-          description: 'টাস্ক পেজে গিয়ে নতুন বিজ্ঞাপন দেখুন এবং টাকা আয় করুন।',
-          type: 'info',
-          timestamp: '২ মিনিট আগে'
-        },
-        {
-          id: '2',
-          title: 'রেফারেল বোনাস!',
-          description: 'আপনার বন্ধুদের রেফার করুন এবং প্রতি রেফারে ৩০ টাকা পান।',
-          type: 'success',
-          timestamp: '১ ঘন্টা আগে'
-        },
-        {
-          id: '3',
-          title: 'সিস্টেম আপডেট',
-          description: 'নতুন ফিচার যোগ করা হয়েছে। অ্যাপ রিস্টার্ট করুন।',
-          type: 'warning',
-          timestamp: '৩ ঘন্টা আগে'
-        },
-        {
-          id: '4',
-          title: 'উইথড্র সফল!',
-          description: 'আপনার ৫০০ টাকা বিকাশে পাঠানো হয়েছে।',
-          type: 'success',
-          timestamp: '৫ ঘন্টা আগে'
-        },
-        {
-          id: '5',
-          title: 'উইথড্র প্রসেসিং',
-          description: 'আপনার উইথড্র অনুরোধটি বর্তমানে প্রক্রিয়াধীন রয়েছে।',
-          type: 'info',
-          timestamp: '৭ ঘন্টা আগে'
-        },
-        {
-          id: '6',
-          title: 'উইথড্র ব্যর্থ!',
-          description: 'লেনদেন সম্পন্ন হয়নি, আবার চেষ্টা করুন বা সাপোর্টে যোগাযোগ করুন।',
-          type: 'warning',
-          timestamp: '১২ ঘন্টা আগে'
-        },
-        {
-          id: '7',
-          title: 'ডেইলি বোনাস',
-          description: 'আজকের ডেইলি বোনাস সংগ্রহ করতে ভুলবেন না!',
-          type: 'info',
-          timestamp: '১ দিন আগে'
-        },
-        {
-          id: '8',
-          title: 'উইথড্র রিকোয়েস্ট গ্রহণ করা হয়েছে',
-          description: 'আপনার ১০০০ টাকার উইথড্র রিকোয়েস্ট রেকর্ড করা হয়েছে।',
-          type: 'info',
-          timestamp: '২ দিন আগে'
+  const user = useSelector((state: RootState) => state.user)
+  const [notifications, setNotifications] = useState<NotificationItem[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isOpen && user.userId) {
+      fetchNotifications()
+    }
+  }, [isOpen, user.userId])
+
+  const fetchNotifications = async () => {
+    setLoading(true)
+    try {
+      const { response } = await API_CALL({
+        method: 'POST',
+        url: '/notifications',
+        body: {
+          userId: user.userId,
+          action: 'list',
+          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
         }
-      ];
+      })
+
+      if (response && response.success) {
+        setNotifications(response.data.notifications)
+      } else {
+        Toast.show({
+          content: response?.message || 'Failed to load notifications',
+          duration: 2000,
+        })
+      }
+    } catch (error) {
+      console.error('Fetch notifications error:', error)
+      Toast.show({
+        content: 'Failed to load notifications',
+        duration: 2000,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const markAsRead = async (notificationIds: string[]) => {
+    try {
+      const { response } = await API_CALL({
+        method: 'POST',
+        url: '/notifications',
+        body: {
+          userId: user.userId,
+          action: 'markRead',
+          notificationIds,
+          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+        }
+      })
+
+      if (response && response.success) {
+        setNotifications(prev => 
+          prev.map(notification => 
+            notificationIds.includes(notification.id) 
+              ? { ...notification, isRead: true }
+              : notification
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Mark as read error:', error)
+    }
+  }
       
       
 
@@ -172,9 +192,9 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                       {notification.description}
                     </p>
-                    {notification.timestamp && (
+                    {notification.timeAgo && (
                       <p className="text-xs text-gray-400 dark:text-gray-500">
-                        {notification.timestamp}
+                        {notification.timeAgo}
                       </p>
                     )}
                   </div>
@@ -186,8 +206,11 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                 } as React.CSSProperties}
               >
                 <div className="flex items-center justify-between">
-                  <div className="font-medium text-gray-900 dark:text-white flex-1">
+                  <div className={`font-medium flex-1 ${notification.isRead ? 'text-gray-600 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
                     {notification.title}
+                    {!notification.isRead && (
+                      <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                    )}
                   </div>
                   <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full border ${getTagColor(notification.type)}`}>
                     {getTagText(notification.type)}

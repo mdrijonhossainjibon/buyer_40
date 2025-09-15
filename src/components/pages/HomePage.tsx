@@ -14,7 +14,7 @@ export default function HomePage() {
   const user = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(false)
  
-  const referralLink = `https://t.me/${botStatus.botUsername || 'earnfromadsbd_bot'}/?startapp=${user.referralCode || ''}`
+  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`
 
   // Dispatch Redux saga to get bot status
   const getBotStatus = () => {
@@ -45,21 +45,55 @@ export default function HomePage() {
 
   const copyReferralLink = async () => {
     try {
-      await navigator.clipboard.writeText(referralLink)
-      Toast.show({
-        content: 'Referral link copied!',
-        position: 'bottom',
-        duration: 2000,
-         
-      })
+      // Try modern Clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(referralLink)
+        Toast.show({
+          content: 'Referral link copied!',
+          position: 'bottom',
+          duration: 2000,
+        })
+        return
+      }
+      
+      // Fallback for Telegram WebView and other restricted environments
+      const textArea = document.createElement('textarea')
+      textArea.value = referralLink
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      
+      if (successful) {
+        Toast.show({
+          content: 'Referral link copied!',
+          position: 'bottom',
+          duration: 2000,
+        })
+      } else {
+        throw new Error('Copy command failed')
+      }
     } catch (err) {
       console.error('Failed to copy: ', err)
+      
+      // Final fallback - show the link for manual copying
       Toast.show({
-        content: 'Failed to copy link',
+        content: 'Copy not supported. Link shown above for manual copy.',
         position: 'center',
-        duration: 2000,
-        icon: 'fail'
+        duration: 3000,
       })
+      
+      // Select the input field text for easy manual copying
+      const linkInput = document.querySelector('input[readonly]') as HTMLInputElement
+      if (linkInput) {
+        linkInput.focus()
+        linkInput.select()
+      }
     }
   }
 
