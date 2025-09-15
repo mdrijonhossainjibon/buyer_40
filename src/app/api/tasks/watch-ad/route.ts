@@ -39,18 +39,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if user is suspended
+    if (user.status === 'suspend') {
+      return NextResponse.json(
+        { success: false, message: 'Your account has been suspended!' },
+        { status: 403 }
+      )
+    }
+
     // Check if user has reached daily limit
     if (user.watchedToday >= user.dailyAdLimit) {
       return NextResponse.json(
         { success: false, message: 'Daily ad limit reached!' },
-        { status: 400 }
-      )
-    }
-
-    // Check if user is verified
-    if (user.isBotVerified !== 1) {
-      return NextResponse.json(
-        { success: false, message: 'Please verify your account first!' },
         { status: 400 }
       )
     }

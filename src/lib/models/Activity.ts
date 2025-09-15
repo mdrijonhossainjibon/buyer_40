@@ -78,11 +78,7 @@ const ActivitySchema = new Schema<IActivity>({
   collection: 'activities'
 })
 
-// Indexes for better query performance
-ActivitySchema.index({ userId: 1, createdAt: -1 })
-ActivitySchema.index({ userId: 1, activityType: 1, createdAt: -1 })
-ActivitySchema.index({ userId: 1, status: 1, createdAt: -1 })
-ActivitySchema.index({ createdAt: -1 })
+ 
 
 // Pre-save middleware to update completedAt when status changes to completed
 ActivitySchema.pre('save', function(next) {

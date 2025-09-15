@@ -19,8 +19,7 @@ export interface IUser extends Document {
   watchedToday: number
   telegramBonus: number
   youtubeBonus: number
-  isBotVerified: number
-  isActive: boolean
+  status: 'active' | 'suspend'
   lastAdWatch?: Date
   lastLogin?: Date
   referredBy?: number
@@ -73,17 +72,7 @@ const UserSchema = new Schema<IUser>({
     default: 0,
     min: [0, 'Referral count cannot be negative']
   },
-  dailyAdLimit: {
-    type: Number,
-    default: 10,
-    min: [1, 'Daily ad limit must be at least 1'],
-    max: [100, 'Daily ad limit cannot exceed 100']
-  },
-  watchedToday: {
-    type: Number,
-    default: 0,
-    min: [0, 'Watched today cannot be negative']
-  },
+ 
   telegramBonus: {
     type: Number,
     default: 0,
@@ -94,14 +83,11 @@ const UserSchema = new Schema<IUser>({
     default: 0,
     min: [0, 'YouTube bonus cannot be negative']
   },
-  isBotVerified: {
-    type: Number,
-    default: 0,
-    enum: [0, 1]
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+  status: {
+    type: String,
+    enum: ['active', 'suspend'],
+    default: 'active',
+    required: true
   },
   lastAdWatch: {
     type: Date
@@ -114,16 +100,7 @@ const UserSchema = new Schema<IUser>({
     type: Number,
     ref: 'User'
   },
-  totalEarned: {
-    type: Number,
-    default: 0,
-    min: [0, 'Total earned cannot be negative']
-  },
-  withdrawnAmount: {
-    type: Number,
-    default: 0,
-    min: [0, 'Withdrawn amount cannot be negative']
-  },
+  
   profile: {
     firstName: {
       type: String,

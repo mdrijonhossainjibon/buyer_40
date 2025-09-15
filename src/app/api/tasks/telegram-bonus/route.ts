@@ -39,6 +39,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if user is suspended
+    if (user.status === 'suspend') {
+      return NextResponse.json(
+        { success: false, message: 'Your account has been suspended!' },
+        { status: 403 }
+      )
+    }
+
     // Check if user already claimed telegram bonus
     if (user.telegramBonus > 0) {
       return NextResponse.json(

@@ -11,7 +11,7 @@ interface UserState {
   watchedToday: number
   telegramBonus: number
   youtubeBonus: number
-  isBotVerified: number
+  status: 'active' | 'suspend'
 }
 
 interface TasksPageProps {
@@ -23,9 +23,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
-  const [isCheckingYoutube, setIsCheckingYoutube] = useState(false)
-  const [youtubeError, setYoutubeError] = useState<string | null>(null)
-  const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
+ 
 
   const watchAd = async () => {
     if (userState.watchedToday >= userState.dailyAdLimit) {
@@ -36,9 +34,9 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       return
     }
 
-    if (userState.isBotVerified !== 1) {
+    if (userState.status === 'suspend') {
       Toast.show({
-        content: 'Please verify your account first!',
+        content: 'Your account has been suspended!',
         duration: 2000,
       })
       return
@@ -107,7 +105,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   const checkChannel = async () => {
     if (userState.telegramBonus > 0) {
       Toast.show({
-        content: 'Telegram bonus already claimed!',
+        content: 'already claimed!',
         duration: 2000,
       })
       return
@@ -116,6 +114,7 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
     Toast.show({
       content: 'Checking channel...',
       duration: 2000,
+      icon : 'loading'
     })
     
     try {
@@ -170,26 +169,17 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
 
   const checkYouTubeSubscribers = async () => {
     Toast.show({
-      content: 'Checking YouTube subscription...',
+      content: 'Checking subscription...',
       duration: 2000,
+      icon: 'loading'
     })
-    
-  
-    
-    setTimeout(() => {
-      
-      setSubscriberCount(1250) // Mock subscriber count
-      Toast.show({
-        content: 'YouTube check completed!',
-        duration: 2000,
-      })
-    }, 2000)
+     
   }
 
   const claimYoutube = async () => {
     if (userState.youtubeBonus > 0) {
       Toast.show({
-        content: 'YouTube bonus already claimed!',
+        content: 'already claimed!',
         duration: 2000,
       })
       return
@@ -217,10 +207,10 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
             }))
             
             setYoutubeClaimed(true)
-            setSubscriberCount(response.data.subscriberCount)
+            
             Toast.show({
               content: response.message,
-              duration: 2000,
+              duration: 3000,
             })
           } else {
             Toast.show({
@@ -298,24 +288,16 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
           <button
             className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={claimYoutube}
-            disabled={isCheckingYoutube || youtubeClaimed}
+            disabled={  youtubeClaimed }
           >
-            <span>{isCheckingYoutube ? 'Checking...' : 'Check & Claim'}</span>
+            <span>{ 'Check & Claim'}</span>
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           Earn 75 TK by subscribing to our YouTube channel!
         </p>
-        {subscriberCount && (
-          <small className="block mt-1.5 opacity-80 text-green-600 dark:text-green-400">
-            📊 Current subscribers: {subscriberCount.toLocaleString()}
-          </small>
-        )}
-        {youtubeError && (
-          <small className="block mt-1.5 text-red-600 dark:text-red-400">
-            ❌ {youtubeError}
-          </small>
-        )}
+       
+        
         {youtubeClaimed && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
             ✅ YouTube bonus claimed!

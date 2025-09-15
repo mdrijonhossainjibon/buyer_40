@@ -3,6 +3,7 @@ import { verifySignature } from 'auth-fingerprint'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
+import { getYouTubeSubscriberCount } from '@/lib/youtubeApi'
 
 interface YoutubeBonusRequest {
   userId: number
@@ -39,6 +40,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if user is suspended
+    if (user.status === 'suspend') {
+      return NextResponse.json(
+        { success: false, message: 'Your account has been suspended!' },
+        { status: 403 }
+      )
+    }
+
     // Check if user already claimed YouTube bonus
     if (user.youtubeBonus > 0) {
       return NextResponse.json(
@@ -46,6 +55,19 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Get real subscriber count from YouTube API
+    const channelId = 'UCIZAXemyhC5YC8f3vk7vJ1w' // Replace with actual channel ID
+    const youtubeResult = await getYouTubeSubscriberCount(channelId)
+    
+    if (!youtubeResult.success) {
+      return NextResponse.json(
+        { success: false, message: `Failed to verify YouTube channel: ${youtubeResult.error}` },
+        { status: 400 }
+      )
+    }
+
+    const subscriberCount = youtubeResult.subscriberCount || 0
 
     // YouTube bonus amount
     const bonusAmount = 75
@@ -66,7 +88,8 @@ export async function POST(request: NextRequest) {
       metadata: {
         taskId: 'youtube_subscribe',
         bonusType: 'youtube',
-        subscriberCount: 1250, // Mock data
+        subscriberCount: subscriberCount,
+        channelId: channelId,
         ipAddress: request.ip || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown'
       }
@@ -79,7 +102,7 @@ export async function POST(request: NextRequest) {
         earned: bonusAmount,
         newBalance: user.balanceTK,
         youtubeBonus: user.youtubeBonus,
-        subscriberCount: 1250
+        subscriberCount: subscriberCount
       }
     })
 
