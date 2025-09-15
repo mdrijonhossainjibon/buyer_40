@@ -50,7 +50,7 @@ export default function Home() {
         tg.ready()
         tg.expand()
 
-        console.log(tg.initDataUnsafe)
+        console.log(tg)
 
         // Get user data from Telegram
         const user = tg.initDataUnsafe?.user
