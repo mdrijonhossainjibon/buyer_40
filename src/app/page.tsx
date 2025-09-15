@@ -42,7 +42,7 @@ export default function Home() {
 
   useEffect(() => {
 
-    console.log(window.Telegram?.WebApp.initDataUnsafe.start_param)
+    console.log(window.Telegram?.WebApp?.initDataUnsafe)
 
     if (isInitialized) return
       
