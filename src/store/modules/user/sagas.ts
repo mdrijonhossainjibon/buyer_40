@@ -16,15 +16,14 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
   try {
     yield put(setLoading(true))
     
-    const { userId , start_param } = action.payload
-    
+ 
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
       url: '/users',
       method: 'POST',
       body: {
         ...generateSignature(
-          JSON.stringify({ userId , start_param    }), 
+          JSON.stringify({ ...action.payload  }), 
           process.env.NEXT_PUBLIC_SECRET_KEY || ''
         )
       }
@@ -33,7 +32,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
     if (response && response.success) {
       // Dispatch success action with user data
       yield put(fetchUserDataSuccess({
-        userId,
+       
         ...response.data
       }))
     } else {

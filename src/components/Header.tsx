@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BellOutline } from 'antd-mobile-icons'
 import NotificationPopup from './NotificationPopup'
 import { useSelector } from 'react-redux'
@@ -10,18 +10,28 @@ import { RootState } from '@/store'
 
 export default function Header( ) {
   const [showNotificationPopup, setShowNotificationPopup] = useState(false)
-  const user = useSelector((state: RootState) => state.user)
+  const user = useSelector((state: RootState) => state.user);
+  const [photoUrl, setPhotoUrl] = useState<string>("https://picsum.photos/60/60?random=1");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const tgPhoto = window.Telegram?.WebApp?.initDataUnsafe?.user?.photo_url;
+      if (tgPhoto) {
+        setPhotoUrl(tgPhoto);
+      }
+    }
+  }, []);
+
   return (
     <header className="px-4 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="flex items-center gap-4">
         <img 
           className="w-15 h-15 rounded-full object-cover border-2 border-blue-600 dark:border-blue-400" 
-          src="https://picsum.photos/60/60?random=1" 
+          src={ photoUrl }
           alt="User Photo" 
         />
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-            User {user.userId || 'Guest'} 
+            User { user.username || user.userId || 'Guest'} 
             <i className="fas fa-check-circle text-base text-blue-600 dark:text-blue-400"></i>
           </h1>
           <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">ব্যালেন্স: <span className="text-blue-600 dark:text-blue-400">{user.balanceTK}</span> টাকা 💰</p>

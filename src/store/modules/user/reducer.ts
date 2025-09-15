@@ -11,6 +11,7 @@ const initialState: UserState = {
   isLoading: true,
   status: 'active',
   referralCode: '',
+  username: '',
   error: null
 }
 

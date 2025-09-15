@@ -34,12 +34,14 @@ export async function POST(request: NextRequest) {
     // Find or create user
     let user = await User.findOne({ userId })
 
+    
     if (!user) {
       // Check if it's feast time (special hours for bonus)
       const now = new Date()
       const currentHour = now.getHours()
       const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
       const feastBonus = isFeastTime ? 25 : 3  
+
 
       // Handle referral logic if start_param is provided
       let referrerBonus = 0
@@ -103,7 +105,6 @@ export async function POST(request: NextRequest) {
         telegramBonus: 0,
         youtubeBonus: 0,
         totalEarned: feastBonus,
-        profile: {},
         username
       })
 

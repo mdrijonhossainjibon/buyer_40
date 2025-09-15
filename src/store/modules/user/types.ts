@@ -10,6 +10,7 @@ export interface UserState {
   referralCode : string;
   isLoading: boolean
   error: string | null
+  username: string
 }
 
 // Action types
