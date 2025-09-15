@@ -3,16 +3,11 @@ import mongoose, { Schema, Document } from 'mongoose'
 export interface INotification extends Document {
   userId: number
   title: string
-  description: string
-  type: 'info' | 'success' | 'warning' | 'error'
+  message: string
+  type: 'info' | 'success' | 'warning' | 'error' 
   isRead: boolean
   priority: 'low' | 'medium' | 'high'
-  metadata?: {
-    actionUrl?: string
-    actionText?: string
-    category?: string
-    relatedId?: string
-  }
+  metadata?: any
   expiresAt?: Date
   createdAt: Date
   updatedAt: Date
@@ -30,15 +25,15 @@ const NotificationSchema = new Schema<INotification>({
     trim: true,
     maxlength: [100, 'Title cannot exceed 100 characters']
   },
-  description: {
+  message: {
     type: String,
-    required: [true, 'Description is required'],
+    required: [true, 'Message is required'],
     trim: true,
-    maxlength: [500, 'Description cannot exceed 500 characters']
+    maxlength: [500, 'Message cannot exceed 500 characters']
   },
   type: {
     type: String,
-    enum: ['info', 'success', 'warning', 'error'],
+    enum: ['info', 'success', 'warning', 'error', 'welcome', 'bonus'],
     default: 'info',
     required: true
   },
@@ -52,24 +47,8 @@ const NotificationSchema = new Schema<INotification>({
     default: 'medium'
   },
   metadata: {
-    actionUrl: {
-      type: String,
-      trim: true
-    },
-    actionText: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'Action text cannot exceed 50 characters']
-    },
-    category: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'Category cannot exceed 50 characters']
-    },
-    relatedId: {
-      type: String,
-      trim: true
-    }
+    type: Schema.Types.Mixed,
+    default: {}
   },
   expiresAt: {
     type: Date
@@ -103,8 +82,8 @@ NotificationSchema.virtual('timeAgo').get(function() {
 NotificationSchema.statics.createNotification = async function(notificationData: {
   userId: number
   title: string
-  description: string
-  type?: 'info' | 'success' | 'warning' | 'error'
+  message: string
+  type?: 'info' | 'success' | 'warning' | 'error' | 'welcome' | 'bonus'
   priority?: 'low' | 'medium' | 'high'
   metadata?: any
   expiresAt?: Date
@@ -112,26 +91,7 @@ NotificationSchema.statics.createNotification = async function(notificationData:
   return this.create(notificationData)
 }
 
-// Static method to get user notifications
-NotificationSchema.statics.getUserNotifications = async function(userId: number, limit = 20) {
-  return this.find({ userId })
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .lean()
-}
-
-// Static method to mark as read
-NotificationSchema.statics.markAsRead = async function(userId: number, notificationIds: string[]) {
-  return this.updateMany(
-    { userId, _id: { $in: notificationIds } },
-    { isRead: true }
-  )
-}
-
-// Static method to get unread count
-NotificationSchema.statics.getUnreadCount = async function(userId: number) {
-  return this.countDocuments({ userId, isRead: false })
-}
+ 
 
 const Notification = mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema)
 

@@ -3,7 +3,7 @@ import { verifySignature } from 'auth-fingerprint'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
-
+import Notification from '@/lib/models/Notification'
 interface UserRequest {
   userId: number
   timestamp: string
@@ -72,17 +72,23 @@ export async function POST(request: NextRequest) {
     let user = await User.findOne({ userId })
 
     if (!user) {
-      // Create new user with default values
+      // Check if it's feast time (special hours for bonus)
+      const now = new Date()
+      const currentHour = now.getHours()
+      const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
+      const feastBonus = isFeastTime ? 100 : 50 // 100 TK during feast time, 50 TK regular
+
+      // Create new user with default values and feast bonus
       user = await User.create({
         userId,
-        balanceTK: 0,
+        balanceTK: feastBonus,
         referralCount: 0,
         dailyAdLimit: 10,
         watchedToday: 0,
         telegramBonus: 0,
         youtubeBonus: 0,
         isBotVerified: 0,
-        totalEarned: 0,
+        totalEarned: feastBonus,
         withdrawnAmount: 0,
         profile: {},
         settings: {
@@ -92,11 +98,59 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Log user registration activity
+      // Create welcome notification
+      await Notification.create({
+        userId,
+        title: '🎉 EarnFromAds এ স্বাগতম!',
+        message: `আমাদের প্ল্যাটফর্মে স্বাগতম! আপনি রেজিস্ট্রেশন বোনাস হিসেবে ${feastBonus} টাকা পেয়েছেন। আরো আয় করতে বিজ্ঞাপন দেখা শুরু করুন!`,
+        type: 'info',
+        priority: 'high',
+        isRead: false,
+        metadata: {
+          bonusAmount: feastBonus,
+          registrationTime: now.toISOString(),
+          isFeastTime
+        }
+      })
+
+      // Create feast time bonus notification if applicable
+      if (isFeastTime) {
+        await Notification.create({
+          userId,
+          title: '🎊 ভোজের সময় বোনাস!',
+          message: 'আপনি ভাগ্যবান! আপনি ভোজের সময় (সকাল ৬-১০টা অথবা সন্ধ্যা ৬-১১টা) রেজিস্ট্রেশন করেছেন এবং অতিরিক্ত ৫০ টাকা বোনাস পেয়েছেন!',
+          type: 'info',
+          priority: 'high',
+          isRead: false,
+          metadata: {
+            bonusType: 'feast_time',
+            extraBonus: 50,
+            feastTimeHours: 'সকাল ৬-১০টা ও সন্ধ্যা ৬-১১টা'
+          }
+        })
+      }
+
+      // Log user registration activity with bonus
+      await Activity.create({
+        userId,
+        activityType: 'signup',
+        description: `ব্যবহারকারী রেজিস্ট্রেশন করেছেন এবং ${feastBonus} টাকা বোনাস পেয়েছেন${isFeastTime ? ' (ভোজের সময়)' : ''}`,
+        amount: feastBonus,
+        status: 'completed',
+        metadata: {
+          isFirstLogin: true,
+          isFeastTime,
+          bonusAmount: feastBonus,
+          userAgent: request.headers.get('user-agent'),
+          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+        }
+      })
+
+      // Log login activity
       await Activity.create({
         userId,
         activityType: 'login',
-        description: 'User registered and first login',
+        description: 'রেজিস্ট্রেশনের পর প্রথম লগইন',
         amount: 0,
         status: 'completed',
         metadata: {

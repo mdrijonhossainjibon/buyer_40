@@ -35,7 +35,7 @@ const ActivitySchema = new Schema<IActivity>({
   activityType: {
     type: String,
     required: true,
-    enum: ['ad_watch', 'task_complete', 'referral', 'bonus', 'withdrawal', 'login'],
+    enum: ['ad_watch', 'task_complete', 'referral', 'bonus', 'withdrawal', 'login' , 'signup'],
     index: true
   },
   description: {
