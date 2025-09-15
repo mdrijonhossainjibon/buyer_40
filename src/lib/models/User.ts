@@ -1,10 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
+// Function to generate referral code like UID1542qA
+function generateReferralCode(): string {
+  const prefix = 'UID'
+  const numbers = Math.floor(1000 + Math.random() * 9000) // 4 digit number
+  const letters = Math.random().toString(36).substring(2, 4).toLowerCase() // 2 random letters
+  const upperLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)) // 1 uppercase letter
+  return `${prefix}${numbers}${letters}${upperLetter}`
+}
+
 export interface IUser extends Document {
   userId: number
   username?: string
-  email?: string
-  phone?: string
+  referralCode: string
   balanceTK: number
   referralCount: number
   dailyAdLimit: number
@@ -48,19 +56,12 @@ const UserSchema = new Schema<IUser>({
     minlength: [3, 'Username must be at least 3 characters'],
     maxlength: [30, 'Username cannot exceed 30 characters']
   },
-  email: {
+  referralCode: {
     type: String,
     unique: true,
-    sparse: true,
-    trim: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
-  },
-  phone: {
-    type: String,
-    unique: true,
-    sparse: true,
-    trim: true
+    required: true,
+    default: generateReferralCode,
+    index: true
   },
   balanceTK: {
     type: Number,
@@ -165,74 +166,58 @@ const UserSchema = new Schema<IUser>({
   toObject: { virtuals: true }
 })
 
-// Indexes for better performance
-UserSchema.index({ userId: 1 })
-UserSchema.index({ email: 1 })
-UserSchema.index({ username: 1 })
-UserSchema.index({ referredBy: 1 })
-UserSchema.index({ isActive: 1 })
-UserSchema.index({ createdAt: -1 })
-
-// Virtual for available balance (balance - withdrawn)
+// Virtual for available balance (total earned - withdrawn)
 UserSchema.virtual('availableBalance').get(function() {
-  return this.balanceTK - this.withdrawnAmount
+  return this.balanceTK
 })
 
-// Virtual for full name
-UserSchema.virtual('fullName').get(function() {
-  if (this.profile.firstName && this.profile.lastName) {
-    return `${this.profile.firstName} ${this.profile.lastName}`
-  }
-  return this.profile.firstName || this.profile.lastName || this.username || `User ${this.userId}`
+// Virtual for recent activities
+UserSchema.virtual('recentActivities', {
+  ref: 'Activity',
+  localField: 'userId',
+  foreignField: 'userId',
+  options: { sort: { createdAt: -1 }, limit: 10 }
 })
 
-// Instance methods
-UserSchema.methods.canWatchAd = function() {
-  return this.watchedToday < this.dailyAdLimit && this.isActive
+// Static method to get user with activities
+UserSchema.statics.findWithActivities = function(userId: number) {
+  return this.findOne({ userId }).populate('recentActivities')
 }
 
-UserSchema.methods.addEarnings = function(amount: number) {
-  this.balanceTK += amount
-  this.totalEarned += amount
-  return this.save()
+// Instance method to log activity
+UserSchema.methods.logActivity = async function(activityData: {
+  activityType: string
+  description: string
+  amount: number
+  metadata?: any
+}) {
+  const Activity = mongoose.model('Activity')
+  return await Activity.create({
+    userId: this.userId,
+    ...activityData
+  })
 }
 
-UserSchema.methods.resetDailyLimit = function() {
-  this.watchedToday = 0
-  return this.save()
-}
-
-// Static methods
-UserSchema.statics.findByUserId = function(userId: number) {
-  return this.findOne({ userId })
-}
-
-UserSchema.statics.getActiveUsers = function() {
-  return this.find({ isActive: true })
-}
-
-UserSchema.statics.getUserStats = function() {
-  return this.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalUsers: { $sum: 1 },
-        activeUsers: { $sum: { $cond: ['$isActive', 1, 0] } },
-        totalBalance: { $sum: '$balanceTK' },
-        totalEarned: { $sum: '$totalEarned' },
-        totalWithdrawn: { $sum: '$withdrawnAmount' }
-      }
+// Pre-save middleware to ensure unique referral code
+UserSchema.pre('save', async function(next) {
+  if (this.isNew && !this.referralCode) {
+    let code = generateReferralCode()
+    let existingUser = await mongoose.model('User').findOne({ referralCode: code })
+    
+    // Keep generating until we get a unique code
+    while (existingUser) {
+      code = generateReferralCode()
+      existingUser = await mongoose.model('User').findOne({ referralCode: code })
     }
-  ])
-}
-
-// Pre-save middleware
-UserSchema.pre('save', function(next) {
-  // Update last login on save
-  if (this.isModified() && !this.isNew) {
-    this.lastLogin = new Date()
+    
+    this.referralCode = code
   }
   next()
 })
 
+// Static method to find user by referral code
+UserSchema.statics.findByReferralCode = function(referralCode: string) {
+  return this.findOne({ referralCode })
+}
+ 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema)

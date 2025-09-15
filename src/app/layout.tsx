@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito } from 'next/font/google'
 import './globals.css'
+import ReduxProvider from '@/components/ReduxProvider'
  
 const nunito = Nunito({
   subsets: ['latin'],
@@ -26,9 +27,9 @@ export default function RootLayout({
         <script src="https://telegram.org/js/telegram-web-app.js" async></script>
       </head>
       <body className={nunito.className}>
-      
+        <ReduxProvider>
           {children}
-         
+        </ReduxProvider>
       </body>
     </html>
   )

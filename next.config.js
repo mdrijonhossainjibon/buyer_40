@@ -11,6 +11,9 @@ const nextConfig = {
 
   // Enable static exports
   trailingSlash: false,
+
+  // Disable React Strict Mode to prevent double API calls in development
+  reactStrictMode: false,
 }
 
 module.exports = nextConfig

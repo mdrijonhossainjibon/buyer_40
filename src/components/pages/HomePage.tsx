@@ -1,79 +1,34 @@
 'use client'
  
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Toast , PullToRefresh , Skeleton  } from 'antd-mobile'
-import { API_CALL , generateSignature } from 'auth-fingerprint'
+import { RootState } from '@/store'
+import { fetchBotStatusRequest } from '@/store/modules/botStatus'
  
-interface UserState {
-  userId: number | null
-  balanceTK: number
-  referralCount: number
-  dailyAdLimit: number
-  watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
-  isBotVerified: number
-}
+ 
 
-interface HomePageProps {
-  userState: UserState
-  setUserState: (state: UserState | ((prev: UserState) => UserState)) => void
-}
-
-export default function HomePage({ userState, setUserState }: HomePageProps) {
+export default function HomePage({ userState, setUserState } :any) {
+  const dispatch = useDispatch()
+  const botStatus = useSelector((state: RootState) => state.botStatus)
   const [isLoading, setIsLoading] = useState(false)
-  
-  // Generate a default user ID if none exists
-  const userId = userState.userId || Math.floor(Math.random() * 1000000) + 100000
-  
-  const referralLink = `https://t.me/earnfromadsbd_bot/app?startapp=${userId}`
+ 
+  const referralLink = `https://t.me/${botStatus.botUsername}/?startapp=${userState.referralCode}`
 
-  // API call to get bot status
-  const getBotStatus = async () => {
-    try {
-      const {response }= await API_CALL({
-        method: 'POST',
-        url: '/bot_status',
-        body : {
-           
-          ...generateSignature('123456789', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-        }
-      })
-      
-      if (response) {
-        return response.data
-      } else {
-        throw new Error(response.message || 'Failed to get bot status')
-      }
-    } catch (error) {
-      console.error('Error fetching bot status:', error)
-      Toast.show({
-        content: 'Failed to fetch bot status',
-        position: 'bottom',
-        duration: 2000,
-        icon: 'fail'
-      })
-      throw error
-    }
+  // Dispatch Redux saga to get bot status
+  const getBotStatus = () => {
+    dispatch(fetchBotStatusRequest())
   }
+
+  useEffect(() => {
+    getBotStatus()
+  }, [])
 
   const onRefresh = async () => {
     setIsLoading(true)
     try {
-      // Get bot status from API
-      const botStatusData = await getBotStatus()
-      
-      // Update user state with fresh data from API
-  /*     setUserState(prev => ({
-        ...prev,
-        watchedToday: botStatusData.watchedToday || prev.watchedToday,
-        referralCount: botStatusData.referralCount || prev.referralCount,
-        balanceTK: botStatusData.balanceTK || prev.balanceTK,
-        dailyAdLimit: botStatusData.dailyAdLimit || prev.dailyAdLimit,
-        telegramBonus: botStatusData.telegramBonus || prev.telegramBonus,
-        youtubeBonus: botStatusData.youtubeBonus || prev.youtubeBonus,
-        isBotVerified: botStatusData.isBotVerified || prev.isBotVerified
-      })) */
+      // Dispatch Redux saga to get bot status
+      getBotStatus()
       
       Toast.show({
         content: 'refreshed successfully!',
@@ -81,7 +36,7 @@ export default function HomePage({ userState, setUserState }: HomePageProps) {
         duration: 1500,
       })
     } catch (error) {
-      // Error already handled in getBotStatus function
+      // Error handled by Redux saga
     } finally {
       setIsLoading(false)
     }
@@ -108,7 +63,9 @@ export default function HomePage({ userState, setUserState }: HomePageProps) {
   }
 
   const shareOnTelegram = () => {
-    const text = encodeURIComponent(`🎉 Join me on Earn From Ads BD and start earning money by watching ads! Use my referral link: ${referralLink}`)
+    const text = encodeURIComponent(
+      `🎉 আমার সাথে Earn From Ads BD-এ যোগ দিন এবং বিজ্ঞাপন দেখার মাধ্যমে আয় শুরু করুন! রেফারেল করলে আপনি পাবেন ৩০ টাকা বোনাস! আমার রেফারেল লিঙ্ক ব্যবহার করুন: ${referralLink}`
+    );
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank')
     
   }

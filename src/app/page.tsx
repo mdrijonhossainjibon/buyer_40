@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import Header from '@/components/Header'
 import Navigation from '@/components/Navigation'
 import HomePage from '@/components/pages/HomePage'
@@ -10,26 +11,31 @@ import WithdrawPage from '@/components/pages/WithdrawPage'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import NewsModal from '@/components/NewsModal'
 import TelegramPopup from '@/components/TelegramPopup'
-import { fetchUserData } from '@/lib/clientSignature'
+
+import { RootState } from '@/store'
+import { setUserData, fetchUserDataRequest } from '@/store/modules/user'
 
 export default function Home() {
+  const dispatch = useDispatch()
+  const userState = useSelector((state: RootState) => state.user)
+  
   const [currentPage, setCurrentPage] = useState('home')
-  const [isLoading, setIsLoading] = useState(true)
   const [showNewsModal, setShowNewsModal] = useState(false)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
-  const [userState, setUserState] = useState({
-    userId: 123456789,
-    balanceTK: 0,
-    referralCount: 0,
-    dailyAdLimit: 10,
-    watchedToday: 0,
-    telegramBonus: 0,
-    youtubeBonus: 0,
-    isBotVerified: 0
-  })
+  const [isInitialized, setIsInitialized] = useState(false)
 
+  // Wrapper function to handle state updates via Redux
+  const handleUserStateUpdate = (newState: any) => {
+    if (typeof newState === 'function') {
+      const updatedState = newState(userState)
+      dispatch(setUserData(updatedState))
+    } else {
+      dispatch(setUserData(newState))
+    }
+  }
 
   useEffect(() => {
+    if (isInitialized) return
     const initializeApp = async () => {
       let currentUserId = 123456789 // Default user ID
 
@@ -46,62 +52,43 @@ export default function Home() {
         }
       }
 
-      // Fetch user data from API
-      try {
-        const userData = await fetchUserData(currentUserId)
-        if (userData) {
-          setUserState(userData)
-        } else {
-          // If API fails, set the userId at least
-          setUserState(prev => ({
-            ...prev,
-            userId: currentUserId,
-          }))
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error)
-        // Fallback to default state with current user ID
-        setUserState(prev => ({
-          ...prev,
-          userId: currentUserId,
-        }))
-      }
-
-      // Complete loading
-      setTimeout(() => {
-        setIsLoading(false)
-        // Show news modal after loading completes
-        setShowNewsModal(true)
-      }, 1000)
+      // Dispatch saga action to fetch user data
+      dispatch(fetchUserDataRequest(currentUserId))
+      
+      setIsInitialized(true)
     }
 
     initializeApp()
-  }, [])
+  }, [isInitialized])
+
+
+ 
+   
 
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage userState={userState} setUserState={setUserState as any} />
+        return <HomePage userState={userState} setUserState={handleUserStateUpdate} />
       case 'tasks':
-        return <TasksPage userState={userState} setUserState={setUserState as any} />
+        return <TasksPage userState={userState} setUserState={handleUserStateUpdate} />
       case 'support':
         return <SupportPage />
       case 'withdraw':
         return <WithdrawPage userState={userState} />
       default:
-        return <HomePage userState={userState} setUserState={setUserState as any} />
+        return <HomePage userState={userState} setUserState={handleUserStateUpdate} />
     }
   }
 
   return (
     <>
-      {isLoading && <LoadingOverlay visible />}
+      {userState.isLoading && <LoadingOverlay visible />}
       {
         showTelegramPopup ? <TelegramPopup isOpen onClose={() => setShowTelegramPopup(false)} miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} /> :
           (
             <><div
               id="app"
-              className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 ${isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
+              className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 ${userState.isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
             >
               <Header userState={userState} />
               <main id="main-content" className="px-4 py-4">

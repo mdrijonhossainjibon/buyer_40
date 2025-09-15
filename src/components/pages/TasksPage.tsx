@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Toast} from 'antd-mobile'
+import { API_CALL, generateSignature } from 'auth-fingerprint'
 interface UserState {
   userId: number | null
   balanceTK: number
@@ -17,7 +18,7 @@ interface TasksPageProps {
   userState: UserState
   setUserState: (state: UserState | ((prev: UserState) => UserState)) => void
 } 
-
+ 
 export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
@@ -35,6 +36,14 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       return
     }
 
+    if (userState.isBotVerified !== 1) {
+      Toast.show({
+        content: 'Please verify your account first!',
+        duration: 2000,
+      })
+      return
+    }
+
     setIsWatchingAd(true)
     
     Toast.show({
@@ -42,14 +51,53 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
       duration: 3000,
     })
 
-    // Simulate ad watching
-    setTimeout(() => {
+    try {
+      // Simulate ad watching delay
+      setTimeout(async () => {
+        try {
+          const { response } = await API_CALL({
+            method: 'POST',
+            url: '/tasks/watch-ad',
+            body: {
+              userId: userState.userId,
+              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+            }
+          })
+
+          if (response && response.success) {
+            setUserState(prev => ({
+              ...prev,
+              balanceTK: response.data.newBalance,
+              watchedToday: response.data.watchedToday
+            }))
+            
+            Toast.show({
+              content: response.message,
+              duration: 2000,
+            })
+          } else {
+            Toast.show({
+              content: response?.message || 'Failed to watch ad',
+              duration: 2000,
+            })
+          }
+        } catch (error) {
+          console.error('Watch ad error:', error)
+          Toast.show({
+            content: 'Failed to process ad watching',
+            duration: 2000,
+          })
+        } finally {
+          setIsWatchingAd(false)
+        }
+      }, 3000)
+    } catch (error) {
       setIsWatchingAd(false)
       Toast.show({
-        content: 'Ad watched! You earned 5 TK!',
+        content: 'Failed to start ad watching',
         duration: 2000,
       })
-    }, 3000)
+    }
   }
 
   const openChannel = () => {
@@ -57,18 +105,63 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   }
 
   const checkChannel = async () => {
+    if (userState.telegramBonus > 0) {
+      Toast.show({
+        content: 'Telegram bonus already claimed!',
+        duration: 2000,
+      })
+      return
+    }
+
     Toast.show({
       content: 'Checking channel...',
       duration: 2000,
     })
     
-    setTimeout(() => {
+    try {
+      setTimeout(async () => {
+        try {
+          const { response } = await API_CALL({
+            method: 'POST',
+            url: '/tasks/telegram-bonus',
+            body: {
+              userId: userState.userId,
+              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+            }
+          })
+
+          if (response && response.success) {
+            setUserState(prev => ({
+              ...prev,
+              balanceTK: response.data.newBalance,
+              telegramBonus: response.data.telegramBonus
+            }))
+            
+            setChannelClaimed(true)
+            Toast.show({
+              content: response.message,
+              duration: 2000,
+            })
+          } else {
+            Toast.show({
+              content: response?.message || 'Failed to claim telegram bonus',
+              duration: 2000,
+            })
+          }
+        } catch (error) {
+          console.error('Telegram bonus error:', error)
+          Toast.show({
+            content: 'Failed to process telegram bonus',
+            duration: 2000,
+          })
+        }
+      }, 2000)
+    } catch (error) {
       Toast.show({
-        content: 'Channel bonus claimed! You earned 50 TK!',
+        content: 'Failed to check channel',
         duration: 2000,
       })
- 
-    }, 2000)
+    }
   }
 
   const openYoutube = () => {
@@ -94,15 +187,61 @@ export default function TasksPage({ userState, setUserState }: TasksPageProps) {
   }
 
   const claimYoutube = async () => {
-    await checkYouTubeSubscribers()
-    
-    setTimeout(() => {
+    if (userState.youtubeBonus > 0) {
       Toast.show({
-        content: 'YouTube bonus claimed! You earned 75 TK!',
+        content: 'YouTube bonus already claimed!',
         duration: 2000,
       })
+      return
+    }
+
+    await checkYouTubeSubscribers()
     
-    }, 2500)
+    try {
+      setTimeout(async () => {
+        try {
+          const { response } = await API_CALL({
+            method: 'POST',
+            url: '/tasks/youtube-bonus',
+            body: {
+              userId: userState.userId,
+              ...generateSignature(userState.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+            }
+          })
+
+          if (response && response.success) {
+            setUserState(prev => ({
+              ...prev,
+              balanceTK: response.data.newBalance,
+              youtubeBonus: response.data.youtubeBonus
+            }))
+            
+            setYoutubeClaimed(true)
+            setSubscriberCount(response.data.subscriberCount)
+            Toast.show({
+              content: response.message,
+              duration: 2000,
+            })
+          } else {
+            Toast.show({
+              content: response?.message || 'Failed to claim YouTube bonus',
+              duration: 2000,
+            })
+          }
+        } catch (error) {
+          console.error('YouTube bonus error:', error)
+          Toast.show({
+            content: 'Failed to process YouTube bonus',
+            duration: 2000,
+          })
+        }
+      }, 2500)
+    } catch (error) {
+      Toast.show({
+        content: 'Failed to claim YouTube bonus',
+        duration: 2000,
+      })
+    }
   }
 
   return (
