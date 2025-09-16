@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifySignature } from 'auth-fingerprint'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
-import Activity from '@/lib/models/Activity'
+import Withdrawal from '@/lib/models/Withdrawal'
 import Notification from '@/lib/models/Notification'
 
 interface WithdrawRequest {
   userId: number
   withdrawMethod: string
   accountNumber: string
+  accountName: string
   amount: number
   timestamp: string
   signature: string
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userId, withdrawMethod, accountNumber, amount } = JSON.parse(result.data as string)
+    const { userId, withdrawMethod, accountNumber, accountName, amount } = JSON.parse(result.data as string)
 
     // Connect to database
     await dbConnect()
@@ -85,57 +86,72 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Calculate fees (you can adjust this logic as needed)
+    const feePercentage = 0 // 0% fee for now
+    const fees = Math.round(amount * feePercentage / 100)
+    const netAmount = amount - fees
+
+    // Create withdrawal record
+    const withdrawal = await Withdrawal.create({
+      userId,
+      amount,
+      method: withdrawMethod as 'bkash' | 'nagad' | 'rocket',
+      accountDetails: {
+        accountNumber,
+        accountName: accountName || 'N/A'
+      },
+      fees,
+      netAmount,
+      status: 'pending',
+      metadata: {
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+        userAgent: request.headers.get('user-agent')
+      }
+    })
+
     // Update user balance
     await User.findOneAndUpdate(
       { userId },
-      { 
-        $inc: { 
+      {
+        $inc: {
           balanceTK: -amount,
           withdrawnAmount: amount
         }
       }
     )
 
-    // Create withdrawal activity
-    await Activity.create({
-      userId,
-      activityType: 'withdrawal',
-      description: `${withdrawMethod} এ ${amount} টাকা উইথড্র অনুরোধ`,
-      amount: amount,
-      status: 'pending',
-      metadata: {
-        withdrawMethod,
-        accountNumber,
-        requestTime: new Date().toISOString(),
-        status: 'pending'
-      }
-    })
 
     // Create withdrawal notification
     await Notification.create({
       userId,
       title: '💰 উইথড্র অনুরোধ জমা দেওয়া হয়েছে',
-      message: `আপনার ${amount} টাকার উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে। ${withdrawMethod} (${accountNumber}) এ পাঠানো হবে।`,
+      message: `আপনার ${amount} টাকার উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে। ${withdrawMethod} (${accountNumber}) এ পাঠানো হবে। উইথড্র ID: ${withdrawal.withdrawalId}`,
       type: 'info',
       priority: 'high',
       isRead: false,
       metadata: {
+        withdrawalId: withdrawal.withdrawalId,
         withdrawMethod,
         accountNumber,
         amount,
+        fees,
+        netAmount,
         requestTime: new Date().toISOString()
       }
     })
 
     return NextResponse.json({
       success: true,
-      message: 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
+      message: 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে',
       data: {
-        amount,
-        withdrawMethod,
-        accountNumber,
-        status: 'pending',
-        newBalance: user.balanceTK - amount
+        withdrawalId: withdrawal.withdrawalId,
+        remainingBalance: user.balanceTK - amount,
+        withdrawAmount: amount,
+        fees,
+        netAmount,
+        method: withdrawMethod,
+        accountNumber: accountNumber,
+        status: 'pending'
       }
     })
 

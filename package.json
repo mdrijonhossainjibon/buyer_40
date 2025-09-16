@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "5.x",
     "@redux-devtools/extension": "^3.3.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@tailwindcss/typography": "^0.5.16",
@@ -22,7 +23,9 @@
     "ioredis": "^5.7.0",
     "mongoose": "^8.18.1",
     "next": "14.0.4",
+    "next-auth": "^4.24.11",
     "node-telegram-bot-api": "^0.66.0",
+    "nodemailer": "^7.0.6",
     "pm2": "^6.0.10",
     "postcss": "^8.5.6",
     "react": "^18",
@@ -37,6 +40,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "@types/node-telegram-bot-api": "^0.64.11",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

@@ -189,16 +189,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Get recent activities (last 10)
-    const recentActivities = await Activity.getUserActivities(userId, 10)
-
-    // Get today's activities count
-    const todayActivities = await Activity.getTodayActivities(userId)
-
-    // Get activity stats
-    const activityStats = await Activity.getUserActivityStats(userId, 30)
-    const totalEarnings = activityStats.reduce((sum: number, stat: any) => sum + stat.totalAmount, 0)
-
+ 
+    
+    
     const response  = {
       success: true,
       data: {
@@ -220,20 +213,6 @@ export async function POST(request: NextRequest) {
         totalEarned: user.totalEarned,
         availableBalance: user.balanceTK,
         referralCode: user.referralCode,
-        recentActivities: recentActivities.map((activity: any) => ({
-          _id: activity._id,
-          activityType: activity.activityType,
-          description: activity.description,
-          amount: activity.amount,
-          status: activity.status,
-          createdAt: activity.createdAt,
-          metadata: activity.metadata
-        })),
-        activityStats: {
-          todayActivities: todayActivities.length,
-          totalActivities: recentActivities.length,
-          totalEarnings
-        }
       },
       message: 'User data retrieved successfully'
     }

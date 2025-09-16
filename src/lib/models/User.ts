@@ -142,59 +142,6 @@ const UserSchema = new Schema<IUser>({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 })
-
-// Virtual for available balance (total earned - withdrawn)
-UserSchema.virtual('availableBalance').get(function() {
-  return this.balanceTK
-})
-
-// Virtual for recent activities
-UserSchema.virtual('recentActivities', {
-  ref: 'Activity',
-  localField: 'userId',
-  foreignField: 'userId',
-  options: { sort: { createdAt: -1 }, limit: 10 }
-})
-
-// Static method to get user with activities
-UserSchema.statics.findWithActivities = function(userId: number) {
-  return this.findOne({ userId }).populate('recentActivities')
-}
-
-// Instance method to log activity
-UserSchema.methods.logActivity = async function(activityData: {
-  activityType: string
-  description: string
-  amount: number
-  metadata?: any
-}) {
-  const Activity = mongoose.model('Activity')
-  return await Activity.create({
-    userId: this.userId,
-    ...activityData
-  })
-}
-
-// Pre-save middleware to ensure unique referral code
-UserSchema.pre('save', async function(next) {
-  if (this.isNew && !this.referralCode) {
-    let code = generateReferralCode()
-    let existingUser = await mongoose.model('User').findOne({ referralCode: code })
-    
-    // Keep generating until we get a unique code
-    while (existingUser) {
-      code = generateReferralCode()
-      existingUser = await mongoose.model('User').findOne({ referralCode: code })
-    }
-    
-    this.referralCode = code
-  }
-  next()
-})
-
-// Static method to find user by referral code
-UserSchema.statics.findByReferralCode = function(referralCode: string) {
-  return this.findOne({ referralCode })
-}
+ 
  
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema)

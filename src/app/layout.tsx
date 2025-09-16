@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Nunito } from 'next/font/google'
 import './globals.css'
 import ReduxProvider from '@/components/ReduxProvider'
+import AuthSessionProvider from '@/components/SessionProvider'
 import Script from 'next/script'
  
 const nunito = Nunito({
@@ -32,9 +33,11 @@ export default function RootLayout({
         <Script src='//libtl.com/sdk.js' data-zone='9486612' data-sdk='show_9486612' /> 
       </head>
       <body className={nunito.className}>
-        <ReduxProvider>
-          {children}
-        </ReduxProvider>
+        <AuthSessionProvider>
+          <ReduxProvider>
+            {children}
+          </ReduxProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   )
