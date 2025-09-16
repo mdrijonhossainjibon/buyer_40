@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         await Notification.create({
           userId,
           title: '🎊 ভোজের সময় বোনাস!',
-          message: 'আপনি ভাগ্যবান! আপনি ভোজের সময় (সকাল ৬-১০টা অথবা সন্ধ্যা ৬-১১টা) রেজিস্ট্রেশন করেছেন এবং অতিরিক্ত ৫০ টাকা বোনাস পেয়েছেন!',
+          message: `আপনি ভাগ্যবান! আপনি ভোজের সময় (সকাল ৬-১০টা অথবা সন্ধ্যা ৬-১১টা) রেজিস্ট্রেশন করেছেন এবং অতিরিক্ত ${feastBonus} টাকা বোনাস পেয়েছেন!`,
           type: 'info',
           priority: 'high',
           isRead: false,

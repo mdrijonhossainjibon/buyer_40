@@ -3,20 +3,11 @@
 import { RootState } from '@/store'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Form, Input, Button, Selector, Toast, Card } from 'antd-mobile'
+import { API_CALL, generateSignature } from 'auth-fingerprint'
 
-interface user {
-  userId: number | null
-  balanceTK: number
-  referralCount: number
-  dailyAdLimit: number
-  watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
-  isBotVerified: number
-}
 
- 
-export default function WithdrawPage( ) {
+export default function WithdrawPage() {
   const [withdrawMethod, setWithdrawMethod] = useState('Bkash')
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('')
@@ -26,96 +17,178 @@ export default function WithdrawPage( ) {
   const minWithdraw = 1500
   const requiredReferrals = 20
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (user.balanceTK < minWithdraw) {
-      alert(`Minimum withdrawal amount is ${minWithdraw} TK`)
+  const handleSubmit = async () => {
+    if (!user.userId || !withdrawMethod || !accountNumber || !amount) {
+      Toast.show({
+        content: 'সকল ক্ষেত্র পূরণ করুন',
+        duration: 3000,
+      })
       return
     }
-    
-    if (user.referralCount < requiredReferrals) {
-      alert(`You need at least ${requiredReferrals} referrals to withdraw`)
-      return
-    }
-
-    if (parseInt(amount) > user.balanceTK) {
-      alert('Insufficient balance!')
-      return
-    }
+ 
 
     setIsSubmitting(true)
-    
-    // Simulate withdrawal request
-    setTimeout(() => {
-      alert('Withdrawal request submitted successfully!')
+
+    Toast.show({
+      content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
+      duration: 3000,
+      icon: 'loading'
+    })
+
+    try {
+      const { response } = await API_CALL({
+        url: '/withdraw',
+        method: 'POST',
+        body: {
+          ...generateSignature(
+            JSON.stringify({
+              userId: user.userId,
+              withdrawMethod,
+              accountNumber,
+              amount: parseInt(amount)
+            }),
+            process.env.NEXT_PUBLIC_SECRET_KEY || ''
+          )
+        }
+      })
+
+      if (response && response.success) {
+        Toast.show({
+          content: response.message || 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
+          duration: 3000,
+        })
+        
+        // Clear form
+        setAccountNumber('')
+        setAmount('')
+        
+        // Optionally refresh user data to show updated balance
+        // dispatch(fetchUserDataRequest({ userId: user.userId }))
+        
+      } else {
+        Toast.show({
+          content: response?.message || 'উইথড্র অনুরোধে সমস্যা হয়েছে',
+          duration: 3000,
+        })
+      }
+    } catch (error) {
+      console.error('Withdraw error:', error)
+      Toast.show({
+        content: 'নেটওয়ার্ক সমস্যা! আবার চেষ্টা করুন।',
+        duration: 3000,
+      })
+    } finally {
       setIsSubmitting(false)
-      setAccountNumber('')
-      setAmount('')
-    }, 2000)
+    }
   }
 
+  const paymentMethods = [
+    { label: 'Bkash', value: 'Bkash' },
+    { label: 'Nagad', value: 'Nagad' },
+  ]
+
   return (
-    <div className="block animate-fade-in">
-      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Withdraw (টাকা)</h2>
-      <p className="text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
-        ন্যূনতম <b>{minWithdraw}</b> টাকা এবং কমপক্ষে <b>{requiredReferrals}</b> টি রেফারেল প্রয়োজন।
-      </p>
-      
-      <form onSubmit={handleSubmit} className="mt-5">
-        <div className="mb-3.5">
-          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
-            Method:
-          </label>
-          <select 
-            value={withdrawMethod}
-            onChange={(e) => setWithdrawMethod(e.target.value)}
-            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            required
-          >
-            <option value="Bkash">Bkash</option>
-            <option value="Nagad">Nagad</option>
-          </select>
-        </div>
-        
-        <div className="mb-3.5">
-          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
-            Account Number:
-          </label>
-          <input 
-            type="text"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder="01XXXXXXXXX"
-            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            required
-          />
-        </div>
-        
-        <div className="mb-3.5">
-          <label className="block mb-1.5 text-sm font-bold text-gray-900 dark:text-white">
-            Amount (টাকা):
-          </label>
-          <input 
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="1500"
-            min={minWithdraw}
-            max={user.balanceTK}
-            className="w-full px-3.5 py-3 rounded-lg text-base outline-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            required
-          />
-        </div>
-        
-        <button 
-          type="submit" 
-          className="mt-2 w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={isSubmitting}
+    <div className="block animate-fade-in p-4">
+      <Card className="mb-4">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">উইথড্র (টাকা)</h2>
+        <p className="text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
+          ন্যূনতম <b>{minWithdraw}</b> টাকা এবং কমপক্ষে <b>{requiredReferrals}</b> টি রেফারেল প্রয়োজন।
+        </p>
+
+        {/* Suspended Account Warning */}
+        {user.status === 'suspend' && (
+          <Card className="mb-4" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
+            <div className="flex items-center">
+              <i className="fa-solid fa-exclamation-triangle text-red-600 mr-3"></i>
+              <div>
+                <h4 className="text-red-800 font-semibold">অ্যাকাউন্ট স্থগিত</h4>
+                <p className="text-red-700 text-sm">
+                  আপনার অ্যাকাউন্ট স্থগিত করা হয়েছে। উইথড্র করতে পারবেন না।
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+      </Card>
+
+      <Card>
+        <Form
+          onFinish={handleSubmit}
+          footer={
+            <Button
+              block
+              type='submit'
+              color='primary'
+              size='large'
+              disabled={user.status === 'suspend' || isSubmitting}
+              loading={isSubmitting}
+            >
+              {user.status === 'suspend'
+                ? 'অ্যাকাউন্ট স্থগিত'
+                : isSubmitting
+                  ? 'জমা দেওয়া হচ্ছে...'
+                  : 'উইথড্র অনুরোধ জমা দিন'
+              }
+            </Button>
+          }
         >
-          <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
-        </button>
-      </form>
+          <Form.Item
+            label="পেমেন্ট পদ্ধতি:"
+            name="withdrawMethod"
+            rules={[{ required: true, message: 'পেমেন্ট পদ্ধতি নির্বাচন করুন' }]}
+          >
+            <Selector
+              options={paymentMethods}
+              value={[withdrawMethod]}
+              onChange={(val) => setWithdrawMethod(val[0] || 'Bkash')}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="অ্যাকাউন্ট নম্বর:"
+            name="accountNumber"
+            rules={[{ required: true, message: 'অ্যাকাউন্ট নম্বর প্রয়োজন' }]}
+          >
+            <Input
+              value={accountNumber}
+              onChange={(val) => setAccountNumber(val)}
+              placeholder="০১XXXXXXXXX"
+              clearable
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="পরিমাণ (টাকা):"
+            name="amount"
+            rules={[
+              { required: true, message: 'পরিমাণ প্রয়োজন' },
+              {
+                validator: (_, value) => {
+                  if (value && parseInt(value) < minWithdraw) {
+                    return Promise.reject(`ন্যূনতম ${minWithdraw} টাকা প্রয়োজন`)
+                  }
+                  if (value && parseInt(value) > user.balanceTK) {
+                    return Promise.reject('অপর্যাপ্ত ব্যালেন্স!')
+                  }
+                  return Promise.resolve()
+                }
+              }
+            ]}
+          >
+            <Input
+              type="text"
+              value={amount}
+              onChange={(val) => {
+                // Keep only numbers
+                const numericValue = val.replace(/\D/g, '')
+                setAmount(numericValue)
+              }}
+              placeholder="১৫০০"
+              clearable
+            />
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   )
 }
