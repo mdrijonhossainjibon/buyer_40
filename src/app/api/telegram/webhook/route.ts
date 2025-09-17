@@ -254,26 +254,11 @@ async function handleBalanceCommand(chatId: number, userId: number | undefined, 
     const balanceMessage = `💰 Your Balance Information
 
 Current Balance: ${user.balanceTK} TK
-Total Earned: ${user.totalEarned} TK
-Referral Code: ${user.referralCode}
-
-📊 Recent Activities:`
-
-    // Get recent activities
-    const recentActivities = await Activity.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-
-    let activitiesText = ''
-    recentActivities.forEach(activity => {
-      const date = activity.createdAt.toLocaleDateString()
-      const status = activity.status === 'completed' ? '✅' : activity.status === 'pending' ? '⏳' : '❌'
-      activitiesText += `\n${status} ${activity.description} - ${activity.amount} TK (${date})`
-    })
+Referral Code: ${user.referralCode}`
 
     const miniAppUrl = await getMiniAppUrl(botToken)
     
-    await sendMessage(botToken, chatId, balanceMessage + activitiesText, {
+    await sendMessage(botToken, chatId, balanceMessage, {
       reply_markup: {
         inline_keyboard: [
           [
