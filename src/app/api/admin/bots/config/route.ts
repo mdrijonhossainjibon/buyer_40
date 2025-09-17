@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import { BotConfig } from '@/lib/models/BotConfig'
+import { getBotInfo } from '@/services/webhook'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
         data: {
           config: {
             botToken: '',
-            botUsername: '@earnfromadsbd_bot',
+            botUsername: '',
             Status: 'offline',
             webhookUrl: '',
             lastUpdated: new Date(),
@@ -58,7 +59,7 @@ export async function PUT(request: NextRequest) {
     await dbConnect()
     
     const body = await request.json()
-    const { botToken, botUsername, webhookUrl, Status } = body
+    const { botToken,   webhookUrl, Status } = body
 
     // Validation
     if (botToken && typeof botToken !== 'string') {
@@ -68,12 +69,7 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (botUsername && typeof botUsername !== 'string') {
-      return NextResponse.json({
-        success: false,
-        message: 'Bot username must be a string'
-      }, { status: 400 })
-    }
+     
 
     if (webhookUrl && typeof webhookUrl !== 'string') {
       return NextResponse.json({
@@ -94,21 +90,26 @@ export async function PUT(request: NextRequest) {
       lastUpdated: new Date()
     }
 
-    if (botToken !== undefined) updateData.botToken = botToken
-    if (botUsername !== undefined) updateData.botUsername = botUsername
-    if (webhookUrl !== undefined) updateData.webhookUrl = webhookUrl
-    if (Status !== undefined) updateData.Status = Status
 
-    // Find and update bot configuration, or create if it doesn't exist
-    const botConfig = await BotConfig.findOneAndUpdate(
-      {}, // Find any bot config (assuming single bot)
-      updateData,
-      { 
-        new: true, 
-        upsert: true, // Create if doesn't exist
-        runValidators: true 
-      }
-    )
+
+    if (botToken !== undefined) updateData.botToken = botToken
+   
+    if (webhookUrl !== undefined) updateData.webhookUrl = webhookUrl
+    if (Status !== undefined) updateData.Status = Status;
+
+
+   
+
+ 
+
+    const info = await getBotInfo(botToken);
+
+    if(info.success && info.data){
+       updateData.botUsername = info.data.username;
+    }
+
+    const botConfig = await BotConfig.findOneAndUpdate({}, updateData, { new: true });
+     
 
     return NextResponse.json({
       success: true,
