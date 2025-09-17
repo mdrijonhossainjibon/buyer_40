@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import { BotConfig } from '@/lib/models/BotConfig'
+import { getBotInfo } from '@/services/webhook'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,23 +9,21 @@ export async function GET(request: NextRequest) {
     
     // Find bot configuration to get status
     const botConfig = await BotConfig.findOne({})
+
     
     if (!botConfig) {
-      // Return default status if no config exists
       return NextResponse.json({
-        success: true,
-        data: {
-          status: {
-            botUsername: '@earnfromadsbd_bot',
-            botStatus: 'offline',
-            botLastSeen: new Date(),
-            botVersion: 'v2.1.0',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        },
-        message: 'No bot configuration found, returning default status'
-      })
+        success: false,
+        message: 'No bot configuration found'
+      }, { status: 404 })
+    }
+
+
+    const botInfo = await getBotInfo(botConfig.botToken);
+
+    if(botInfo.success && botInfo.data){
+      botConfig.botUsername = botInfo.data.username;
+      await botConfig.save();
     }
 
     return NextResponse.json({
@@ -59,30 +58,33 @@ export async function PUT(request: NextRequest) {
     const { status } = body
 
     // Validation
-    if (!status || !['online', 'offline', 'maintenance'].includes(status)) {
+    if (!status || !['online', 'offline'].includes(status)) {
       return NextResponse.json({
         success: false,
         message: 'Status must be one of: online, offline, maintenance'
       }, { status: 400 })
     }
+ 
 
-    // Map maintenance to offline for the bot config (since model only supports online/offline)
-    const botStatus = status === 'maintenance' ? 'offline' : status
+    const botConfig = await BotConfig.findOne({})
 
-    // Update bot status
-    const botConfig = await BotConfig.findOneAndUpdate(
-      {}, // Find any bot config (assuming single bot)
-      { 
-        Status: botStatus,
-        lastUpdated: new Date()
-      },
-      { 
-        new: true,
-        upsert: true, // Create if doesn't exist
-        runValidators: true 
-      }
-    )
+    if (!botConfig) {
+      return NextResponse.json({
+        success: false,
+        message: 'No bot configuration found'
+      }, { status: 404 })
+    }
 
+    const botInfo = await getBotInfo(botConfig.botToken);
+
+    if(botInfo.success && botInfo.data){
+      botConfig.botUsername = botInfo.data.username;
+      await botConfig.save();
+    }
+    botConfig.Status = status;
+    await botConfig.save();
+
+    
     return NextResponse.json({
       success: true,
       data: {
