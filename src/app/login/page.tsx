@@ -23,7 +23,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated') {
-      ////router.push('/')
+      router.push('/admin')
     }
   }, [status, router])
 
@@ -128,7 +128,7 @@ export default function LoginPage() {
         })
         setShowOtpPopup(false)
         setPendingLoginData(null)
-        router.push('/')
+        router.push('/admin')
       }
     } catch (error) {
       console.error('OTP verification error:', error)
