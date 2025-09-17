@@ -44,7 +44,13 @@ const ActivitySchema = new Schema<IActivity>({
     default: 0,
     min: 0
   },
-   
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'completed', 'failed', 'cancelled'],
+    default: 'pending',
+    index: true
+  },
   metadata: {
     type: Schema.Types.Mixed,
     default: {}

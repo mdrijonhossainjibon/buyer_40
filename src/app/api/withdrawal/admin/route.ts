@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+ 
 import User from '@/lib/models/User'
 import Withdrawal from '@/lib/models/Withdrawal'
 
 import Admin from '@/lib/models/Admin'
 import dbConnect from '@/lib/mongodb'
+import { authOptions } from '@/lib/authOptions'
 
 export async function POST(request: NextRequest) {
   try {

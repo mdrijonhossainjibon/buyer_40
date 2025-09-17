@@ -168,9 +168,8 @@ export default function AdminUsers() {
   }
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.phone.includes(searchQuery)
+    const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase())  
+                         
     const matchesFilter = userFilter === 'all' || user.status === userFilter
     return matchesSearch && matchesFilter
   })

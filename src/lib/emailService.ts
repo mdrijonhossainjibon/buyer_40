@@ -24,6 +24,19 @@ interface LoginSuccessEmailData {
   userAgent?: string
 }
 
+interface PasswordChangeEmailData {
+  to: string
+  username: string
+  changeTime: Date
+  method: 'OTP Reset' | 'Current Password'
+}
+
+interface PasswordResetOTPEmailData {
+  to: string
+  username: string
+  otp: string
+}
+
 // Create transporter with email configuration
 const createTransporter = () => {
   const config: EmailConfig = {
@@ -115,6 +128,99 @@ export const sendOTPEmail = async (data: OTPEmailData): Promise<boolean> => {
   } catch (error) {
 
     console.error('Failed to send OTP email:', error)
+    return false
+  }
+}
+
+// Send password reset OTP email
+export const sendPasswordResetOTPEmail = async (data: PasswordResetOTPEmailData): Promise<boolean> => {
+  try {
+    const transporter = createTransporter()
+
+    const mailOptions = {
+      from: {
+        name: 'EarnFromAds BD',
+        address: process.env.EMAIL_USER || 'noreply@mdrijonhossajibon.shop'
+      },
+      to: data.to,
+      subject: '🔐 Password Reset OTP - EarnFromAds BD',
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🔐 EarnFromAds BD</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0 0; font-size: 16px;">Password Reset Request</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h2 style="color: #d97706; margin: 0; font-size: 24px;">🔑 Password Reset OTP</h2>
+              </div>
+              <h3 style="color: #333; margin-bottom: 15px;">Hello ${data.username}!</h3>
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                You have requested to reset your password for your EarnFromAds BD admin account.
+              </p>
+            </div>
+            
+            <div style="background-color: #f8fafc; padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center; border: 2px dashed #d97706;">
+              <p style="color: #374151; font-size: 16px; margin: 0 0 15px 0; font-weight: bold;">Your OTP Code:</p>
+              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; font-size: 36px; font-weight: bold; padding: 20px; border-radius: 8px; letter-spacing: 8px; font-family: 'Courier New', monospace; text-align: center; margin: 15px 0;">
+                ${data.otp}
+              </div>
+              <p style="color: #6b7280; font-size: 14px; margin: 15px 0 0 0;">
+                This code will expire in <strong>10 minutes</strong>
+              </p>
+            </div>
+            
+            <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="color: #dc2626; font-size: 14px; margin: 0; text-align: center;">
+                🚨 <strong>Security Notice:</strong> If you didn't request this password reset, please ignore this email and contact support immediately.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                Enter this OTP code in the password reset form to continue.
+              </p>
+              <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">
+                Don't see this email in your inbox? Check your spam folder.
+              </p>
+            </div>
+            
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} EarnFromAds BD. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+      text: `
+        EarnFromAds BD - Password Reset OTP
+        
+        Hello ${data.username}!
+        
+        You have requested to reset your password for your EarnFromAds BD admin account.
+        
+        Your OTP Code: ${data.otp}
+        
+        This code will expire in 10 minutes.
+        
+        Enter this OTP code in the password reset form to continue.
+        
+        Security Notice: If you didn't request this password reset, please ignore this email and contact support immediately.
+        
+        Don't see this email in your inbox? Check your spam folder.
+        
+        © ${new Date().getFullYear()} EarnFromAds BD. All rights reserved.
+      `
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    console.log('Password reset OTP email sent successfully:', result.messageId)
+    return true
+  } catch (error) {
+    console.error('Failed to send password reset OTP email:', error)
     return false
   }
 }
@@ -215,6 +321,113 @@ export const sendLoginSuccessEmail = async (data: LoginSuccessEmailData): Promis
     return true
   } catch (error) {
     console.error('Failed to send login success email:', error)
+    return false
+  }
+}
+
+// Send password change confirmation email
+export const sendPasswordChangeEmail = async (data: PasswordChangeEmailData): Promise<boolean> => {
+  try {
+    const transporter = createTransporter()
+    
+    const changeTimeFormatted = data.changeTime.toLocaleString('en-BD', {
+      timeZone: 'Asia/Dhaka',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+
+    const mailOptions = {
+      from: {
+        name: 'EarnFromAds BD',
+        address: process.env.EMAIL_USER || 'noreply@mdrijonhossajibon.shop'
+      },
+      to: data.to,
+      subject: '🔐 Password Changed Successfully - EarnFromAds BD',
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🔐 EarnFromAds BD</h1>
+            <p style="color: #e2e8f0; margin: 10px 0 0 0; font-size: 16px;">Admin Panel Security</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="background-color: #dcfce7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h2 style="color: #16a34a; margin: 0; font-size: 24px;">✅ Password Changed Successfully</h2>
+              </div>
+              <h3 style="color: #333; margin-bottom: 15px;">Hello ${data.username}!</h3>
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                Your password has been successfully changed for your EarnFromAds BD admin account.
+              </p>
+            </div>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="color: #374151; margin: 0 0 15px 0;">Change Details:</h4>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: bold;">Time:</td>
+                  <td style="padding: 8px 0; color: #374151;">${changeTimeFormatted}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: bold;">Method:</td>
+                  <td style="padding: 8px 0; color: #374151;">${data.method}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: bold;">Account:</td>
+                  <td style="padding: 8px 0; color: #374151;">${data.to}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="color: #92400e; font-size: 14px; margin: 0; text-align: center;">
+                🔒 <strong>Security Notice:</strong> If you didn't make this change, please contact support immediately
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                For security reasons, you may need to log in again on some devices.
+              </p>
+            </div>
+            
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} EarnFromAds BD. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+      text: `
+        EarnFromAds BD - Password Change Confirmation
+        
+        Hello ${data.username}!
+        
+        Your password has been successfully changed for your EarnFromAds BD admin account.
+        
+        Change Details:
+        Time: ${changeTimeFormatted}
+        Method: ${data.method}
+        Account: ${data.to}
+        
+        Security Notice: If you didn't make this change, please contact support immediately.
+        
+        For security reasons, you may need to log in again on some devices.
+        
+        © ${new Date().getFullYear()} EarnFromAds BD. All rights reserved.
+      `
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    console.log('Password change confirmation email sent successfully:', result.messageId)
+    return true
+  } catch (error) {
+    console.error('Failed to send password change confirmation email:', error)
     return false
   }
 }

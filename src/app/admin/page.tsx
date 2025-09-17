@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Toast  } from 'antd-mobile'
+ 
 import { 
   CreditCardOutlined,
   MenuOutlined,
@@ -15,8 +15,7 @@ import {
   SunOutlined, 
   MoonOutlined 
 } from '@ant-design/icons';
- 
-import { API_CALL, generateSignature } from 'auth-fingerprint'
+  
 import BarChartOutline from '@/components/BarChartOutline'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminDashboard from '@/components/admin/AdminDashboard'
@@ -24,7 +23,6 @@ import AdminWithdrawals from '@/components/admin/AdminWithdrawals'
 import AdminUsers from '@/components/admin/AdminUsers'
 import AdminSettings from '@/components/admin/AdminSettings'
 import AdminReports from '@/components/admin/AdminReports'
-import AdminActivities from '@/components/admin/AdminActivities'
 import AdminAdsSettings from '@/components/admin/AdminAdsSettings'
 import AdminBotsSettings from '@/components/admin/AdminBotsSettings'
 
@@ -49,29 +47,16 @@ interface UserStats {
   totalEarnings: number
 }
 
-interface User {
-  id: string
-  username: string
-  email: string
-  phone: string
-  status: 'active' | 'inactive' | 'suspended'
-  joinDate: string
-  lastActive: string
-  totalEarnings: number
-  totalWithdrawals: number
-  referralCount: number
-}
+ 
 
 export default function AdminPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [loading, setLoading] = useState(false)
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([])
+ 
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [users, setUsers] = useState<User[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [userFilter, setUserFilter] = useState<'all' | 'active' | 'inactive' | 'suspended'>('all')
+   
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   useLayoutEffect(() => {
@@ -96,84 +81,8 @@ export default function AdminPage() {
     }
   }
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    setLoading(true)
-    try {
-      const [statsResponse, withdrawalsResponse] = await Promise.all([
-        API_CALL({
-          method: 'POST',
-          url: '/admin/stats',
-          body: {
-            action: 'get-stats',
-            ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-          }
-        }),
-        API_CALL({
-          method: 'POST',
-          url: '/admin/withdrawals',
-          body: {
-            action: 'list-withdrawals',
-            ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-          }
-        })
-      ])
-
-      if (statsResponse.response?.success) {
-        setUserStats(statsResponse.response.data)
-      }
-
-      if (withdrawalsResponse.response?.success) {
-        setWithdrawals(withdrawalsResponse.response.data.withdrawals)
-      }
-    } catch (error) {
-      console.error('Admin data fetch error:', error)
-      Toast.show({
-        content: 'Failed to load data',
-        duration: 2000,
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleWithdrawalAction = async (withdrawalId: string, action: 'approve' | 'reject', note?: string) => {
-    try {
-      const { response } = await API_CALL({
-        method: 'POST',
-        url: '/admin/withdrawal-action',
-        body: {
-          withdrawalId,
-          action,
-          adminNote: note,
-          ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-        }
-      })
-
-      if (response?.success) {
-        Toast.show({
-          content: action === 'approve' ? 'Withdrawal approved' : 'Withdrawal rejected',
-          duration: 2000,
-        })
-        fetchDashboardData()
-      } else {
-        Toast.show({
-          content: response?.message || 'Action failed',
-          duration: 2000,
-        })
-      }
-    } catch (error) {
-      console.error('Withdrawal action error:', error)
-      Toast.show({
-        content: 'Failed to complete action',
-        duration: 2000,
-      })
-    }
-  }
-
+ 
+ 
   const menuItems = [
     {
       key: 'dashboard',
@@ -211,15 +120,7 @@ export default function AdminPage() {
         setSidebarOpen(false)
       }
     },
-    {
-      key: 'reports',
-      title: 'Reports',
-      icon: <GlobalOutlined />,
-      onClick: () => {
-        setActiveTab('reports')
-        setSidebarOpen(false)
-      }
-    },
+    
     {
       key: 'activities',
       title: 'Activities',
@@ -299,10 +200,7 @@ export default function AdminPage() {
           {/* Content */}
           <div className=" bg-gray-50 dark:bg-gray-900 min-h-[calc(100vh-120px)] pb-20 pt-[78px]">
             {activeTab === 'dashboard' && (
-              <AdminDashboard 
-                userStats={userStats}
-                loading={loading}
-              />
+              <AdminDashboard   />
             )}
             {activeTab === 'withdrawals' && (
               <AdminWithdrawals  />
@@ -315,15 +213,9 @@ export default function AdminPage() {
                 loading={loading}
               />
             )}
-            {activeTab === 'reports' && (
-              <AdminReports 
-           
-              />
-            )}
+          
             {activeTab === 'activities' && (
-              <AdminActivities 
-                loading={loading}
-              />
+                 <AdminReports />
             )}
             {activeTab === 'ads-settings' && (
               <AdminAdsSettings 

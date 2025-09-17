@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, Switch,  Toast, Form } from 'antd-mobile'
+import { Card, Switch,  Toast, Form, PullToRefresh } from 'antd-mobile'
 import { 
   PlayOutline,
   StopOutline,
@@ -12,31 +12,13 @@ import {
   CheckCircleOutline,
   CloseCircleOutline
 } from 'antd-mobile-icons'
+import { BotAPI, BotConfig, BotStatus } from '@/lib/api/bots'
 
 interface AdminBotsSettingsProps {
   loading?: boolean
 }
 
-interface BotConfig {
-  _id?: string
-  botToken: string
-  botUsername: string
-  Status: 'online' | 'offline'
-  webhookUrl: string
-  lastUpdated: Date
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface BotStatus {
-  _id?: string
-  botUsername: string
-  botStatus: 'online' | 'offline' | 'maintenance'
-  botLastSeen: Date
-  botVersion: string
-  createdAt: Date
-  updatedAt: Date
-}
+// Interfaces are now imported from the API module
 
 export default function AdminBotsSettings({ loading = false }: AdminBotsSettingsProps) {
   const [botConfig, setBotConfig] = useState<BotConfig>({
@@ -59,112 +41,199 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
   })
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     // TODO: Fetch bot config and status from API
     fetchBotData()
   }, [])
 
-  const fetchBotData = async () => {
+  const fetchBotData = async (isRefresh = false) => {
     try {
-      // Mock data - replace with actual API calls
-      setBotConfig({
-        botToken: '7234567890:AAHdqTcvbXorQeR-5WP1arjdpEHHhvlhvlh',
-        botUsername: '@earnfromadsbd_bot',
-        Status: 'online',
-        webhookUrl: 'https://api.earnfromadsbd.com/webhook',
-        lastUpdated: new Date(Date.now() - 5 * 60 * 1000),
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        updatedAt: new Date(Date.now() - 5 * 60 * 1000)
-      })
-
-      setBotStatus({
-        botUsername: '@earnfromadsbd_bot',
-        botStatus: 'online',
-        botLastSeen: new Date(Date.now() - 2 * 60 * 1000),
-        botVersion: 'v2.1.0',
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        updatedAt: new Date(Date.now() - 2 * 60 * 1000)
-      })
+      if (isRefresh) {
+        setIsRefreshing(true)
+      } else {
+        setIsLoading(true)
+      }
+      
+      // Fetch bot data from API
+      const response = await BotAPI.getBotData()
+      
+      if (response.success && response.data) {
+        setBotConfig(response.data.config)
+        setBotStatus(response.data.status)
+        
+        if (isRefresh) {
+          Toast.show({
+            content: 'Bot data refreshed successfully',
+            duration: 1500
+          })
+        }
+      } else {
+        throw new Error(response.message || 'Failed to fetch bot data')
+      }
     } catch (error) {
       console.error('Failed to fetch bot data:', error)
       Toast.show({
-        content: 'বট ডেটা লোড করতে ব্যর্থ',
+        content: 'Failed to load bot data',
         duration: 2000
       })
+      
+      // Set fallback data on error
+      setBotConfig({
+        botToken: '',
+        botUsername: '@earnfromadsbd_bot',
+        Status: 'offline',
+        webhookUrl: '',
+        lastUpdated: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      
+      setBotStatus({
+        botUsername: '@earnfromadsbd_bot',
+        botStatus: 'offline',
+        botLastSeen: new Date(),
+        botVersion: 'v2.1.0',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false)
+      } else {
+        setIsLoading(false)
+      }
     }
+  }
+
+  const handleRefresh = async () => {
+    await fetchBotData(true)
   }
 
   const handleToggleBotStatus = async () => {
     try {
+      setIsLoading(true)
       const newStatus = botConfig.Status === 'online' ? 'offline' : 'online'
       
-      setBotConfig(prev => ({ ...prev, Status: newStatus, lastUpdated: new Date() }))
-      setBotStatus(prev => ({ 
-        ...prev, 
-        botStatus: newStatus, 
-        botLastSeen: new Date(),
-        updatedAt: new Date()
-      }))
+      // Call API to update bot status
+      const response = await BotAPI.updateBotStatus(newStatus)
+      
+      if (response.success) {
+        setBotConfig(prev => ({ ...prev, Status: newStatus, lastUpdated: new Date() }))
+        setBotStatus(prev => ({ 
+          ...prev, 
+          botStatus: newStatus, 
+          botLastSeen: new Date(),
+          updatedAt: new Date()
+        }))
 
-      Toast.show({
-        content: `বট ${newStatus === 'online' ? 'চালু' : 'বন্ধ'} করা হয়েছে`,
-        duration: 2000
-      })
-
-      // TODO: Call API to update bot status
+        Toast.show({
+          content: `Bot ${newStatus === 'online' ? 'started' : 'stopped'}`,
+          duration: 2000
+        })
+      } else {
+        throw new Error(response.message || 'Failed to update bot status')
+      }
     } catch (error) {
       console.error('Failed to toggle bot status:', error)
       Toast.show({
-        content: 'বট স্ট্যাটাস আপডেট করতে ব্যর্থ',
+        content: 'Failed to update bot status',
         duration: 2000
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleSaveBotConfig = async () => {
     try {
-      // TODO: Validate and save bot configuration
-      setBotConfig(prev => ({ ...prev, updatedAt: new Date() }))
-      setIsEditing(false)
+      setIsLoading(true)
       
-      Toast.show({
-        content: 'বট কনফিগারেশন সংরক্ষণ করা হয়েছে',
-        duration: 2000
+      // Validate bot configuration
+      if (!botConfig.botToken.trim()) {
+        Toast.show({
+          content: 'Bot token is required',
+          duration: 2000
+        })
+        return
+      }
+      
+      if (!botConfig.webhookUrl.trim()) {
+        Toast.show({
+          content: 'Webhook URL is required',
+          duration: 2000
+        })
+        return
+      }
+      
+      // Call API to save bot configuration
+      const response = await BotAPI.updateBotConfig({
+        botToken: botConfig.botToken,
+        webhookUrl: botConfig.webhookUrl
       })
-
-      // TODO: Call API to save bot config
+      
+      if (response.success && response.data?.config) {
+        setBotConfig(response.data.config)
+        setIsEditing(false)
+        
+        Toast.show({
+          content: 'Bot configuration saved successfully',
+          duration: 2000
+        })
+      } else {
+        throw new Error(response.message || 'Failed to save bot configuration')
+      }
     } catch (error) {
       console.error('Failed to save bot config:', error)
       Toast.show({
-        content: 'বট কনফিগারেশন সংরক্ষণ করতে ব্যর্থ',
+        content: 'Failed to save bot configuration',
         duration: 2000
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleSetWebhook = async () => {
     try {
+      setIsLoading(true)
+      
+      if (!botConfig.webhookUrl.trim()) {
+        Toast.show({
+          content: 'Webhook URL is required',
+          duration: 2000
+        })
+        return
+      }
+      
       Toast.show({
-        content: 'ওয়েবহুক সেট করা হচ্ছে...',
+        content: 'Setting webhook...',
         duration: 2000
       })
 
-      // TODO: Call Telegram API to set webhook
-      setBotConfig(prev => ({ ...prev, lastUpdated: new Date() }))
+      // Call API to set webhook
+      const response = await BotAPI.setWebhook(botConfig.webhookUrl)
       
-      setTimeout(() => {
+      if (response.success) {
+        setBotConfig(prev => ({ ...prev, lastUpdated: new Date() }))
+        
         Toast.show({
-          content: 'ওয়েবহুক সফলভাবে সেট করা হয়েছে',
+          content: 'Webhook set successfully',
           duration: 2000
         })
-      }, 2000)
+      } else {
+        throw new Error(response.message || 'Failed to set webhook')
+      }
     } catch (error) {
       console.error('Failed to set webhook:', error)
       Toast.show({
-        content: 'ওয়েবহুক সেট করতে ব্যর্থ',
+        content: 'Failed to set webhook',
         duration: 2000
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -172,17 +241,15 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     switch (status) {
       case 'online': return <CheckCircleOutline className="text-green-500" />
       case 'offline': return <CloseCircleOutline className="text-red-500" />
-      case 'maintenance': return <ClockCircleOutline className="text-yellow-500" />
       default: return <CloseCircleOutline className="text-gray-500" />
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'online': return 'অনলাইন'
-      case 'offline': return 'অফলাইন'
-      case 'maintenance': return 'রক্ষণাবেক্ষণ'
-      default: return 'অজানা'
+      case 'online': return 'Online'
+      case 'offline': return 'Offline'
+      default: return 'Unknown'
     }
   }
 
@@ -190,17 +257,17 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
     
-    if (diffInMinutes < 1) return 'এখনই'
-    if (diffInMinutes < 60) return `${diffInMinutes} মিনিট আগে`
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
     
     const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) return `${diffInHours} ঘন্টা আগে`
+    if (diffInHours < 24) return `${diffInHours} hours ago`
     
     const diffInDays = Math.floor(diffInHours / 24)
-    return `${diffInDays} দিন আগে`
+    return `${diffInDays} days ago`
   }
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -214,7 +281,14 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
   }
 
   return (
-    <div className="space-y-4">
+    <PullToRefresh
+      onRefresh={handleRefresh}
+      pullingText="Pull to refresh bot data"
+      canReleaseText="Release to refresh"
+      refreshingText="Refreshing bot data..."
+      completeText="Refresh complete"
+    >
+      <div className="space-y-4">
       {/* Header */}
       <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
         <div className="p-4">
@@ -227,9 +301,9 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
               />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">বট সেটিংস</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Bot Settings</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                টেলিগ্রাম বট কনফিগারেশন এবং ম্যানেজমেন্ট
+                Telegram bot configuration and management
               </p>
             </div>
           </div>
@@ -245,7 +319,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
                 {getStatusIcon(botStatus.botStatus)}
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">বট স্ট্যাটাস</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Bot Status</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {botStatus.botUsername} • {getStatusText(botStatus.botStatus)}
                 </p>
@@ -255,6 +329,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
             <Switch
               checked={botConfig.Status === 'online'}
               onChange={handleToggleBotStatus}
+              disabled={isLoading}
               style={{
                 '--checked-color': '#10b981',
                 '--height': '28px',
@@ -265,28 +340,29 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-500 dark:text-gray-400">ভার্সন:</span>
+ 
+              <span className="text-gray-500 dark:text-gray-400">Version:</span>
               <div className="font-medium text-gray-900 dark:text-white">
                 {botStatus.botVersion}
               </div>
             </div>
             
             <div>
-              <span className="text-gray-500 dark:text-gray-400">শেষ দেখা:</span>
+              <span className="text-gray-500 dark:text-gray-400">Last Seen:</span>
               <div className="font-medium text-gray-900 dark:text-white">
                 {formatTimeAgo(botStatus.botLastSeen)}
               </div>
             </div>
             
             <div>
-              <span className="text-gray-500 dark:text-gray-400">তৈরি:</span>
+              <span className="text-gray-500 dark:text-gray-400">Created:</span>
               <div className="font-medium text-gray-900 dark:text-white">
                 {formatTimeAgo(botStatus.createdAt)}
               </div>
             </div>
             
             <div>
-              <span className="text-gray-500 dark:text-gray-400">আপডেট:</span>
+              <span className="text-gray-500 dark:text-gray-400">Updated:</span>
               <div className="font-medium text-gray-900 dark:text-white">
                 {formatTimeAgo(botStatus.updatedAt)}
               </div>
@@ -304,9 +380,9 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
                 <SetOutline className="text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">বট কনফিগারেশন</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Bot Configuration</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  টোকেন এবং ওয়েবহুক সেটিংস
+                  Token and webhook settings
                 </p>
               </div>
             </div>
@@ -316,20 +392,20 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
               onClick={() => setIsEditing(!isEditing)}
             >
               <EditSOutline className="text-sm" />
-              <span>{isEditing ? 'বাতিল' : 'সম্পাদনা'}</span>
+              <span>{isEditing ? 'Cancel' : 'Edit'}</span>
             </button>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                বট টোকেন:
+                Bot Token:
               </label>
               <input
                 type={isEditing ? 'text' : 'password'}
                 value={botConfig.botToken}
                 onChange={(e) => setBotConfig(prev => ({ ...prev, botToken: e.target.value }))}
-                placeholder="বট টোকেন প্রবেশ করুন"
+                placeholder="Enter bot token"
                 disabled={!isEditing}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
               />
@@ -337,21 +413,21 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                বট ইউজারনেম:
+                Bot Username:
               </label>
               <input
                 type="text"
                 value={botConfig.botUsername}
                 onChange={(e) => setBotConfig(prev => ({ ...prev, botUsername: e.target.value }))}
                 placeholder="@username"
-                disabled={!isEditing}
+                disabled={true}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                ওয়েবহুক URL:
+                Webhook URL:
               </label>
               <input
                 type="url"
@@ -368,14 +444,15 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
                 <button
                   className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
                   onClick={handleSaveBotConfig}
+                  disabled={isLoading}
                 >
-                  সংরক্ষণ করুন
+                  Save
                 </button>
                 <button
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
                   onClick={() => setIsEditing(false)}
                 >
-                  বাতিল
+                  Cancel
                 </button>
               </div>
             )}
@@ -386,39 +463,46 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       {/* Bot Actions */}
       <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">বট অ্যাকশন</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bot Actions</h3>
           
           <div className="space-y-3">
             <button
               className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
               onClick={handleSetWebhook}
-              disabled={!botConfig.botToken || !botConfig.webhookUrl}
+              disabled={isLoading || !botConfig.botToken || !botConfig.webhookUrl}
             >
               <SetOutline />
-              <span>ওয়েবহুক সেট করুন</span>
+              <span>Set Webhook</span>
             </button>
             
-            <button
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
-              onClick={() => {
-                Toast.show('বট পুনরায় চালু করা হচ্ছে...')
-                // TODO: Implement bot restart
-              }}
-            >
-              <PlayOutline />
-              <span>বট পুনরায় চালু করুন</span>
-            </button>
+          
             
             <button
               className="w-full px-4 py-3 border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
-              onClick={() => {
-                Toast.show('বট বন্ধ করা হচ্ছে...')
-                setBotConfig(prev => ({ ...prev, Status: 'offline' }))
-                setBotStatus(prev => ({ ...prev, botStatus: 'offline' }))
+              onClick={async () => {
+                try {
+                  setIsLoading(true)
+                  Toast.show('Stopping bot...')
+                  
+                  const response = await BotAPI.stopBot()
+                  
+                  if (response.success) {
+                    setBotConfig(prev => ({ ...prev, Status: 'offline' }))
+                    setBotStatus(prev => ({ ...prev, botStatus: 'offline' }))
+                    Toast.show('Bot stopped successfully')
+                  } else {
+                    throw new Error(response.message || 'Failed to stop bot')
+                  }
+                } catch (error) {
+                  console.error('Failed to stop bot:', error)
+                  Toast.show('Failed to stop bot')
+                } finally {
+                  setIsLoading(false)
+                }
               }}
             >
               <StopOutline />
-              <span>বট বন্ধ করুন</span>
+              <span>Stop Bot</span>
             </button>
           </div>
         </div>
@@ -427,25 +511,25 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       {/* Bot Information */}
       <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">বট তথ্য</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bot Information</h3>
           
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">শেষ আপডেট:</span>
+              <span className="text-gray-500 dark:text-gray-400">Last Updated:</span>
               <span className="text-gray-700 dark:text-gray-300">
                 {formatTimeAgo(botConfig.lastUpdated)}
               </span>
             </div>
             
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">তৈরির তারিখ:</span>
+              <span className="text-gray-500 dark:text-gray-400">Created Date:</span>
               <span className="text-gray-700 dark:text-gray-300">
                 {botConfig.createdAt.toLocaleDateString('bn-BD')}
               </span>
             </div>
             
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">কনফিগারেশন ID:</span>
+              <span className="text-gray-500 dark:text-gray-400">Configuration ID:</span>
               <span className="text-gray-700 dark:text-gray-300 font-mono text-xs">
                 {botConfig._id || 'N/A'}
               </span>
@@ -453,6 +537,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           </div>
         </div>
       </Card>
-    </div>
+      </div>
+    </PullToRefresh>
   )
 }

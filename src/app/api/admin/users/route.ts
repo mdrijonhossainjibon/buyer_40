@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
+import Withdrawal from '@/lib/models/Withdrawal';
 
+// Utility function to format numbers (1k, 2.5k, etc.)
+function formatNumber(num: number): string {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+  }
+  return num.toString()
+}
 export async function POST(request: NextRequest) {
   try {
     await dbConnect()
@@ -38,6 +49,25 @@ export async function POST(request: NextRequest) {
         .limit(limit)
      
 
+      // Get withdrawal totals for all users
+      const withdrawalTotals = await Withdrawal.aggregate([
+        {
+          $match: { status: 'approved' }
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalWithdrawals: { $sum: '$amount' }
+          }
+        }
+      ])
+
+      // Create a map for quick lookup
+      const withdrawalMap = new Map()
+      withdrawalTotals.forEach(item => {
+        withdrawalMap.set(item._id.toString(), item.totalWithdrawals)
+      })
+ 
       // Transform data to match expected format
       const transformedUsers = users.map(user => ({
         id: user._id,
@@ -45,8 +75,8 @@ export async function POST(request: NextRequest) {
         status: user.status || 'active',
         joinDate: user.createdAt,
         lastActive: user.lastActive || user.createdAt,
-        totalEarnings: user.balanceTK || 0,
-        totalWithdrawals: user.totalWithdrawals || 0,
+        totalEarnings: formatNumber(user.balanceTK || 0),
+        totalWithdrawals: formatNumber(withdrawalMap.get(user.userId.toString()) || 0),
         referralCount: user.referralCount || 0
       }))
 
@@ -74,27 +104,40 @@ export async function POST(request: NextRequest) {
       const totalUsers = await User.countDocuments({})
       const activeUsers = await User.countDocuments({ status: 'active' })
       
-      // Aggregate total earnings and withdrawals
+      // Aggregate total earnings from User model
       const earningsResult = await User.aggregate([
         {
           $group: {
             _id: null,
-            totalEarnings: { $sum: '$totalEarnings' },
-            totalWithdrawals: { $sum: '$totalWithdrawals' }
+            totalEarnings: { $sum: '$balanceTK' }
           }
         }
       ])
 
-      const { totalEarnings = 0, totalWithdrawals = 0 } = earningsResult[0] || {}
+      // Aggregate total withdrawals from Withdrawal model
+      const withdrawalsResult = await Withdrawal.aggregate([
+        {
+          $match: { status: 'approved' }
+        },
+        {
+          $group: {
+            _id: null,
+            totalWithdrawals: { $sum: '$amount' }
+          }
+        }
+      ])
+
+      const totalEarnings = earningsResult[0]?.totalEarnings || 0
+      const totalWithdrawals = withdrawalsResult[0]?.totalWithdrawals || 0
 
       return NextResponse.json({
         success: true,
         data: {
-          totalUsers,
-          activeUsers,
-          totalEarnings,
-          totalWithdrawals,
-          averageEarningsPerUser: totalUsers > 0 ? totalEarnings / totalUsers : 0
+          totalUsers: formatNumber(totalUsers),
+          activeUsers: formatNumber(activeUsers),
+          totalEarnings: formatNumber(totalEarnings),
+          totalWithdrawals: formatNumber(totalWithdrawals),
+          averageEarningsPerUser: formatNumber(totalUsers > 0 ? totalEarnings / totalUsers : 0)
         }
       })
     }
@@ -178,13 +221,13 @@ export async function POST(request: NextRequest) {
             status: user.status || 'active',
             joinDate: user.createdAt,
             lastActive: user.lastActive || user.createdAt,
-            totalEarnings: user.totalEarnings || 0,
-            totalWithdrawals: user.totalWithdrawals || 0,
+            totalEarnings: formatNumber(user.totalEarnings || 0),
+            totalWithdrawals: formatNumber(user.totalWithdrawals || 0),
             referralCount: user.referralCount || 0
           },
           additionalStats: {
-            tasksCompleted: user.tasksCompleted || 0,
-            withdrawalRequests: user.withdrawalRequests || 0,
+            tasksCompleted: formatNumber(user.tasksCompleted || 0),
+            withdrawalRequests: formatNumber(user.withdrawalRequests || 0),
             accountAge
           }
         }
