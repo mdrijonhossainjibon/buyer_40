@@ -262,7 +262,7 @@ Referral Code: ${user.referralCode}`
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📋 View All Tasks', callback_data: 'view_tasks' },
+             
             { 
               text: '🚀 Open Mini App', 
               web_app: { url: `${miniAppUrl}?section=dashboard&userId=${userId}` }
