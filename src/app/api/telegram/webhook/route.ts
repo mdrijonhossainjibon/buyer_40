@@ -3,7 +3,7 @@ import dbConnect from '@/lib/mongodb'
 import { BotConfig } from '@/lib/models/BotConfig'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
-import { sendMessage } from '@/services/webhook'
+import { sendMessage, getWebhookInfo  } from '@/services/webhook'
 
 // Telegram Update types
 interface TelegramUser {
@@ -49,6 +49,32 @@ interface TelegramUpdate {
   message?: TelegramMessage
   callback_query?: TelegramCallbackQuery
   inline_query?: any
+}
+
+// Global variable to cache mini app URL
+let cachedMiniAppUrl: string | null = null
+
+// Function to get mini app URL from webhook info
+async function getMiniAppUrl(botToken: string): Promise<string> {
+  if (cachedMiniAppUrl) {
+    return cachedMiniAppUrl
+  }
+
+  try {
+    const webhookInfo = await getWebhookInfo(botToken)
+    if (webhookInfo?.url) {
+      // Extract domain from webhook URL
+      const url = new URL(webhookInfo.url)
+      cachedMiniAppUrl = `${url.protocol}//${url.host}`
+      return cachedMiniAppUrl
+    }
+  } catch (error) {
+    console.error('Error getting webhook info:', error)
+  }
+
+  // Fallback to environment variable or default
+  cachedMiniAppUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+  return cachedMiniAppUrl
 }
 
 export async function POST(request: NextRequest) {
@@ -105,8 +131,6 @@ async function handleMessage(message: TelegramMessage, botToken: string) {
       await handleBalanceCommand(chatId, userId, botToken)
     } else if (text.startsWith('/tasks')) {
       await handleTasksCommand(chatId, userId, botToken)
-    } else if (text.startsWith('/withdraw')) {
-      await handleWithdrawCommand(chatId, userId, botToken)
     } else {
       // Handle regular messages
       await handleRegularMessage(chatId, userId, text, botToken)
@@ -129,8 +153,6 @@ async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery, botToke
     // Handle different callback data
     if (data.startsWith('task_')) {
       await handleTaskCallback(chatId, userId, data, botToken)
-    } else if (data.startsWith('withdraw_')) {
-      await handleWithdrawCallback(chatId, userId, data, botToken)
     } else if (data === 'check_balance') {
       await handleBalanceCommand(chatId, userId, botToken)
     }
@@ -168,26 +190,26 @@ async function handleStartCommand(chatId: number, userId: number | undefined, us
 Hello ${username}! 👋
 
 💰 Current Balance: ${user.balanceTK} TK
-🎁 Total Earned: ${user.totalEarned} TK
+
 
 📋 Available Commands:
 /help - Show help menu
 /balance - Check your balance
 /tasks - View available tasks
-/withdraw - Withdraw earnings
 
 Start earning money by completing simple tasks! 🚀`
 
+    const miniAppUrl = await getMiniAppUrl(botToken)
+    
     await sendMessage(botToken, chatId, welcomeMessage, {
       reply_markup: {
         inline_keyboard: [
           [
             { text: '💰 Check Balance', callback_data: 'check_balance' },
-            { text: '📋 View Tasks', callback_data: 'view_tasks' }
-          ],
-          [
-            { text: '💸 Withdraw', callback_data: 'withdraw_menu' },
-            { text: '👥 Referrals', callback_data: 'referral_info' }
+            { 
+              text: '📋 Open Mini App', 
+              web_app: { url: `${miniAppUrl}?userId=${userId}` }
+            }
           ]
         ]
       }
@@ -206,18 +228,12 @@ async function handleHelpCommand(chatId: number, botToken: string) {
 /help - Show this help menu
 /balance - Check your current balance
 /tasks - View available earning tasks
-/withdraw - Withdraw your earnings
 
 💡 How to Earn:
 • Complete ad viewing tasks
 • Refer friends to earn bonus
 • Complete daily tasks
 • Participate in special events
-
-💸 Withdrawal:
-• Minimum withdrawal: 100 TK
-• Available methods: bKash, Nagad, Rocket
-• Processing time: 24-48 hours
 
 Need more help? Contact our support team! 📞`
 
@@ -255,12 +271,17 @@ Referral Code: ${user.referralCode}
       activitiesText += `\n${status} ${activity.description} - ${activity.amount} TK (${date})`
     })
 
+    const miniAppUrl = await getMiniAppUrl(botToken)
+    
     await sendMessage(botToken, chatId, balanceMessage + activitiesText, {
       reply_markup: {
         inline_keyboard: [
           [
             { text: '📋 View All Tasks', callback_data: 'view_tasks' },
-            { text: '💸 Withdraw', callback_data: 'withdraw_menu' }
+            { 
+              text: '🚀 Open Mini App', 
+              web_app: { url: `${miniAppUrl}?section=dashboard&userId=${userId}` }
+            }
           ]
         ]
       }
@@ -294,6 +315,8 @@ async function handleTasksCommand(chatId: number, userId: number | undefined, bo
 
 Click below to start earning! 💰`
 
+  const miniAppUrl = await getMiniAppUrl(botToken)
+  
   await sendMessage(botToken, chatId, tasksMessage, {
     reply_markup: {
       inline_keyboard: [
@@ -304,68 +327,18 @@ Click below to start earning! 💰`
         [
           { text: '✅ Daily Check-in', callback_data: 'task_daily_checkin' },
           { text: '👥 Invite Friends', callback_data: 'task_referral' }
+        ],
+        [
+          { 
+            text: '🚀 Open Mini App', 
+            web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
+          }
         ]
       ]
     }
   })
 }
 
-async function handleWithdrawCommand(chatId: number, userId: number | undefined, botToken: string) {
-  try {
-    if (!userId) return
-
-    const user = await User.findOne({ userId })
-    
-    if (!user) {
-      await sendMessage(botToken, chatId, '❌ User not found. Please use /start to register.')
-      return
-    }
-
-    if (user.balanceTK < 100) {
-      await sendMessage(botToken, chatId, `💸 Withdrawal Information
-
-Current Balance: ${user.balanceTK} TK
-Minimum Withdrawal: 100 TK
-
-❌ Insufficient balance for withdrawal.
-Complete more tasks to reach the minimum amount! 📋`)
-      return
-    }
-
-    const withdrawMessage = `💸 Withdrawal Options
-
-Current Balance: ${user.balanceTK} TK
-Available for Withdrawal: ${user.balanceTK} TK
-
-📱 Available Methods:
-• bKash - Instant transfer
-• Nagad - Instant transfer  
-• Rocket - Instant transfer
-
-⏰ Processing Time: 24-48 hours
-💰 Minimum Amount: 100 TK
-
-Select your preferred method:`
-
-    await sendMessage(botToken, chatId, withdrawMessage, {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '📱 bKash', callback_data: 'withdraw_bkash' },
-            { text: '📱 Nagad', callback_data: 'withdraw_nagad' }
-          ],
-          [
-            { text: '📱 Rocket', callback_data: 'withdraw_rocket' },
-            { text: '❌ Cancel', callback_data: 'cancel_withdraw' }
-          ]
-        ]
-      }
-    })
-
-  } catch (error) {
-    console.error('Error in withdraw command:', error)
-  }
-}
 
 async function handleRegularMessage(chatId: number, userId: number | undefined, text: string, botToken: string) {
   // Handle regular text messages
@@ -375,7 +348,6 @@ Use these commands to interact with me:
 /help - Show available commands
 /balance - Check your balance
 /tasks - View earning opportunities
-/withdraw - Withdraw your earnings
 
 Type /help for more information! 💡`
 
@@ -384,74 +356,76 @@ Type /help for more information! 💡`
 
 async function handleTaskCallback(chatId: number, userId: number, data: string, botToken: string) {
   try {
+    const miniAppUrl = await getMiniAppUrl(botToken)
+    
     if (data === 'task_watch_ads') {
-      await sendMessage(botToken, chatId, '🎥 Ad Watching Task\n\nRedirecting you to available ads...\nComplete the ad and return here for your reward! 💰')
-    } else if (data === 'task_daily_checkin') {
-      // Check if user already checked in today
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      const existingCheckin = await Activity.findOne({
-        userId,
-        activityType: 'login',
-        createdAt: { $gte: today }
-      })
-
-      if (existingCheckin) {
-        await sendMessage(botToken, chatId, '✅ You have already checked in today!\nCome back tomorrow for your next daily bonus! 📅')
-        return
-      }
-
-      // Create daily check-in activity
-      const checkinActivity = new Activity({
-        userId,
-        activityType: 'login',
-        description: 'Daily check-in via Telegram bot',
-        amount: 5,
-        status: 'completed',
-        metadata: { platform: 'telegram' },
-        createdAt: new Date(),
-        completedAt: new Date()
-      })
-      await checkinActivity.save()
-
-      // Update user balance
-      await User.findOneAndUpdate(
-        { userId },
-        { 
-          $inc: { 
-            balanceTK: 5,
-            totalEarned: 5
-          }
+      await sendMessage(botToken, chatId, '🎥 Watch Ads & Earn!\n\nClick the button below to open our mini app and start watching ads to earn money! 💰', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: '🎥 Open Mini App', 
+                web_app: { url: `${miniAppUrl}?task=watch_ads&userId=${userId}` }
+              }
+            ]
+          ]
         }
-      )
-
-      await sendMessage(botToken, chatId, '🎉 Daily Check-in Complete!\n\n💰 +5 TK added to your balance\n\nCome back tomorrow for another bonus! 📅')
+      })
+    } else if (data === 'task_daily_checkin') {
+      await sendMessage(botToken, chatId, '✅ Daily Check-in\n\nClick the button below to open our mini app and complete your daily check-in! 📅', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: '✅ Open Mini App', 
+                web_app: { url: `${miniAppUrl}?task=daily_checkin&userId=${userId}` }
+              }
+            ]
+          ]
+        }
+      })
+    } else if (data === 'task_apps') {
+      await sendMessage(botToken, chatId, '📱 App Installation Tasks\n\nClick the button below to open our mini app and see available app installation tasks! 💰', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: '📱 Open Mini App', 
+                web_app: { url: `${miniAppUrl}?task=app_install&userId=${userId}` }
+              }
+            ]
+          ]
+        }
+      })
+    } else if (data === 'task_referral') {
+      await sendMessage(botToken, chatId, '👥 Referral Program\n\nClick the button below to open our mini app and manage your referrals! 🎁', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: '👥 Open Mini App', 
+                web_app: { url: `${miniAppUrl}?task=referral&userId=${userId}` }
+              }
+            ]
+          ]
+        }
+      })
+    } else if (data === 'view_tasks') {
+      await sendMessage(botToken, chatId, '📋 All Available Tasks\n\nClick the button below to open our mini app and see all available earning opportunities! 🚀', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: '📋 Open Mini App', 
+                web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
+              }
+            ]
+          ]
+        }
+      })
     }
   } catch (error) {
     console.error('Error handling task callback:', error)
   }
 }
 
-async function handleWithdrawCallback(chatId: number, userId: number, data: string, botToken: string) {
-  try {
-    const method = data.replace('withdraw_', '')
-    
-    if (method === 'cancel') {
-      await sendMessage(botToken, chatId, '❌ Withdrawal cancelled.\n\nUse /withdraw when you\'re ready to cash out! 💰')
-      return
-    }
-
-    await sendMessage(botToken, chatId, `💸 ${method.toUpperCase()} Withdrawal
-
-Please provide your ${method.toUpperCase()} number in this format:
-${method.toUpperCase()}: 01XXXXXXXXX
-
-Example: ${method.toUpperCase()}: 01712345678
-
-Send your number and we'll process your withdrawal request! 📱`)
-
-  } catch (error) {
-    console.error('Error handling withdraw callback:', error)
-  }
-}
