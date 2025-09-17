@@ -90,3 +90,46 @@ export async function getChatMember(botToken: string , chatId: number | string ,
     return null;
   }
 }
+
+/**
+ * Check if user has joined a Telegram channel
+ */
+export async function checkTelegramChannelJoin(
+  botToken: string, 
+  channelId: string | number, 
+  userId: number
+): Promise<{ success: boolean; isMember: boolean; message?: string }> {
+  try {
+    const bot = new TelegramBot(botToken, { polling: false });
+    
+    const chatMember = await bot.getChatMember(channelId, userId);
+    
+    // Check if user is a member (member, administrator, creator)
+    const isMember = ['member', 'administrator', 'creator'].includes(chatMember.status);
+    
+    return {
+      success: true,
+      isMember,
+      message: isMember ? 'User is a member of the channel' : 'User is not a member of the channel'
+    };
+  } catch (error: any) {
+    console.error('Error checking channel membership:', error);
+    
+    // Handle specific Telegram API errors
+    if (error.code === 'ETELEGRAM') {
+      if (error.response?.body?.error_code === 400) {
+        return {
+          success: false,
+          isMember: false,
+          message: 'User not found in channel or channel not accessible'
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      isMember: false,
+      message: 'Failed to check channel membership'
+    };
+  }
+}

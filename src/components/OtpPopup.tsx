@@ -101,7 +101,7 @@ export default function OtpPopup({
     const otpString = otp.join('')
     if (otpString.length !== 6) {
       Toast.show({
-        content: '৬ সংখ্যার OTP কোড লিখুন',
+        content: 'Enter the 6-digit OTP code.',
         duration: 2000,
       })
       return
@@ -116,7 +116,7 @@ export default function OtpPopup({
       setCanResend(false)
       setOtp(['', '', '', '', '', ''])
       Toast.show({
-        content: 'নতুন OTP পাঠানো হয়েছে',
+        content: 'New OTP sent',
         duration: 2000,
       })
     }
@@ -163,9 +163,9 @@ export default function OtpPopup({
             </svg>
           </div>
           
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">OTP যাচাইকরণ</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">OTP Verification</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {phoneNumber ? `${phoneNumber} নম্বরে` : email ? `${email} ইমেইলে` : 'আপনার নিবন্ধিত নম্বরে'} পাঠানো ৬ সংখ্যার কোড লিখুন
+             ${email} Enter the 6-digit code sent in the email.
           </p>
         </div>
 
@@ -192,14 +192,14 @@ export default function OtpPopup({
           <div className="text-center mb-6">
             {timer > 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                কোড পুনরায় পাঠাতে অপেক্ষা করুন: <span className="font-mono font-bold text-blue-500 dark:text-blue-400">{formatTime(timer)}</span>
+               Wait for the code to be resent.: <span className="font-mono font-bold text-blue-500 dark:text-blue-400">{formatTime(timer)}</span>
               </p>
             ) : (
               <button
                 onClick={handleResend}
                 className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-medium transition-colors"
               >
-                নতুন কোড পাঠান
+                Send new code
               </button>
             )}
           </div>
@@ -216,13 +216,13 @@ export default function OtpPopup({
               '--adm-button-border-radius': '8px'
             } as React.CSSProperties}
           >
-            {loading ? 'যাচাই করা হচ্ছে...' : 'যাচাই করুন'}
+           {loading ? 'Verifying...' : 'Verify'}
           </Button>
 
           {/* Help Text */}
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              কোড পাননি? স্প্যাম ফোল্ডার চেক করুন অথবা কিছুক্ষণ অপেক্ষা করুন
+            Didn't receive the code? Check your spam folder or wait a while.
             </p>
           </div>
         </div>

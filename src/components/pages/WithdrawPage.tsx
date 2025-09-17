@@ -22,17 +22,18 @@ export default function WithdrawPage() {
       Toast.show({
         content: 'সকল ক্ষেত্র পূরণ করুন',
         duration: 3000,
+        position: 'bottom'
       })
       return
     }
- 
+
 
     setIsSubmitting(true)
 
     Toast.show({
       content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
       duration: 3000,
-      icon: 'loading'
+      icon: 'loading',
     })
 
     try {
@@ -56,26 +57,26 @@ export default function WithdrawPage() {
         Toast.show({
           content: response.message || 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
           duration: 3000,
+          position: 'bottom'
         })
-        
+
         // Clear form
         setAccountNumber('')
         setAmount('')
-        
-        // Optionally refresh user data to show updated balance
-        // dispatch(fetchUserDataRequest({ userId: user.userId }))
-        
+
+
       } else {
         Toast.show({
           content: response?.message || 'উইথড্র অনুরোধে সমস্যা হয়েছে',
           duration: 3000,
+          position: 'bottom'
         })
       }
     } catch (error) {
       console.error('Withdraw error:', error)
       Toast.show({
         content: 'নেটওয়ার্ক সমস্যা! আবার চেষ্টা করুন।',
-        duration: 3000,
+        duration: 3000, position: 'bottom'
       })
     } finally {
       setIsSubmitting(false)
@@ -90,7 +91,7 @@ export default function WithdrawPage() {
   return (
     <div className="block animate-fade-in p-4">
       <Card className="mb-4">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">উইথড্র (টাকা)</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Withdraw (BDT)</h2>
         <p className="text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
           ন্যূনতম <b>{minWithdraw}</b> টাকা এবং কমপক্ষে <b>{requiredReferrals}</b> টি রেফারেল প্রয়োজন।
         </p>
@@ -124,10 +125,10 @@ export default function WithdrawPage() {
               loading={isSubmitting}
             >
               {user.status === 'suspend'
-                ? 'অ্যাকাউন্ট স্থগিত'
+                ? 'Account suspended'
                 : isSubmitting
-                  ? 'জমা দেওয়া হচ্ছে...'
-                  : 'উইথড্র অনুরোধ জমা দিন'
+                  ? 'Submitting...'
+                  : 'Submit withdrawal request'
               }
             </Button>
           }
@@ -135,7 +136,7 @@ export default function WithdrawPage() {
           <Form.Item
             label="পেমেন্ট পদ্ধতি:"
             name="withdrawMethod"
-            rules={[{ required: true, message: 'পেমেন্ট পদ্ধতি নির্বাচন করুন' }]}
+            rules={[{ required: true, message: 'Select payment method' }]}
           >
             <Selector
               options={paymentMethods}
@@ -145,9 +146,9 @@ export default function WithdrawPage() {
           </Form.Item>
 
           <Form.Item
-            label="অ্যাকাউন্ট নম্বর:"
+            label="Account Number:"
             name="accountNumber"
-            rules={[{ required: true, message: 'অ্যাকাউন্ট নম্বর প্রয়োজন' }]}
+            rules={[{ required: true, message: 'Account number required' }]}
           >
             <Input
               value={accountNumber}
@@ -158,10 +159,10 @@ export default function WithdrawPage() {
           </Form.Item>
 
           <Form.Item
-            label="পরিমাণ (টাকা):"
+            label="Amount (BDT)):"
             name="amount"
             rules={[
-              { required: true, message: 'পরিমাণ প্রয়োজন' },
+              { required: true, message: 'quantity required' },
               {
                 validator: (_, value) => {
                   if (value && parseInt(value) < minWithdraw) {
@@ -183,7 +184,7 @@ export default function WithdrawPage() {
                 const numericValue = val.replace(/\D/g, '')
                 setAmount(numericValue)
               }}
-              placeholder="১৫০০"
+              placeholder="১০০০"
               clearable
             />
           </Form.Item>

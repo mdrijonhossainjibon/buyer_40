@@ -99,7 +99,7 @@ export default function TasksPage( ) {
   }
 
   const openChannel = () => {
-    window.open('https://t.me/earnfromadsbd', '_blank')
+    window.open('https://t.me/earnfromads1', '_blank')
   }
 
   const checkChannel = async () => {

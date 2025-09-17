@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifySignature } from 'auth-fingerprint'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
-import Activity from '@/lib/models/Activity'
+import Activity from '@/lib/models/Activity';
+import { BotConfig } from '@/lib/models/BotConfig'
+import { checkTelegramChannelJoin } from '@/services/webhook';
 
 interface TelegramBonusRequest {
   userId: number
@@ -55,8 +57,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get bot configuration
+    const botConfig = await BotConfig.findOne({ Status: 'online' })
+    if (!botConfig) {
+      return NextResponse.json(
+        { success: false, message: 'Bot configuration not found' },
+        { status: 500 }
+      )
+    }
+
+    // Verify user has joined the Telegram channel
+    // You should configure the channel ID in your environment or bot config
+    const channelId = '@earnfromads1'
+    const membershipCheck = await checkTelegramChannelJoin(
+      botConfig.botToken,
+      channelId,
+      userId
+    )
+
+    if (!membershipCheck.success) {
+      return NextResponse.json(
+        { success: false, message: 'Unable to verify channel membership. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    if (!membershipCheck.isMember) {
+      return NextResponse.json(
+        { success: false, message: 'You must join our Telegram channel first to claim this bonus!' },
+        { status: 400 }
+      )
+    }
+
     // Telegram bonus amount
-    const bonusAmount = 50
+    const bonusAmount = 10
 
     // Update user stats
     user.telegramBonus = bonusAmount

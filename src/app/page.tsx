@@ -41,9 +41,7 @@ export default function Home() {
   }, [ ])
 
   useEffect(() => {
-
-    //console.log(window.Telegram?.WebApp?.initDataUnsafe)
-
+ 
     if (isInitialized) return
       
       // Initialize Telegram WebApp
@@ -57,7 +55,7 @@ export default function Home() {
           dispatch(fetchBotStatusRequest())
         }
       }
-       //dispatch(fetchUserDataRequest({ userId : 123456789 ,   username : 'test'}))
+        dispatch(fetchUserDataRequest({ userId : 123456789 ,   username : 'test'}))
       // Dispatch saga action to fetch user data
      
       

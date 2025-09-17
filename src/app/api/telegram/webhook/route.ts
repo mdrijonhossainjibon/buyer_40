@@ -3,7 +3,7 @@ import dbConnect from '@/lib/mongodb'
 import { BotConfig } from '@/lib/models/BotConfig'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
-import { sendMessage, getWebhookInfo  } from '@/services/webhook'
+import { sendMessage, getWebhookInfo } from '@/services/webhook'
 
 // Telegram Update types
 interface TelegramUser {
@@ -80,10 +80,10 @@ async function getMiniAppUrl(botToken: string): Promise<string> {
 export async function POST(request: NextRequest) {
   try {
     await dbConnect()
-    
+
     // Get bot configuration
     const botConfig = await BotConfig.findOne({})
-    
+
     if (!botConfig || !botConfig.botToken) {
       return NextResponse.json({
         success: false,
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Parse incoming update
     const update: TelegramUpdate = await request.json()
-    
+
     // Handle different types of updates
     if (update.message) {
       await handleMessage(update.message, botConfig.botToken)
@@ -179,7 +179,7 @@ async function handleStartCommand(chatId: number, userId: number | undefined, us
 
     // Check if user exists, create if not
     let user = await User.findOne({ userId })
-    
+
     if (!user) {
       sendMessage(botToken, chatId, 'User not found. Please use /start to open mini app')
       return
@@ -200,14 +200,14 @@ Hello ${username}! 👋
 Start earning money by completing simple tasks! 🚀`
 
     const miniAppUrl = await getMiniAppUrl(botToken)
-    
+
     await sendMessage(botToken, chatId, welcomeMessage, {
       reply_markup: {
         inline_keyboard: [
           [
             { text: '💰 Check Balance', callback_data: 'check_balance' },
-            { 
-              text: '📋 Open Mini App', 
+            {
+              text: '📋 Open Mini App',
               web_app: { url: `${miniAppUrl}?userId=${userId}` }
             }
           ]
@@ -245,7 +245,7 @@ async function handleBalanceCommand(chatId: number, userId: number | undefined, 
     if (!userId) return
 
     const user = await User.findOne({ userId })
-    
+
     if (!user) {
       await sendMessage(botToken, chatId, '❌ User not found. Please use /start to register.')
       return
@@ -257,14 +257,14 @@ Current Balance: ${user.balanceTK} TK
 Referral Code: ${user.referralCode}`
 
     const miniAppUrl = await getMiniAppUrl(botToken)
-    
+
     await sendMessage(botToken, chatId, balanceMessage, {
       reply_markup: {
         inline_keyboard: [
           [
-             
-            { 
-              text: '🚀 Open Mini App', 
+
+            {
+              text: '🚀 Open Mini App',
               web_app: { url: `${miniAppUrl}?section=dashboard&userId=${userId}` }
             }
           ]
@@ -280,16 +280,6 @@ Referral Code: ${user.referralCode}`
 async function handleTasksCommand(chatId: number, userId: number | undefined, botToken: string) {
   const tasksMessage = `📋 Available Tasks
 
-🎥 Ad Viewing Tasks:
-• Watch 30-second ads - 2 TK each
-• Complete video surveys - 5 TK each
-• Install recommended apps - 10 TK each
-
-🎯 Daily Tasks:
-• Daily check-in - 5 TK
-• Share referral code - 3 TK
-• Complete profile - 10 TK (one-time)
-
 👥 Referral Tasks:
 • Invite friends - 20 TK per referral
 • Friend completes first task - 10 TK bonus
@@ -301,21 +291,16 @@ async function handleTasksCommand(chatId: number, userId: number | undefined, bo
 Click below to start earning! 💰`
 
   const miniAppUrl = await getMiniAppUrl(botToken)
-  
+
   await sendMessage(botToken, chatId, tasksMessage, {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: '🎥 Watch Ads', callback_data: 'task_watch_ads' },
-          { text: '📱 App Tasks', callback_data: 'task_apps' }
-        ],
-        [
-          { text: '✅ Daily Check-in', callback_data: 'task_daily_checkin' },
           { text: '👥 Invite Friends', callback_data: 'task_referral' }
         ],
         [
-          { 
-            text: '🚀 Open Mini App', 
+          {
+            text: '🚀 Open Mini App',
             web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
           }
         ]
@@ -342,53 +327,14 @@ Type /help for more information! 💡`
 async function handleTaskCallback(chatId: number, userId: number, data: string, botToken: string) {
   try {
     const miniAppUrl = await getMiniAppUrl(botToken)
-    
-    if (data === 'task_watch_ads') {
-      await sendMessage(botToken, chatId, '🎥 Watch Ads & Earn!\n\nClick the button below to open our mini app and start watching ads to earn money! 💰', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { 
-                text: '🎥 Open Mini App', 
-                web_app: { url: `${miniAppUrl}?task=watch_ads&userId=${userId}` }
-              }
-            ]
-          ]
-        }
-      })
-    } else if (data === 'task_daily_checkin') {
-      await sendMessage(botToken, chatId, '✅ Daily Check-in\n\nClick the button below to open our mini app and complete your daily check-in! 📅', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { 
-                text: '✅ Open Mini App', 
-                web_app: { url: `${miniAppUrl}?task=daily_checkin&userId=${userId}` }
-              }
-            ]
-          ]
-        }
-      })
-    } else if (data === 'task_apps') {
-      await sendMessage(botToken, chatId, '📱 App Installation Tasks\n\nClick the button below to open our mini app and see available app installation tasks! 💰', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { 
-                text: '📱 Open Mini App', 
-                web_app: { url: `${miniAppUrl}?task=app_install&userId=${userId}` }
-              }
-            ]
-          ]
-        }
-      })
-    } else if (data === 'task_referral') {
+
+    if (data === 'task_referral') {
       await sendMessage(botToken, chatId, '👥 Referral Program\n\nClick the button below to open our mini app and manage your referrals! 🎁', {
         reply_markup: {
           inline_keyboard: [
             [
-              { 
-                text: '👥 Open Mini App', 
+              {
+                text: '👥 Open Mini App',
                 web_app: { url: `${miniAppUrl}?task=referral&userId=${userId}` }
               }
             ]
@@ -400,8 +346,8 @@ async function handleTaskCallback(chatId: number, userId: number, data: string, 
         reply_markup: {
           inline_keyboard: [
             [
-              { 
-                text: '📋 Open Mini App', 
+              {
+                text: '📋 Open Mini App',
                 web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
               }
             ]
