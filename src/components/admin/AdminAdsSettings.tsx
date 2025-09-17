@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, Switch,   Selector, Toast, Stepper } from 'antd-mobile'
+import { useState, useEffect } from 'react'
+import { Card, Switch, Selector, Toast, Stepper, PullToRefresh } from 'antd-mobile'
 import { 
   EyeOutline,
   PlayOutline,
@@ -11,26 +11,9 @@ import {
   BankcardOutline,
   GlobalOutline
 } from 'antd-mobile-icons'
+import { adsAPI, AdsSettings } from '@/lib/api/ads'
 
-interface AdminAdsSettingsProps {
-  loading?: boolean
-}
-
-// Interface matching the database model           
-interface AdsSettings {
-  enableGigaPubAds: boolean;
-  gigaPubAppId: string;
-  defaultAdsReward: number;
-  adsWatchLimit: number;
-  adsRewardMultiplier: number;
-  minWatchTime: number;
-  monetagEnabled: boolean;
-  monetagZoneId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsProps) {
+export default function AdminAdsSettings() {
   const [adsSettings, setAdsSettings] = useState<AdsSettings>({
     enableGigaPubAds: true,
     gigaPubAppId: '',
@@ -39,49 +22,97 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
     adsRewardMultiplier: 1.0,
     minWatchTime: 30,
     monetagEnabled: true,
-    monetagZoneId: '',
-    createdAt: new Date(),
-    updatedAt: new Date()
+    monetagZoneId: ''
   })
   const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   const updateAdsSettings = (field: keyof AdsSettings, value: any) => {
     setAdsSettings(prev => ({
       ...prev,
-      [field]: value,
-      updatedAt: new Date()
+      [field]: value
     }))
   }
 
-  const handleSaveSettings = () => {
-    setIsEditing(false)
-    Toast.show({
-      content: 'অ্যাড সেটিংস সংরক্ষণ করা হয়েছে',
-      duration: 2000
-    })
-    // TODO: Implement actual API call to save settings
+  const handleSaveSettings = async () => {
+    setSaving(true)
+    try {
+      const response = await adsAPI.updateSettings({
+        enableGigaPubAds: adsSettings.enableGigaPubAds,
+        gigaPubAppId: adsSettings.gigaPubAppId,
+        defaultAdsReward: adsSettings.defaultAdsReward,
+        adsWatchLimit: adsSettings.adsWatchLimit,
+        adsRewardMultiplier: adsSettings.adsRewardMultiplier,
+        minWatchTime: adsSettings.minWatchTime,
+        monetagEnabled: adsSettings.monetagEnabled,
+        monetagZoneId: adsSettings.monetagZoneId
+      })
+
+      if (response.success && response.data) {
+        setAdsSettings(response.data)
+        setIsEditing(false)
+        Toast.show({
+          content: 'Ad settings saved successfully',
+          duration: 2000
+        })
+      } else {
+        Toast.show({
+          content: response.error || 'Failed to save settings',
+          duration: 3000
+        })
+      }
+    } catch (error) {
+      console.error('Error saving ads settings:', error)
+      Toast.show({
+        content: 'Failed to save settings',
+        duration: 3000
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleResetSettings = () => {
-    setAdsSettings({
-      enableGigaPubAds: true,
-      gigaPubAppId: '',
-      defaultAdsReward: 50,
-      adsWatchLimit: 10,
-      adsRewardMultiplier: 1.0,
-      minWatchTime: 30,
-      monetagEnabled: false,
-      monetagZoneId: '',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })
-    setIsEditing(false)
-    
-    Toast.show({
-      content: 'সেটিংস রিসেট করা হয়েছে',
-      duration: 2000
-    })
+  // Load ads settings function
+  const loadAdsSettings = async (showToast = false) => {
+    try {
+      const response = await adsAPI.getSettings()
+      if (response.success && response.data) {
+        setAdsSettings(response.data)
+        if (showToast) {
+          Toast.show({
+            content: 'Settings refreshed successfully',
+            duration: 2000
+          })
+        }
+      } else {
+        Toast.show({
+          content: response.error || 'Failed to load settings',
+          duration: 3000
+        })
+      }
+    } catch (error) {
+      console.error('Error loading ads settings:', error)
+      Toast.show({
+        content: 'Failed to load settings',
+        duration: 3000
+      })
+    }
   }
+
+  // Handle pull to refresh
+  const handleRefresh = async () => {
+    await loadAdsSettings(true)
+  }
+
+  // Load ads settings on component mount
+  useEffect(() => {
+    const initialLoad = async () => {
+      await loadAdsSettings()
+      setLoading(false)
+    }
+    initialLoad()
+  }, [])
 
   if (loading) {
     return (
@@ -97,7 +128,8 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
   }
 
   return (
-    <div className="space-y-4">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-4">
       {/* Header */}
       <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
         <div className="p-4">
@@ -106,15 +138,15 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
           {/* Main Toggle */}
           <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">অ্যাড সিস্টেম</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Ad System</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                বিজ্ঞাপন প্রদর্শন চালু/বন্ধ করুন
+                Enable/disable advertisement display
               </p>
             </div>
             <Switch
               checked={adsSettings.enableGigaPubAds}
               onChange={(checked) => updateAdsSettings('enableGigaPubAds', checked)}
-              disabled={!isEditing}
+              disabled={!isEditing || saving}
               style={{
                 '--checked-color': '#10b981',
                 '--height': '28px',
@@ -133,9 +165,9 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
               <GlobalOutline className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">GigaPub অ্যাড সেটিংস</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">GigaPub Ad Settings</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                GigaPub বিজ্ঞাপন নেটওয়ার্ক কনফিগারেশন
+                GigaPub advertisement network configuration
               </p>
             </div>
           </div>
@@ -143,24 +175,24 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                GigaPub অ্যাপ আইডি:
+                GigaPub App ID:
               </label>
               <input
                 type="text"
                 value={adsSettings.gigaPubAppId}
                 onChange={(e) => updateAdsSettings('gigaPubAppId', e.target.value)}
-                placeholder="অ্যাপ আইডি লিখুন"
-                disabled={!isEditing}
+                placeholder="Enter App ID"
+                disabled={!isEditing || saving}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors duration-200"
               />
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-gray-700 dark:text-gray-300">Monetag সক্রিয়</span>
+              <span className="text-gray-700 dark:text-gray-300">Monetag Enabled</span>
               <Switch
                 checked={adsSettings.monetagEnabled}
                 onChange={(checked) => updateAdsSettings('monetagEnabled', checked)}
-                disabled={!isEditing}
+                disabled={!isEditing || saving}
                 style={{
                   '--checked-color': '#3b82f6',
                   '--height': '24px',
@@ -172,14 +204,14 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
             {adsSettings.monetagEnabled && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Monetag জোন আইডি:
+                  Monetag Zone ID:
                 </label>
                 <input
                   type="text"
                   value={adsSettings.monetagZoneId}
                   onChange={(e) => updateAdsSettings('monetagZoneId', e.target.value)}
-                  placeholder="জোন আইডি লিখুন"
-                  disabled={!isEditing}
+                  placeholder="Enter Zone ID"
+                  disabled={!isEditing || saving}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors duration-200"
                 />
               </div>
@@ -196,9 +228,9 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
               <SetOutline className="text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">অ্যাড কনফিগারেশন</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Ad Configuration</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                বিজ্ঞাপনের সময় এবং সেটিংস
+                Advertisement timing and settings
               </p>
             </div>
           </div>
@@ -206,7 +238,7 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                সর্বনিম্ন দেখার সময় (সেকেন্ড):
+                Minimum Watch Time (seconds):
               </label>
               <Stepper
                 value={adsSettings.minWatchTime}
@@ -214,20 +246,20 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
                 min={5}
                 max={300}
                 step={5}
-                disabled={!isEditing}
+                disabled={!isEditing || saving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                বর্তমান: {adsSettings.minWatchTime} সেকেন্ড
+                Current: {adsSettings.minWatchTime} seconds
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                পুরস্কার গুণক:
+                Reward Multiplier:
               </label>
               <Stepper
                 value={adsSettings.adsRewardMultiplier}
@@ -235,7 +267,7 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
                 min={0.1}
                 max={10.0}
                 step={0.1}
-                disabled={!isEditing}
+                disabled={!isEditing || saving}
                 digits={1}
                 style={{
                   '--border': '1px solid #d1d5db',
@@ -243,7 +275,7 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                বর্তমান: {adsSettings.adsRewardMultiplier}x
+                Current: {adsSettings.adsRewardMultiplier}x
               </p>
             </div>
           </div>
@@ -258,9 +290,9 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
               <BankcardOutline className="text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">পুরস্কার সেটিংস</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Reward Settings</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                অ্যাড দেখার জন্য পুরস্কার কনফিগারেশন
+                Reward configuration for watching ads
               </p>
             </div>
           </div>
@@ -268,7 +300,7 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                ডিফল্ট অ্যাড পুরস্কার (পয়সা):
+                Default Ad Reward (BDT):
               </label>
               <Stepper
                 value={adsSettings.defaultAdsReward}
@@ -276,20 +308,20 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
                 min={1}
                 max={1000}
                 step={1}
-                disabled={!isEditing}
+                disabled={!isEditing || saving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                বর্তমান: {adsSettings.defaultAdsReward} পয়সা
+                Current: {adsSettings.defaultAdsReward} BDT
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                অ্যাড দেখার সীমা:
+                Ad Watch Limit:
               </label>
               <Stepper
                 value={adsSettings.adsWatchLimit}
@@ -297,14 +329,14 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
                 min={1}
                 max={100}
                 step={1}
-                disabled={!isEditing}
+                disabled={!isEditing || saving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                বর্তমান: {adsSettings.adsWatchLimit} টি অ্যাড
+                Current: {adsSettings.adsWatchLimit} ads
               </p>
             </div>
           </div>
@@ -318,47 +350,33 @@ export default function AdminAdsSettings({ loading = false }: AdminAdsSettingsPr
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+              disabled={saving}
+              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
             >
               <SetOutline className="text-lg" />
-              <span>সেটিংস সম্পাদনা করুন</span>
+              <span>Edit Settings</span>
             </button>
           ) : (
             <div className="flex space-x-3">
               <button
                 onClick={handleSaveSettings}
-                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                disabled={saving}
+                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
               >
-                <span>সংরক্ষণ করুন</span>
+                <span>{saving ? 'Saving...' : 'Save'}</span>
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium rounded-lg transition-colors duration-200"
+                disabled={saving}
+                className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 font-medium rounded-lg transition-colors duration-200"
               >
-                বাতিল
+                Cancel
               </button>
             </div>
           )}
-          
-          <button
-            onClick={handleResetSettings}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium rounded-lg transition-colors duration-200"
-          >
-            ডিফল্ট সেটিংস পুনরুদ্ধার করুন
-          </button>
-          
-          <button
-            onClick={() => {
-              Toast.show('টেস্ট অ্যাড চালু করা হচ্ছে...')
-              // TODO: Implement test ad functionality
-            }}
-            className="w-full px-4 py-3 border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
-          >
-            <PlayOutline className="text-lg" />
-            <span>টেস্ট অ্যাড চালান</span>
-          </button>
         </div>
       </Card>
-    </div>
+      </div>
+    </PullToRefresh>
   )
 }

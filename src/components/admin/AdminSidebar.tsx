@@ -3,11 +3,10 @@
 import { Popup } from 'antd-mobile'
 import { 
   CloseOutline,
-  SetOutline,
-  GlobalOutline,
-  TeamOutline
+   
 } from 'antd-mobile-icons'
-import BarChartOutline from '@/components/BarChartOutline'
+ 
+import Image from 'next/image'
 
 interface MenuItem {
   key: string
@@ -46,12 +45,18 @@ export default function AdminSidebar({ isOpen, onClose, activeTab, menuItems }: 
         <div className="px-6 py-6 bg-gradient-to-r from-purple-500 to-pink-600 dark:from-purple-600 dark:to-pink-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center">
-                <BarChartOutline className="text-purple-500 dark:text-purple-400" />
+              <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center p-2">
+                <Image 
+                  src="/logo.svg" 
+                  alt="Logo" 
+                  width={24} 
+                  height={24}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">অ্যাডমিন প্যানেল</h2>
-                <p className="text-sm text-purple-100 dark:text-purple-200">ম্যানেজমেন্ট সিস্টেম</p>
+                <h2 className="text-lg font-bold text-white">Admin Panel</h2>
+                <p className="text-sm text-purple-100 dark:text-purple-200">System Management Dashboard</p>
               </div>
             </div>
             <button
@@ -85,10 +90,7 @@ export default function AdminSidebar({ isOpen, onClose, activeTab, menuItems }: 
         <div className="p-6 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              © 2024 EarnFromAds BD
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Admin Panel v1.0
+              &copy; {new Date().getFullYear()} Future Apps Developer Admin Panel. All rights reserved.
             </p>
           </div>
         </div>

@@ -13,10 +13,11 @@ import {
   EyeOutlined,
   UserOutlined,
   SunOutlined, 
-  MoonOutlined 
+  MoonOutlined,
+  DashboardOutlined
 } from '@ant-design/icons';
   
-import BarChartOutline from '@/components/BarChartOutline'
+ 
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import AdminWithdrawals from '@/components/admin/AdminWithdrawals'
@@ -25,36 +26,13 @@ import AdminSettings from '@/components/admin/AdminSettings'
 import AdminReports from '@/components/admin/AdminReports'
 import AdminAdsSettings from '@/components/admin/AdminAdsSettings'
 import AdminBotsSettings from '@/components/admin/AdminBotsSettings'
-
-interface WithdrawalRequest {
-  id: string
-  userId: string
-  username: string
-  amount: number
-  method: string
-  accountNumber: string
-  status: 'pending' | 'approved' | 'rejected'
-  requestTime: string
-  processedTime?: string
-  adminNote?: string
-}
-
-interface UserStats {
-  totalUsers: number
-  activeUsers: number
-  totalWithdrawals: number
-  pendingWithdrawals: number
-  totalEarnings: number
-}
-
  
+  
 
 export default function AdminPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [loading, setLoading] = useState(false)
- 
-  const [userStats, setUserStats] = useState<UserStats | null>(null)
+    
   const [sidebarOpen, setSidebarOpen] = useState(false)
    
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -87,7 +65,7 @@ export default function AdminPage() {
     {
       key: 'dashboard',
       title: 'Dashboard',
-      icon: <BarChartOutline />,
+      icon: <DashboardOutlined />,
       onClick: () => {
         setActiveTab('dashboard')
         setSidebarOpen(false)
@@ -111,15 +89,7 @@ export default function AdminPage() {
         setSidebarOpen(false)
       }
     },
-    {
-      key: 'settings',
-      title: 'Settings',
-      icon: <SettingOutlined />,
-      onClick: () => {
-        setActiveTab('settings')
-        setSidebarOpen(false)
-      }
-    },
+   
     
     {
       key: 'activities',
@@ -145,6 +115,15 @@ export default function AdminPage() {
       icon: <UserOutlined />,
       onClick: () => {
         setActiveTab('bots-settings')
+        setSidebarOpen(false)
+      }
+    },
+    {
+      key: 'settings',
+      title: 'Settings',
+      icon: <SettingOutlined />,
+      onClick: () => {
+        setActiveTab('settings')
         setSidebarOpen(false)
       }
     }
@@ -209,23 +188,17 @@ export default function AdminPage() {
               <AdminUsers  />
             )}
             {activeTab === 'settings' && (
-              <AdminSettings 
-                loading={loading}
-              />
+              <AdminSettings  />
             )}
           
             {activeTab === 'activities' && (
                  <AdminReports />
             )}
             {activeTab === 'ads-settings' && (
-              <AdminAdsSettings 
-                loading={loading}
-              />
+              <AdminAdsSettings   />
             )}
             {activeTab === 'bots-settings' && (
-              <AdminBotsSettings 
-                loading={loading}
-              />
+              <AdminBotsSettings  />
             )}
           </div>
 
