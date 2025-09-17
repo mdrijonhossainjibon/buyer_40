@@ -222,7 +222,7 @@ export default function OtpPopup({
           {/* Help Text */}
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-            Didn't receive the code? Check your spam folder or wait a while.
+            Didn&apos;t receive the code? Check your spam folder or wait a while.
             </p>
           </div>
         </div>

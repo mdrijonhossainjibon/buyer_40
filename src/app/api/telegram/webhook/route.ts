@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import { BotConfig } from '@/lib/models/BotConfig'
 import User from '@/lib/models/User'
-import Activity from '@/lib/models/Activity'
 import { sendMessage, getWebhookInfo } from '@/services/webhook'
 
 // Telegram Update types
@@ -14,6 +13,7 @@ interface TelegramUser {
   username?: string
   language_code?: string
 }
+ 
 
 interface TelegramChat {
   id: number
@@ -94,12 +94,21 @@ export async function POST(request: NextRequest) {
     // Parse incoming update
     const update: TelegramUpdate = await request.json()
 
-    // Handle different types of updates
+    // Check bot status before processing updates
+    if (botConfig.Status === 'offline') {
+      // Handle offline status - send offline message for user interactions
+      if (update.message) {
+        await handleOfflineMessage(update.message, botConfig.botToken)
+      } else if (update.callback_query) {
+        await handleOfflineCallback(update.callback_query, botConfig.botToken)
+      }
+      return NextResponse.json({ success: true, status: 'offline' })
+    }
+
+    // Handle different types of updates when bot is online
     if (update.message) {
       await handleMessage(update.message, botConfig.botToken)
-    } else if (update.callback_query) {
-      await handleCallbackQuery(update.callback_query, botConfig.botToken)
-    } else if (update.inline_query) {
+    }  else if (update.inline_query) {
       await handleInlineQuery(update.inline_query, botConfig.botToken)
     }
 
@@ -127,10 +136,6 @@ async function handleMessage(message: TelegramMessage, botToken: string) {
       await handleStartCommand(chatId, userId, username, botToken)
     } else if (text.startsWith('/help')) {
       await handleHelpCommand(chatId, botToken)
-    } else if (text.startsWith('/balance')) {
-      await handleBalanceCommand(chatId, userId, botToken)
-    } else if (text.startsWith('/tasks')) {
-      await handleTasksCommand(chatId, userId, botToken)
     } else {
       // Handle regular messages
       await handleRegularMessage(chatId, userId, text, botToken)
@@ -141,26 +146,7 @@ async function handleMessage(message: TelegramMessage, botToken: string) {
   }
 }
 
-// Handle callback queries (inline keyboard buttons)
-async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery, botToken: string) {
-  try {
-    const chatId = callbackQuery.message?.chat.id
-    const userId = callbackQuery.from.id
-    const data = callbackQuery.data || ''
-
-    if (!chatId) return
-
-    // Handle different callback data
-    if (data.startsWith('task_')) {
-      await handleTaskCallback(chatId, userId, data, botToken)
-    } else if (data === 'check_balance') {
-      await handleBalanceCommand(chatId, userId, botToken)
-    }
-
-  } catch (error) {
-    console.error('Error handling callback query:', error)
-  }
-}
+ 
 
 // Handle inline queries
 async function handleInlineQuery(inlineQuery: any, botToken: string) {
@@ -190,13 +176,7 @@ async function handleStartCommand(chatId: number, userId: number | undefined, us
 Hello ${username}! 👋
 
 💰 Current Balance: ${user.balanceTK} TK
-
-
-📋 Available Commands:
-/help - Show help menu
-/balance - Check your balance
-/tasks - View available tasks
-
+ 
 Start earning money by completing simple tasks! 🚀`
 
     const miniAppUrl = await getMiniAppUrl(botToken)
@@ -205,7 +185,7 @@ Start earning money by completing simple tasks! 🚀`
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '💰 Check Balance', callback_data: 'check_balance' },
+
             {
               text: '📋 Open Mini App',
               web_app: { url: `${miniAppUrl}?userId=${userId}` }
@@ -226,9 +206,7 @@ async function handleHelpCommand(chatId: number, botToken: string) {
 📋 Available Commands:
 /start - Start using the bot
 /help - Show this help menu
-/balance - Check your current balance
-/tasks - View available earning tasks
-
+  
 💡 How to Earn:
 • Complete ad viewing tasks
 • Refer friends to earn bonus
@@ -240,123 +218,71 @@ Need more help? Contact our support team! 📞`
   await sendMessage(botToken, chatId, helpMessage)
 }
 
-async function handleBalanceCommand(chatId: number, userId: number | undefined, botToken: string) {
-  try {
-    if (!userId) return
-
-    const user = await User.findOne({ userId })
-
-    if (!user) {
-      await sendMessage(botToken, chatId, '❌ User not found. Please use /start to register.')
-      return
-    }
-
-    const balanceMessage = `💰 Your Balance Information
-
-Current Balance: ${user.balanceTK} TK
-Referral Code: ${user.referralCode}`
-
-    const miniAppUrl = await getMiniAppUrl(botToken)
-
-    await sendMessage(botToken, chatId, balanceMessage, {
-      reply_markup: {
-        inline_keyboard: [
-          [
-
-            {
-              text: '🚀 Open Mini App',
-              web_app: { url: `${miniAppUrl}?section=dashboard&userId=${userId}` }
-            }
-          ]
-        ]
-      }
-    })
-
-  } catch (error) {
-    console.error('Error in balance command:', error)
-  }
-}
-
-async function handleTasksCommand(chatId: number, userId: number | undefined, botToken: string) {
-  const tasksMessage = `📋 Available Tasks
-
-👥 Referral Tasks:
-• Invite friends - 20 TK per referral
-• Friend completes first task - 10 TK bonus
-
-🎁 Special Events:
-• Weekend bonus tasks - Up to 50 TK
-• Monthly challenges - Up to 200 TK
-
-Click below to start earning! 💰`
-
-  const miniAppUrl = await getMiniAppUrl(botToken)
-
-  await sendMessage(botToken, chatId, tasksMessage, {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: '👥 Invite Friends', callback_data: 'task_referral' }
-        ],
-        [
-          {
-            text: '🚀 Open Mini App',
-            web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
-          }
-        ]
-      ]
-    }
-  })
-}
 
 
 async function handleRegularMessage(chatId: number, userId: number | undefined, text: string, botToken: string) {
   // Handle regular text messages
-  const response = `🤖 I received your message: "${text}"
+  const response = ` 
 
 Use these commands to interact with me:
 /help - Show available commands
-/balance - Check your balance
-/tasks - View earning opportunities
-
+ 
 Type /help for more information! 💡`
 
   await sendMessage(botToken, chatId, response)
 }
 
-async function handleTaskCallback(chatId: number, userId: number, data: string, botToken: string) {
-  try {
-    const miniAppUrl = await getMiniAppUrl(botToken)
+ 
 
-    if (data === 'task_referral') {
-      await sendMessage(botToken, chatId, '👥 Referral Program\n\nClick the button below to open our mini app and manage your referrals! 🎁', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: '👥 Open Mini App',
-                web_app: { url: `${miniAppUrl}?task=referral&userId=${userId}` }
-              }
-            ]
-          ]
-        }
-      })
-    } else if (data === 'view_tasks') {
-      await sendMessage(botToken, chatId, '📋 All Available Tasks\n\nClick the button below to open our mini app and see all available earning opportunities! 🚀', {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: '📋 Open Mini App',
-                web_app: { url: `${miniAppUrl}?section=tasks&userId=${userId}` }
-              }
-            ]
-          ]
-        }
-      })
-    }
+// Handle messages when bot is offline
+async function handleOfflineMessage(message: TelegramMessage, botToken: string) {
+  try {
+    const chatId = message.chat.id
+    const username = message.from?.username || message.from?.first_name || 'User'
+
+    const offlineMessage = `🤖 Bot Status: Offline
+
+Hello ${username}! 👋
+
+I'm currently offline for maintenance. 🔧
+
+⏰ Please try again later or contact our support team if you need immediate assistance.
+
+🛠️ We're working to get everything back online as soon as possible!
+
+Thank you for your patience! 🙏`
+
+    await sendMessage(botToken, chatId, offlineMessage)
+
   } catch (error) {
-    console.error('Error handling task callback:', error)
+    console.error('Error handling offline message:', error)
+  }
+}
+
+// Handle callback queries when bot is offline
+async function handleOfflineCallback(callbackQuery: TelegramCallbackQuery, botToken: string) {
+  try {
+    const chatId = callbackQuery.message?.chat.id
+    const username = callbackQuery.from.username || callbackQuery.from.first_name || 'User'
+
+    if (!chatId) return
+
+    const offlineMessage = `🤖 Bot Status: Offline
+
+Hello ${username}! 👋
+
+I'm currently offline for maintenance. 🔧
+
+⏰ The feature you're trying to access is temporarily unavailable.
+
+🛠️ We're working to get everything back online as soon as possible!
+
+Thank you for your patience! 🙏`
+
+    await sendMessage(botToken, chatId, offlineMessage)
+
+  } catch (error) {
+    console.error('Error handling offline callback:', error)
   }
 }
 
