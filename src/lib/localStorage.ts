@@ -101,14 +101,15 @@ export const clearStoredUserData = (): void => {
  * Get account lock duration in hours
  */
 export const getAccountLockDuration = (): number => {
-  const storedData = getStoredUserData()
+    const storedData = getStoredUserData()
+    if (!storedData) return 0
   
-  if (!storedData) return 0
+    const lockPeriodMs = 365 * 24 * 60 * 60 * 1000 // 1 year in ms
+    const elapsedMs = Date.now() - storedData.lockedAt
   
-  const hoursSinceLock = (Date.now() - storedData.lockedAt) / (1000 * 60 * 60)
-  return Math.max(0, 24 - hoursSinceLock) // 24 hour lock period
-}
-
+    return Math.max(0, (lockPeriodMs - elapsedMs) / (1000 * 60 * 60)) // return remaining hours
+  }
+  
 /**
  * Check if account lock has expired (24 hours)
  */
