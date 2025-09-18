@@ -84,8 +84,8 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
             onLoad={handleGigaPubLoad}
             onError={() => handleScriptError('GigaPub')}
           />
-          
-         
+
+
         </>
       )}
 
@@ -93,14 +93,15 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
       {adsSettings.monetagEnabled && (
         <Script
           src="//libtl.com/sdk.js"
-          data-zone="9890517"
-          data-sdk="show_9890517"
+          data-zone={adsSettings.monetagZoneId}
+          data-sdk={`show_${adsSettings.monetagZoneId}`}
           strategy="afterInteractive"
           onLoad={handleMonetagLoad}
           onError={() => handleScriptError('Monetag')}
         />
       )}
- 
+
+
 
       {children}
     </>

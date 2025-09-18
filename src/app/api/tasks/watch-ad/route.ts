@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if ad watching is enabled
-    if (!adsConfig.enableGigaPubAds) {
+    if (!adsConfig.enableGigaPubAds || !adsConfig.enableMonetagAds) {
       return NextResponse.json(
         { success: false, message: 'Ad watching is currently disabled' },
         { status: 503 }
