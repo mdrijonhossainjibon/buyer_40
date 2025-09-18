@@ -57,14 +57,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if ad watching is enabled
-    if (!adsConfig.enableGigaPubAds || !adsConfig.enableMonetagAds) {
-      return NextResponse.json(
-        { success: false, message: 'Ad watching is currently disabled' },
-        { status: 503 }
-      )
-    }
- 
+    
     // Check daily ad limit using activities and bot config
     const today = new Date()
     today.setHours(0, 0, 0, 0)

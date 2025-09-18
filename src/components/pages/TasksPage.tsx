@@ -40,50 +40,53 @@ export default function TasksPage( ) {
     })
 
     // Rewarded interstitial
+
     
-     LoadAds('9890517').then(() => {
-      try {
-        // Simulate ad watching delay
-        setTimeout(async () => {
-          try {
-            const { response } = await API_CALL({
-              method: 'POST',
-              url: '/tasks/watch-ad',
-              body: {
-                userId: user.userId,
-                ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+    if (adsSettings.monetagEnabled) {
+      LoadAds(adsSettings.monetagZoneId).then(() => {
+        try {
+          // Simulate ad watching delay
+          setTimeout(async () => {
+            try {
+              const { response } = await API_CALL({
+                method: 'POST',
+                url: '/tasks/watch-ad',
+                body: {
+                  userId: user.userId,
+                  ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+                }
+              })
+    
+              if (response && response.success) {
+                Toast.show({
+                  content: response.message,
+                  duration: 2000,
+                })
+              } else {
+                Toast.show({
+                  content: response?.message || 'Failed to watch ad',
+                  duration: 2000,
+                })
               }
-            })
-  
-            if (response && response.success) {
+            } catch (error) {
+              console.error('Watch ad error:', error)
               Toast.show({
-                content: response.message,
+                content: 'Failed to process ad watching',
                 duration: 2000,
               })
-            } else {
-              Toast.show({
-                content: response?.message || 'Failed to watch ad',
-                duration: 2000,
-              })
+            } finally {
+              setIsWatchingAd(false)
             }
-          } catch (error) {
-            console.error('Watch ad error:', error)
-            Toast.show({
-              content: 'Failed to process ad watching',
-              duration: 2000,
-            })
-          } finally {
-            setIsWatchingAd(false)
-          }
-        }, 3000)
-      } catch (error) {
-        setIsWatchingAd(false)
-        Toast.show({
-          content: 'Failed to start ad watching',
-          duration: 2000,
-        })
-      }
-     })
+          }, 3000)
+        } catch (error) {
+          setIsWatchingAd(false)
+          Toast.show({
+            content: 'Failed to start ad watching',
+            duration: 2000,
+          })
+        }
+       })
+    }
 
    
   }

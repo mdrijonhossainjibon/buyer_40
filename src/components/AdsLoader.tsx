@@ -76,10 +76,10 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
   return (
     <>
       {/* GigaPub Ads - Load if enabled and has app ID */}
-      {adsSettings.enableGigaPubAds && adsSettings.adsWatchLimit > 0 && (
+      {adsSettings.enableGigaPubAds && (
         <>
           <Script
-            src="https://ad.gigapub.tech/script?id=3085"
+            src={`https://ad.gigapub.tech/script?id=${adsSettings.gigaPubAppId}`}
             strategy="afterInteractive"
             onLoad={handleGigaPubLoad}
             onError={() => handleScriptError('GigaPub')}
