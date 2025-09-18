@@ -113,8 +113,6 @@ export async function checkTelegramChannelJoin(
       message: isMember ? 'User is a member of the channel' : 'User is not a member of the channel'
     };
   } catch (error: any) {
-    console.error('Error checking channel membership:', error);
-    
     // Handle specific Telegram API errors
     if (error.code === 'ETELEGRAM') {
       if (error.response?.body?.error_code === 400) {

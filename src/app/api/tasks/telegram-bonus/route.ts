@@ -16,7 +16,7 @@ interface TelegramBonusRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: TelegramBonusRequest = await request.json()
-    const { userId, timestamp, signature, hash } = body
+    const {  timestamp, signature, hash } = body
 
     // Verify signature for security
     const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || ''
@@ -72,9 +72,9 @@ export async function POST(request: NextRequest) {
     const membershipCheck = await checkTelegramChannelJoin(
       botConfig.botToken,
       channelId,
-      userId
-    )
-
+      Number(data)
+    ) 
+ 
     if (!membershipCheck.success) {
       return NextResponse.json(
         { success: false, message: 'Unable to verify channel membership. Please try again.' },
@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
     // Update user stats
     user.telegramBonus = bonusAmount
     user.balanceTK += bonusAmount
-    user.totalEarned += bonusAmount
     await user.save()
 
     // Log activity

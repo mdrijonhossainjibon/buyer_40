@@ -15,7 +15,7 @@ export default function Header( ) {
   const [showNotificationPopup, setShowNotificationPopup] = useState(false)
   const user = useSelector((state: RootState) => state.user);
   const [photoUrl, setPhotoUrl] = useState<string>("https://picsum.photos/60/60?random=1");
-  const [isInitialized, setIsInitialized] = useState(false);
+  
   const [isLoading, setIsLoading] = useState(false)
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [blockedUserId, setBlockedUserId] = useState<number | null>(null)
@@ -59,8 +59,7 @@ export default function Header( ) {
 
 
     useEffect(() => {
-   
-      if (isInitialized) return
+    
         // Initialize Telegram WebApp
               if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp
@@ -93,14 +92,11 @@ export default function Header( ) {
                   dispatch(fetchBotStatusRequest())
                 }
               }
-          ///dispatch(fetchUserDataRequest({ userId : 123456788 ,   username : 'test'}))
+          dispatch(fetchUserDataRequest({ userId : 709148502 }))
         
        
-          
-        setIsInitialized(true)
-      
        
-    }, [isInitialized])
+    }, [])
   
     const handleCloseDialog = () => {
       setShowAccountDialog(false)

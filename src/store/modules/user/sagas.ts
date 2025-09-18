@@ -60,26 +60,8 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
   try {
     yield put(setLoading(true))
     
-    const { userId, username } = action.payload
     
-    // First validate the account
-    if (userId && username) {
-      // Check account validation before making API call
-      if (isAccountSwitchAttempt(userId)) {
-        const lockDuration = getAccountLockDuration()
-        
-        if (lockDuration > 0) {
-          yield put(fetchUserDataFailure(
-            `Account switching not allowed. Browser is locked for ${Math.ceil(lockDuration)} more hours.`
-          ))
-          return
-        }
-      }
-      
-      // Store user data if validation passes
-      storeUserData(userId, username)
-    }
- 
+     
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
       url: '/users',
