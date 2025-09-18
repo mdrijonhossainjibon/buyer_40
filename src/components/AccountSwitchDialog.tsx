@@ -45,27 +45,34 @@ export default function AccountSwitchDialog({
   }, [visible, onClose])
 
   const formatTimeRemaining = (hours: number): string => {
-    if (hours <= 0) return '0 minutes'
-    
-    const wholeHours = Math.floor(hours)
-    const minutes = Math.round((hours - wholeHours) * 60)
-    
-    if (wholeHours === 0) {
-      return `${minutes} minute${minutes !== 1 ? 's' : ''}`
-    }
-    
-    if (minutes === 0) {
-      return `${wholeHours} hour${wholeHours !== 1 ? 's' : ''}`
-    }
-    
-    return `${wholeHours}h ${minutes}m`
+    if (hours <= 0) return '0s'
+  
+    let totalSeconds = Math.floor(hours * 3600)
+  
+    const years = Math.floor(totalSeconds / (365 * 24 * 3600))
+    totalSeconds %= 365 * 24 * 3600
+  
+    const days = Math.floor(totalSeconds / (24 * 3600))
+    totalSeconds %= 24 * 3600
+  
+    const hrs = Math.floor(totalSeconds / 3600)
+    totalSeconds %= 3600
+  
+    const mins = Math.floor(totalSeconds / 60)
+    const secs = totalSeconds % 60
+  
+    const parts: string[] = []
+    if (years > 0) parts.push(`${years}y`)
+    if (days > 0) parts.push(`${days}d`)
+    if (hrs > 0) parts.push(`${hrs}h`)
+    if (mins > 0) parts.push(`${mins}m`)
+    if (secs > 0) parts.push(`${secs}s`)
+  
+    return parts.join(' ')
   }
+  
  
- 
-
-  const cancelClearAccount = () => {
-    setShowConfirmClear(false)
-  }
+  
 
   return (
     <>
@@ -130,7 +137,7 @@ export default function AccountSwitchDialog({
                 🛡️ Why is this happening?
               </h4>
               <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                To prevent abuse and maintain fair usage, each browser is locked to one account for 24 hours after first use. This helps protect the platform and ensures equal opportunities for all users.
+                To prevent abuse and maintain fair usage, each browser is locked to one account for 365 days after first use. This helps protect the platform and ensures equal opportunities for all users.
               </p>
             </div>
  
