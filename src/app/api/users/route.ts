@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       const now = new Date()
       const currentHour = now.getHours()
       const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
-      const feastBonus = isFeastTime ? 25 : 3  
+      const feastBonus = isFeastTime ? 20 : 25  
 
 
       // Handle referral logic if start_param is provided
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           
           if (referrer) {
             // Update referrer's referral count and give bonus
-            referrerBonus = 25 // 25 TK bonus for referrer
+            referrerBonus = 20 // 25 TK bonus for referrer
             await User.findOneAndUpdate(
               { referralCode : start_param },
               { 
