@@ -24,7 +24,12 @@ export const USER_ACTIONS = {
   // Saga actions
   FETCH_USER_DATA_REQUEST: 'FETCH_USER_DATA_REQUEST',
   FETCH_USER_DATA_SUCCESS: 'FETCH_USER_DATA_SUCCESS',
-  FETCH_USER_DATA_FAILURE: 'FETCH_USER_DATA_FAILURE'
+  FETCH_USER_DATA_FAILURE: 'FETCH_USER_DATA_FAILURE',
+  // Account validation actions
+  VALIDATE_ACCOUNT_REQUEST: 'VALIDATE_ACCOUNT_REQUEST',
+  VALIDATE_ACCOUNT_SUCCESS: 'VALIDATE_ACCOUNT_SUCCESS',
+  VALIDATE_ACCOUNT_FAILURE: 'VALIDATE_ACCOUNT_FAILURE',
+  CLEAR_STORED_ACCOUNT: 'CLEAR_STORED_ACCOUNT'
 } as const
 
 // Action interfaces
@@ -82,6 +87,30 @@ export interface FetchUserDataFailureAction {
   [key: string]: any
 }
 
+// Account validation action interfaces
+export interface ValidateAccountRequestAction {
+  type: typeof USER_ACTIONS.VALIDATE_ACCOUNT_REQUEST
+  payload: { userId: number, username: string }
+  [key: string]: any
+}
+
+export interface ValidateAccountSuccessAction {
+  type: typeof USER_ACTIONS.VALIDATE_ACCOUNT_SUCCESS
+  payload: { isValid: boolean, message?: string }
+  [key: string]: any
+}
+
+export interface ValidateAccountFailureAction {
+  type: typeof USER_ACTIONS.VALIDATE_ACCOUNT_FAILURE
+  payload: string
+  [key: string]: any
+}
+
+export interface ClearStoredAccountAction {
+  type: typeof USER_ACTIONS.CLEAR_STORED_ACCOUNT
+  [key: string]: any
+}
+
 export type UserActionTypes = 
   | SetUserDataAction
   | SetLoadingAction
@@ -92,3 +121,7 @@ export type UserActionTypes =
   | FetchUserDataRequestAction
   | FetchUserDataSuccessAction
   | FetchUserDataFailureAction
+  | ValidateAccountRequestAction
+  | ValidateAccountSuccessAction
+  | ValidateAccountFailureAction
+  | ClearStoredAccountAction

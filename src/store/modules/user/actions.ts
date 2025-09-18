@@ -9,6 +9,10 @@ import {
   FetchUserDataRequestAction,
   FetchUserDataSuccessAction,
   FetchUserDataFailureAction,
+  ValidateAccountRequestAction,
+  ValidateAccountSuccessAction,
+  ValidateAccountFailureAction,
+  ClearStoredAccountAction,
   UserState 
 } from './types'
 
@@ -56,4 +60,24 @@ export const fetchUserDataSuccess = (userData: Partial<UserState>): FetchUserDat
 export const fetchUserDataFailure = (error: string): FetchUserDataFailureAction => ({
   type: USER_ACTIONS.FETCH_USER_DATA_FAILURE,
   payload: error
+})
+
+// Account validation action creators
+export const validateAccountRequest = (userId: number, username: string): ValidateAccountRequestAction => ({
+  type: USER_ACTIONS.VALIDATE_ACCOUNT_REQUEST,
+  payload: { userId, username }
+})
+
+export const validateAccountSuccess = (isValid: boolean, message?: string): ValidateAccountSuccessAction => ({
+  type: USER_ACTIONS.VALIDATE_ACCOUNT_SUCCESS,
+  payload: { isValid, message }
+})
+
+export const validateAccountFailure = (error: string): ValidateAccountFailureAction => ({
+  type: USER_ACTIONS.VALIDATE_ACCOUNT_FAILURE,
+  payload: error
+})
+
+export const clearStoredAccount = (): ClearStoredAccountAction => ({
+  type: USER_ACTIONS.CLEAR_STORED_ACCOUNT
 })

@@ -78,6 +78,33 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
         isLoading: false,
         error: action.payload
       }
+
+    // Account validation actions
+    case USER_ACTIONS.VALIDATE_ACCOUNT_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      }
+    
+    case USER_ACTIONS.VALIDATE_ACCOUNT_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload.isValid ? null : (action.payload.message || 'Account validation failed')
+      }
+    
+    case USER_ACTIONS.VALIDATE_ACCOUNT_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
+      }
+    
+    case USER_ACTIONS.CLEAR_STORED_ACCOUNT:
+      return {
+        ...initialState
+      }
     
     default:
       return state

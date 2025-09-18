@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       const now = new Date()
       const currentHour = now.getHours()
       const isFeastTime = (currentHour >= 18 && currentHour <= 23) || (currentHour >= 6 && currentHour <= 10)
-      const feastBonus = isFeastTime ? 20 : 25  
+      const feastBonus = isFeastTime ? 20 : 25 
 
 
       // Handle referral logic if start_param is provided
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       if (isFeastTime) {
         await Notification.create({
           userId,
-          title: '🎊 ভোজের সময় বোনাস!',
+          title: '🎊 Party time bonus!',
           message: `আপনি ভাগ্যবান! আপনি ভোজের সময় (সকাল ৬-১০টা অথবা সন্ধ্যা ৬-১১টা) রেজিস্ট্রেশন করেছেন এবং অতিরিক্ত ${feastBonus} টাকা বোনাস পেয়েছেন!`,
           type: 'info',
           priority: 'high',

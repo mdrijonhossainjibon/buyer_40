@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Toast, PullToRefresh, Skeleton } from 'antd-mobile'
+import { Toast, PullToRefresh, Skeleton, Dialog, Button } from 'antd-mobile'
 import { RootState } from '@/store'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
-import { fetchUserDataRequest } from '@/store/modules/user'
+import { fetchUserDataRequest, validateAccountRequest, clearStoredAccount } from '@/store/modules/user'
+import { getStoredUserData, getAccountLockDuration, isAccountSwitchAttempt } from '@/lib/localStorage'
 
 
 
@@ -16,6 +17,9 @@ export default function HomePage() {
   const user = useSelector((state: RootState) => state.user)
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
   const [isLoading, setIsLoading] = useState(false)
+  const [showAccountDialog, setShowAccountDialog] = useState(false)
+  const [accountDialogMessage, setAccountDialogMessage] = useState('')
+  const [blockedUserId, setBlockedUserId] = useState<number | null>(null)
 
   const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`
 
@@ -27,27 +31,54 @@ export default function HomePage() {
       // Dispatch Redux saga to get bot status and ads settings
       dispatch(fetchBotStatusRequest())
       dispatch(fetchAdsSettingsRequest())
+      
       // Initialize Telegram WebApp
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp
 
         // Get user data from Telegram
-        const user = tg.initDataUnsafe?.user
-        if (user) {
-          dispatch(fetchUserDataRequest({ userId: user.id, start_param: tg.initDataUnsafe.start_param, username: tg.initDataUnsafe.user?.username }));
+        const telegramUser = tg.initDataUnsafe?.user
+        if (telegramUser && telegramUser.username) {
+          const userId = telegramUser.id
+          const username = telegramUser.username
+
+          // Check if this is an account switch attempt
+          if (isAccountSwitchAttempt(userId)) {
+            const lockDuration = getAccountLockDuration()
+            
+            if (lockDuration > 0) {
+              setAccountDialogMessage(
+                `Account switching detected! This browser is locked for ${Math.ceil(lockDuration)} more hours. Please use a different browser or wait for the lock to expire.`
+              )
+              setBlockedUserId(userId)
+              setShowAccountDialog(true)
+              setIsLoading(false)
+              return
+            }
+          }
+
+          // Proceed with user data fetch if validation passes
+          dispatch(fetchUserDataRequest({ 
+            userId, 
+            start_param: tg.initDataUnsafe.start_param, 
+            username 
+          }))
           dispatch(fetchBotStatusRequest())
         }
       }
 
-      //dispatch(fetchUserDataRequest({ userId : 123456789 ,   username : 'test'}))
-
       Toast.show({
-        content: 'refreshed successfully!',
+        content: 'Refreshed successfully!',
         position: 'bottom',
         duration: 1500,
       })
     } catch (error) {
-      // Error handled by Redux saga
+      console.error('Refresh error:', error)
+      Toast.show({
+        content: 'Refresh failed. Please try again.',
+        position: 'bottom',
+        duration: 2000,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -112,7 +143,24 @@ export default function HomePage() {
       `🎉 আমার সাথে Earn From Ads BD-এ যোগ দিন এবং বিজ্ঞাপন দেখার মাধ্যমে আয় শুরু করুন! রেফারেল করলে আপনি পাবেন 20 টাকা বোনাস! আমার রেফারেল লিঙ্ক ব্যবহার করুন: ${referralLink}`
     );
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank')
+  }
 
+  const handleClearAccount = () => {
+    dispatch(clearStoredAccount())
+    setShowAccountDialog(false)
+    Toast.show({
+      content: 'Account data cleared. You can now use a different account.',
+      position: 'bottom',
+      duration: 3000,
+    })
+    // Refresh the page to allow new account login
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  }
+
+  const handleCloseDialog = () => {
+    setShowAccountDialog(false)
   }
 
   // Load ads settings on component mount
@@ -120,6 +168,14 @@ export default function HomePage() {
     dispatch(fetchBotStatusRequest())
     dispatch(fetchAdsSettingsRequest())
   }, [dispatch])
+
+  // Check for existing stored account data on mount
+  useEffect(() => {
+    const storedData = getStoredUserData()
+    if (storedData) {
+      console.log('Found stored account data:', storedData.username)
+    }
+  }, [])
 
   return (
     <PullToRefresh onRefresh={onRefresh}>
@@ -190,6 +246,56 @@ export default function HomePage() {
           </small>
         </div>
 
+        {/* Account Validation Dialog */}
+        <Dialog
+          visible={showAccountDialog}
+          content={
+            <div className="text-center p-4">
+              <div className="mb-4">
+                <i className="fas fa-exclamation-triangle text-red-500 text-4xl mb-3"></i>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                  Account Switch Detected
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {accountDialogMessage}
+                </p>
+              </div>
+              
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Why is this happening?</strong><br/>
+                  To prevent abuse, each browser can only be used with one account per 24 hours.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Button
+                  color="danger"
+                  fill="solid"
+                  onClick={handleClearAccount}
+                  className="w-full"
+                >
+                  Clear Account Data & Use New Account
+                </Button>
+                <Button
+                  color="primary"
+                  fill="outline"
+                  onClick={handleCloseDialog}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+              
+              <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                <p>
+                  <strong>Alternative:</strong> Use a different browser or wait for the lock to expire.
+                </p>
+              </div>
+            </div>
+          }
+          closeOnMaskClick={false}
+        />
 
       </div>
     </PullToRefresh>
