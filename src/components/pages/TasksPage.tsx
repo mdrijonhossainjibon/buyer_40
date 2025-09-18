@@ -41,7 +41,7 @@ export default function TasksPage( ) {
 
     // Rewarded interstitial
     
-     LoadAds('9486612').then(() => {
+     LoadAds('9890517').then(() => {
       try {
         // Simulate ad watching delay
         setTimeout(async () => {
@@ -241,7 +241,7 @@ export default function TasksPage( ) {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 10 BDT by joining our Telegram channel!
+          Earn 15 BDT by joining our Telegram channel!
         </p>
         {channelClaimed && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
@@ -267,7 +267,7 @@ export default function TasksPage( ) {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 10 BDT by subscribing to our YouTube channel!
+          Earn 15 BDT by subscribing to our YouTube channel!
         </p>
        
         

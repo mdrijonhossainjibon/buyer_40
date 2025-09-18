@@ -79,9 +79,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
       {adsSettings.enableGigaPubAds && adsSettings.adsWatchLimit > 0 && (
         <>
           <Script
-            src="//libtl.com/sdk.js"
-            data-zone="9890517"
-            data-sdk="show_9890517"
+            src="https://ad.gigapub.tech/script?id=3085"
             strategy="afterInteractive"
             onLoad={handleGigaPubLoad}
             onError={() => handleScriptError('GigaPub')}
@@ -94,7 +92,9 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
       {/* Monetag Ads - Load if enabled and has zone ID */}
       {adsSettings.monetagEnabled && (
         <Script
-          src="//d2oh4tlt9mrke9.cloudfront.net/Record/js/moneytag-banner-api.js"
+          src="//libtl.com/sdk.js"
+          data-zone="9890517"
+          data-sdk="show_9890517"
           strategy="afterInteractive"
           onLoad={handleMonetagLoad}
           onError={() => handleScriptError('Monetag')}

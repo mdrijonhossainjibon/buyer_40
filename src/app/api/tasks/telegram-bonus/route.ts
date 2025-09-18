@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Telegram bonus amount
-    const bonusAmount = 10
+    const bonusAmount = 15
 
     // Update user stats
     user.telegramBonus = bonusAmount

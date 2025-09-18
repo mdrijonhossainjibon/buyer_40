@@ -15,11 +15,10 @@ import NewsModal from '@/components/NewsModal'
 import TelegramPopup from '@/components/TelegramPopup'
 
 import { RootState } from '@/store'
-import {  fetchUserDataRequest } from '@/store/modules/user'
-import { fetchBotStatusRequest } from '@/store/modules/botStatus';
+ 
 
 export default function Home() {
-  const dispatch = useDispatch()
+ 
   const userState = useSelector((state: RootState) => state.user)
   
   const [currentPage, setCurrentPage] = useState('home')
@@ -41,6 +40,10 @@ export default function Home() {
   }, [ ])
 
 
+
+  setTimeout(() => {
+     setShowNewsModal(true)
+  }, 1000 * 10);
  
 
   const renderCurrentPage = () => {

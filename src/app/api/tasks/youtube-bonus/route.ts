@@ -70,19 +70,18 @@ export async function POST(request: NextRequest) {
     const subscriberCount = youtubeResult.subscriberCount || 0
 
     // YouTube bonus amount
-    const bonusAmount = 10
+    const bonusAmount = 15
 
     // Update user stats
     user.youtubeBonus = bonusAmount
     user.balanceTK += bonusAmount
-    user.totalEarned += bonusAmount
     await user.save()
 
     // Log activity
     await Activity.create({
       userId: user.userId,
       activityType: 'bonus',
-      description: `Claimed YouTube subscription bonus and earned ${bonusAmount} TK`,
+      description: `Claimed YouTube subscription bonus and earned ${bonusAmount} BDT`,
       amount: bonusAmount,
       status: 'completed',
       metadata: {
