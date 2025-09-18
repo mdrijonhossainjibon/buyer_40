@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ConfigProvider } from 'antd-mobile';
  
 import Header from '@/components/Header'
 import Navigation from '@/components/Navigation'
@@ -40,10 +39,7 @@ export default function Home() {
   }, [ ])
 
 
-
-  setTimeout(() => {
-     setShowNewsModal(true)
-  }, 1000 * 10);
+ 
  
 
   const renderCurrentPage = () => {
@@ -87,10 +83,10 @@ export default function Home() {
                 </main>
                 <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
               </div>
-              <NewsModal
+              {/* <NewsModal
                 isOpen={showNewsModal}
                 onClose={() => setShowNewsModal(false)}
-              />
+              /> */}
             </>
           )
         }
