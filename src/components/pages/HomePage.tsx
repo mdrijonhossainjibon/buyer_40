@@ -170,7 +170,7 @@ export default function HomePage() {
             {isLoading ? (
               <Skeleton.Title animated className="w-20 mx-auto" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.watchedToday} / {adsSettings.adsWatchLimit}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.watchedToday} / {user.dailyAdLimit}</p>
             )}
           </div>
           <div className="p-5 rounded-xl text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">

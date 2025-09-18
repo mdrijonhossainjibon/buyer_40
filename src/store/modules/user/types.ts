@@ -11,6 +11,7 @@ export interface UserState {
   isLoading: boolean
   error: string | null
   username: string
+  dailyAdLimit: number
 }
 
 // Action types

@@ -12,6 +12,7 @@ const initialState: UserState = {
   status: 'active',
   referralCode: '',
   username: '',
+  dailyAdLimit: 0,
   error: null
 }
 
