@@ -328,21 +328,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: {
-        adsSettings: adsSettings.map(setting => ({
-          id: setting._id,
-          enableGigaPubAds: setting.enableGigaPubAds,
-          gigaPubAppId: setting.gigaPubAppId,
-          defaultAdsReward: setting.defaultAdsReward,
-          adsWatchLimit: setting.adsWatchLimit,
-          adsRewardMultiplier: setting.adsRewardMultiplier,
-          minWatchTime: setting.minWatchTime,
-          monetagEnabled: setting.monetagEnabled,
-          monetagZoneId: setting.monetagZoneId,
-          createdAt: setting.createdAt,
-          updatedAt: setting.updatedAt
-        }))
-      }
+      data: adsSettings
     })
 
   } catch (error) {
