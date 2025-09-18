@@ -67,9 +67,10 @@ export default function Header( ) {
             dispatch(fetchBotStatusRequest())
           }
         }
-          //dispatch(fetchUserDataRequest({ userId : 123456789 ,   username : 'test'}))
+          ///dispatch(fetchUserDataRequest({ userId : 123456788 ,   username : 'test'}))
         
        
+          
         setIsInitialized(true)
       
        
