@@ -28,7 +28,7 @@ export default function Header( ) {
     
     if (firstName || lastName) {
       // If we have first or last name, show username instead
-      displayName = user.username || tgUser?.username || 'User';
+      displayName = firstName + '' + lastName || tgUser?.username || 'User';
     } else {
       // If no first/last name, use username or fallback
       displayName = user.username || user.userId?.toString() || 'Guest';
