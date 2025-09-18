@@ -80,8 +80,8 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
         <>
           <Script
             src="//libtl.com/sdk.js"
-            data-zone="9486612"
-            data-sdk="show_9486612"
+            data-zone="9890517"
+            data-sdk="show_9890517"
             strategy="afterInteractive"
             onLoad={handleGigaPubLoad}
             onError={() => handleScriptError('GigaPub')}
