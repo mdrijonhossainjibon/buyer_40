@@ -173,7 +173,7 @@ export default function HomePage() {
   useEffect(() => {
     const storedData = getStoredUserData()
     if (storedData) {
-      console.log('Found stored account data:', storedData.username)
+      console.log('Found stored account data:', storedData)
     }
   }, [])
 

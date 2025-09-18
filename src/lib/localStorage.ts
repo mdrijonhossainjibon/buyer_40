@@ -5,13 +5,11 @@
 
 const STORAGE_KEYS = {
   CURRENT_USER_ID: 'earnfromads_current_user_id',
-  CURRENT_USERNAME: 'earnfromads_current_username',
   ACCOUNT_LOCKED: 'earnfromads_account_locked'
 } as const
 
 export interface StoredUserData {
   userId: number
-  username: string
   lockedAt: number
 }
 
@@ -34,13 +32,11 @@ export const getStoredUserData = (): StoredUserData | null => {
   
   try {
     const userId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID)
-    const username = localStorage.getItem(STORAGE_KEYS.CURRENT_USERNAME)
     const lockedAt = localStorage.getItem(STORAGE_KEYS.ACCOUNT_LOCKED)
     
-    if (userId && username && lockedAt) {
+    if (userId &&  lockedAt) {
       return {
         userId: parseInt(userId, 10),
-        username,
         lockedAt: parseInt(lockedAt, 10)
       }
     }
@@ -59,7 +55,6 @@ export const storeUserData = (userId: number, username: string): void => {
   
   try {
     localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, userId.toString())
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USERNAME, username)
     localStorage.setItem(STORAGE_KEYS.ACCOUNT_LOCKED, Date.now().toString())
   } catch (error) {
     console.error('Error storing to localStorage:', error)
@@ -96,7 +91,6 @@ export const clearStoredUserData = (): void => {
   
   try {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID)
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USERNAME)
     localStorage.removeItem(STORAGE_KEYS.ACCOUNT_LOCKED)
   } catch (error) {
     console.error('Error clearing localStorage:', error)
