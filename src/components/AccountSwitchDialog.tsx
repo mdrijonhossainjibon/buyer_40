@@ -18,7 +18,7 @@ export default function AccountSwitchDialog({
   
 }: AccountSwitchDialogProps) {
   const dispatch = useDispatch()
-  const [timeRemaining, setTimeRemaining] = useState(1)
+  const [timeRemaining, setTimeRemaining] = useState( getAccountLockDuration())
   const [showConfirmClear, setShowConfirmClear] = useState(false)
   const storedData = getStoredUserData()
 
@@ -39,7 +39,7 @@ export default function AccountSwitchDialog({
           duration: 3000,
         })
       }
-    }, 60000) // Update every minute
+    }, 1000) // Update every minute
 
     return () => clearInterval(timer)
   }, [visible, onClose])
