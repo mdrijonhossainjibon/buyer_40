@@ -8,8 +8,7 @@ import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
 import { fetchUserDataRequest } from '@/store/modules/user'
 import { getStoredUserData, getAccountLockDuration, isAccountSwitchAttempt } from '@/lib/localStorage'
-import AccountSwitchDialog from '@/components/AccountSwitchDialog'
-
+ 
 
 
 export default function HomePage() {
