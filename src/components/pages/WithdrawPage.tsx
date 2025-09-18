@@ -14,7 +14,7 @@ export default function WithdrawPage() {
   const user = useSelector((state: RootState) => state.user)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const minWithdraw = 1500
+  const minWithdraw = 1000
   const requiredReferrals = 20
 
   const handleSubmit = async () => {

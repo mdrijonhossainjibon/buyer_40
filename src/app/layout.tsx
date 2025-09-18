@@ -3,6 +3,7 @@ import { Nunito } from 'next/font/google'
 import './globals.css'
 import ReduxProvider from '@/components/ReduxProvider'
 import AuthSessionProvider from '@/components/SessionProvider'
+import AdsLoader from '@/components/AdsLoader'
 import Script from 'next/script'
  
 const nunito = Nunito({
@@ -29,13 +30,14 @@ export default function RootLayout({
         <Script
             src="https://telegram.org/js/telegram-web-app.js"
             strategy="beforeInteractive"
-          />
-        <Script src='//libtl.com/sdk.js' data-zone='9486612' data-sdk='show_9486612' /> 
+          /> 
       </head>
       <body className={nunito.className}>
         <AuthSessionProvider>
           <ReduxProvider>
-            {children}
+            <AdsLoader>
+              {children}
+            </AdsLoader>
           </ReduxProvider>
         </AuthSessionProvider>
       </body>

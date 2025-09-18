@@ -3,12 +3,13 @@ import { verifySignature } from 'auth-fingerprint'
 import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
-
+import AdsSettings from '@/lib/models/AdsSettings'
 interface WatchAdRequest {
   userId: number
   timestamp: string
   signature: string
   hash: string
+  ipAddress: string
 }
 
 export async function POST(request: NextRequest) {
@@ -47,17 +48,57 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user has reached daily limit
-    if (user.watchedToday >= user.dailyAdLimit) {
+    // Get ads settings for ad watch configuration
+    const adsConfig = await AdsSettings.findOne().sort({ createdAt: -1 })
+    if (!adsConfig) {
       return NextResponse.json(
-        { success: false, message: 'Daily ad limit reached!' },
-        { status: 400 }
+        { success: false, message: 'Ads settings not found' },
+        { status: 500 }
       )
     }
 
-    // Ad earning amount
-    const adEarning = 5
+    // Check if ad watching is enabled
+    if (!adsConfig.enableGigaPubAds) {
+      return NextResponse.json(
+        { success: false, message: 'Ad watching is currently disabled' },
+        { status: 503 }
+      )
+    }
+ 
+    // Check daily ad limit using activities and bot config
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
+    const todayAdWatchCount = await Activity.countDocuments({
+      userId: user.userId,
+      activityType: 'ad_watch',
+      status: 'completed',
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    })
+
+    if (todayAdWatchCount >= adsConfig.adsWatchLimit) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Daily ad limit reached! You can watch ${adsConfig.adsWatchLimit} ads per day. Try again tomorrow.`,
+          data: {
+            watchedToday: todayAdWatchCount,
+            dailyAdLimit: adsConfig.adsWatchLimit,
+            nextResetTime: tomorrow.toISOString()
+          }
+        },
+        { status: 429 }
+      )
+    }
+
+    // Ad earning amount from ads config
+    const adEarning = adsConfig.defaultAdsReward
+ 
     // Update user stats
     user.watchedToday += 1
     user.balanceTK += adEarning
@@ -69,7 +110,7 @@ export async function POST(request: NextRequest) {
     await Activity.create({
       userId: user.userId,
       activityType: 'ad_watch',
-      description: `Watched rewarded ad and earned ${adEarning} TK`,
+      description: `Watched rewarded ad and earned ${adEarning} BDT`,
       amount: adEarning,
       status: 'completed',
       metadata: {
@@ -81,12 +122,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Ad watched! You earned ${adEarning} TK!`,
+      message: `Ad watched! You earned ${adEarning} BDT!`,
       data: {
         earned: adEarning,
         newBalance: user.balanceTK,
-        watchedToday: user.watchedToday,
-        dailyAdLimit: user.dailyAdLimit
+        watchedToday: todayAdWatchCount + 1, // +1 because we just added a new activity
+        dailyAdLimit: adsConfig.adsWatchLimit
       }
     })
 

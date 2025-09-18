@@ -4,6 +4,7 @@ import dbConnect from '@/lib/mongodb'
 import User from '@/lib/models/User'
 import Activity from '@/lib/models/Activity'
 import Notification from '@/lib/models/Notification'
+import AdsSettings from '@/lib/models/AdsSettings';
 interface UserRequest {
   userId: number
   timestamp: string
@@ -191,6 +192,34 @@ export async function POST(request: NextRequest) {
 
  
     
+    // Get bot configuration for ad watch settings
+    const AdsConfig = await AdsSettings.findOne().sort({ createdAt: -1 })
+    if (!AdsConfig) {
+      return NextResponse.json(
+        { success: false, message: 'Bot configuration not found' },
+        { status: 500 }
+      )
+    }
+ 
+    // Check daily ad limit using activities and bot config
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    const todayAdWatchCount = await Activity.countDocuments({
+      userId: user.userId,
+      activityType: 'ad_watch',
+      status: 'completed',
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    })
+ 
+  
+    
+    
     
     const response  = {
       success: true,
@@ -198,8 +227,8 @@ export async function POST(request: NextRequest) {
         userId: user.userId,
         balanceTK: user.balanceTK,
         referralCount: user.referralCount,
-        dailyAdLimit: user.dailyAdLimit,
-        watchedToday: user.watchedToday,
+        dailyAdLimit: AdsConfig.adsWatchLimit,
+        watchedToday: todayAdWatchCount,
         telegramBonus: user.telegramBonus,
         youtubeBonus: user.youtubeBonus,
         isBotVerified: user.isBotVerified,

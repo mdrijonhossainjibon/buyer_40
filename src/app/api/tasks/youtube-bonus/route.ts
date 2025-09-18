@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const subscriberCount = youtubeResult.subscriberCount || 0
 
     // YouTube bonus amount
-    const bonusAmount = 75
+    const bonusAmount = 10
 
     // Update user stats
     user.youtubeBonus = bonusAmount
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `YouTube bonus claimed! You earned ${bonusAmount} TK!`,
+      message: `YouTube bonus claimed! You earned ${bonusAmount} BDT!`,
       data: {
         earned: bonusAmount,
         newBalance: user.balanceTK,

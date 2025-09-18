@@ -8,6 +8,10 @@ export interface IBotConfig extends Document {
   createdAt: Date;
   webhookUrl: string;
   updatedAt: Date;
+  // Ad watch configuration
+  dailyAdLimit: number;
+  adEarningAmount: number;
+  adWatchEnabled: boolean;
 }
 
 const BotConfigSchema: Schema = new Schema({
@@ -33,6 +37,23 @@ const BotConfigSchema: Schema = new Schema({
   lastUpdated: {
     type: Date,
     default: Date.now
+  },
+  // Ad watch configuration
+  dailyAdLimit: {
+    type: Number,
+    default: 10,
+    min: 1,
+    max: 100
+  },
+  adEarningAmount: {
+    type: Number,
+    default: 5,
+    min: 1,
+    max: 1000
+  },
+  adWatchEnabled: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true

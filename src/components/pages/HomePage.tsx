@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Toast , PullToRefresh , Skeleton  } from 'antd-mobile'
 import { RootState } from '@/store'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus'
+import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
  
  
 
@@ -12,21 +13,20 @@ export default function HomePage() {
   const dispatch = useDispatch()
   const botStatus = useSelector((state: RootState) => state.botStatus)
   const user = useSelector((state: RootState) => state.user)
+  const adsSettings = useSelector((state: RootState) => state.adsSettings)
   const [isLoading, setIsLoading] = useState(false)
  
   const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`
 
-  // Dispatch Redux saga to get bot status
-  const getBotStatus = () => {
-    dispatch(fetchBotStatusRequest())
-  }
+ 
  
   const onRefresh = async () => {
     setIsLoading(true)
     try {
-      // Dispatch Redux saga to get bot status
-      getBotStatus()
-      
+      // Dispatch Redux saga to get bot status and ads settings
+      dispatch(fetchBotStatusRequest())
+      dispatch(fetchAdsSettingsRequest())
+
       Toast.show({
         content: 'refreshed successfully!',
         position: 'bottom',
@@ -101,6 +101,12 @@ export default function HomePage() {
     
   }
 
+  // Load ads settings on component mount
+  useEffect(() => {
+    dispatch(fetchBotStatusRequest())
+    dispatch(fetchAdsSettingsRequest())
+  }, [ dispatch ])
+
   return (
     <PullToRefresh onRefresh={onRefresh}>
       <div className="block animate-fade-in bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
@@ -112,7 +118,7 @@ export default function HomePage() {
             {isLoading ? (
               <Skeleton.Title animated className="w-20 mx-auto" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.watchedToday} / 10</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.watchedToday} / {adsSettings.adsWatchLimit}</p>
             )}
           </div>
           <div className="p-5 rounded-xl text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -122,6 +128,31 @@ export default function HomePage() {
             ) : (
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.referralCount}</p>
             )}
+          </div>
+        </div>
+
+        {/* Ads Settings Information */}
+        <div className="mt-6 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-center text-lg font-semibold mb-3 text-gray-900 dark:text-white">Ad Watch Settings</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <h4 className="text-sm mb-1 text-gray-600 dark:text-gray-400">Per Ad Earning</h4>
+              {adsSettings.isLoading ? (
+                <Skeleton.Title animated className="w-16 mx-auto" />
+              ) : (
+                <p className="text-xl font-bold text-green-600 dark:text-green-400">{adsSettings.defaultAdsReward} BDT</p>
+              )}
+            </div>
+            <div className="text-center">
+              <h4 className="text-sm mb-1 text-gray-600 dark:text-gray-400">Ad Watch Status</h4>
+              {adsSettings.isLoading ? (
+                <Skeleton.Title animated className="w-20 mx-auto" />
+              ) : (
+                <p className={`text-sm font-semibold ${adsSettings.enableGigaPubAds || adsSettings.enableGigaPubAds ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {adsSettings.enableGigaPubAds || adsSettings.enableGigaPubAds ? '✅ Enabled' : '❌ Disabled'}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 

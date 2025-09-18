@@ -6,24 +6,14 @@ import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { LoadAds } from '@/lib/ads'
-interface UserState {
-  userId: number | null
-  balanceTK: number
-  referralCount: number
-  dailyAdLimit: number
-  watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
-  status: 'active' | 'suspend'
-}
-
  
  
 export default function TasksPage( ) {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
-  const user = useSelector((state: RootState) => state.user)
+  const user = useSelector((state: RootState) => state.user);
+  const  adsSettings   = useSelector((state: RootState) => state.adsSettings);
 
   const watchAd = async () => {
     if (user.watchedToday >= 5000) {
@@ -124,7 +114,7 @@ export default function TasksPage( ) {
             method: 'POST',
             url: '/tasks/telegram-bonus',
             body: {
-              userId: user.userId,
+             
               ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
@@ -224,17 +214,17 @@ export default function TasksPage( ) {
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
         <i className="fas fa-video text-5xl mb-4 text-blue-600 dark:text-blue-400"></i>
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Rewarded Ad</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>5</b> টাকা আয় করুন।</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{ adsSettings.defaultAdsReward }</b> টাকা আয় করুন।</p>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
         <button
           className="w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={watchAd}
-          disabled={isWatchingAd || user.watchedToday >= 5000000}
+          disabled={isWatchingAd || user.watchedToday >= adsSettings.adsWatchLimit || user.status === 'suspend'}
         >
           <span>{isWatchingAd ? 'Watching Ad...' : 'Watch Ad'}</span>
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          পুরস্কার পেতে 15 সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
+          পুরস্কার পেতে { adsSettings.adsWatchLimit } সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
         </p>
       </div>
 
@@ -251,7 +241,7 @@ export default function TasksPage( ) {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 50 TK by joining our Telegram channel!
+          Earn 10 BDT by joining our Telegram channel!
         </p>
         {channelClaimed && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
@@ -277,7 +267,7 @@ export default function TasksPage( ) {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 75 TK by subscribing to our YouTube channel!
+          Earn 10 BDT by subscribing to our YouTube channel!
         </p>
        
         
