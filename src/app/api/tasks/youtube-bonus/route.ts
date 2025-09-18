@@ -15,13 +15,13 @@ interface YoutubeBonusRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: YoutubeBonusRequest = await request.json()
-    const { userId, timestamp, signature, hash } = body
+    const {   timestamp, signature, hash } = body
 
     // Verify signature for security
     const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || ''
-    const isValidSignature = verifySignature({ timestamp, signature, hash }, secretKey)
+    const  { success , data } = verifySignature({ timestamp, signature, hash }, secretKey)
 
-    if (!isValidSignature) {
+    if (!success) {
       return NextResponse.json(
         { success: false, message: 'Invalid signature or request expired' },
         { status: 401 }
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     await dbConnect()
 
     // Find user
-    const user = await User.findOne({ userId })
+    const user = await User.findOne({ userId  : data })
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
