@@ -7,10 +7,14 @@ import Admin from '@/lib/models/Admin'
 import dbConnect from '@/lib/mongodb'
 import { authOptions } from '@/lib/authOptions'
 
+export async function GET(request: NextRequest) {
+
+}
+
 export async function POST(request: NextRequest) {
   try {
     await dbConnect()
-    
+
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.email) {
@@ -20,9 +24,8 @@ export async function POST(request: NextRequest) {
       }, { status: 401 })
     }
 
-
     // Check if user is admin
-    const admin = await Admin.findOne({ email:session.user.email})
+    const admin = await Admin.findOne({ email: session.user.email })
     if (!admin) {
       return NextResponse.json({
         success: false,
@@ -30,9 +33,8 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { action, status, limit = 50, offset = 0 } = body
-
+    const  { action, status = 'all', limit = 50, offset = 0 } = await request.json();
+      
     if (action === 'list-withdrawals') {
       // Build filter query
       const filter: any = {}
@@ -43,7 +45,6 @@ export async function POST(request: NextRequest) {
       // Get withdrawals with user information
       const [withdrawals, total] = await Promise.all([
         Withdrawal.find(filter)
-          .populate('userId', 'username profile.firstName profile.lastName')
           .sort({ requestedAt: -1 }) // Newest first
           .limit(limit)
           .skip(offset)
@@ -52,20 +53,20 @@ export async function POST(request: NextRequest) {
       ])
 
       // Format response data
-      const formattedWithdrawals = withdrawals.map(withdrawal => {
-        const populatedUser = withdrawal.userId as any // User object after population
+      const formattedWithdrawals = await Promise.all(withdrawals.map(async (withdrawal) => {
+        const user = await User.findOne({ userId: withdrawal.userId })
         return {
           id: withdrawal.withdrawalId,
-          userId: populatedUser?.userId || withdrawal.userId,
-          username: populatedUser?.username || `${populatedUser?.profile?.firstName || ''} ${populatedUser?.profile?.lastName || ''}`.trim() || 'Unknown User',
+          userId: withdrawal.userId,
+          username: user?.username || `${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`.trim() || 'Unknown User',
           amount: withdrawal.amount,
           netAmount: withdrawal.netAmount,
           fees: withdrawal.fees,
           method: withdrawal.method,
-          accountNumber: withdrawal.accountDetails.accountNumber,
-          accountName: withdrawal.accountDetails.accountName,
-          bankName: withdrawal.accountDetails.bankName,
-          branchName: withdrawal.accountDetails.branchName,
+          accountNumber: withdrawal.accountDetails?.accountNumber || '',
+          accountName: withdrawal.accountDetails?.accountName || '',
+          bankName: withdrawal.accountDetails?.bankName || '',
+          branchName: withdrawal.accountDetails?.branchName || '',
           status: withdrawal.status,
           requestTime: withdrawal.requestedAt,
           processedTime: withdrawal.processedAt,
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
           transactionId: withdrawal.transactionId,
           adminNote: withdrawal.metadata?.adminNotes || null
         }
-      })
+      }))
 
       return NextResponse.json({
         success: true,
@@ -112,7 +113,9 @@ export async function POST(request: NextRequest) {
 
       stats.forEach(stat => {
         summary.total += stat.count
-        summary[stat._id as keyof typeof summary] = stat.count
+        if (stat._id && typeof stat._id === 'string' && stat._id in summary) {
+          (summary as any)[stat._id] = stat.count
+        }
         summary.totalAmount += stat.totalAmount
         summary.totalFees += stat.totalFees
       })
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
     }, { status: 400 })
 
   } catch (error) {
-    console.error('Admin withdrawals API error:', error)
+    console.error('Admin withdrawals GET API error:', error)
     return NextResponse.json({
       success: false,
       message: 'Internal server error'
