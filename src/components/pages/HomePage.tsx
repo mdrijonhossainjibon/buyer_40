@@ -18,10 +18,7 @@ export default function HomePage() {
   const user = useSelector((state: RootState) => state.user)
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
   const [isLoading, setIsLoading] = useState(false)
-  const [showAccountDialog, setShowAccountDialog] = useState(false)
-  const [blockedUserId, setBlockedUserId] = useState<number | null>(null)
-   
-
+ 
   const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`
 
 
@@ -29,9 +26,6 @@ export default function HomePage() {
   const onRefresh = async () => {
     setIsLoading(true)
     try {
-      // Dispatch Redux saga to get bot status and ads settings
-      dispatch(fetchBotStatusRequest())
-      dispatch(fetchAdsSettingsRequest())
       
       // Initialize Telegram WebApp
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -42,20 +36,7 @@ export default function HomePage() {
         if (telegramUser && telegramUser.username) {
           const userId = telegramUser.id
           const username = telegramUser.username
-
-          // Check if this is an account switch attempt
-          if (isAccountSwitchAttempt(userId)) {
-            const currentLockDuration = getAccountLockDuration()
-            
-            if (currentLockDuration > 0) {
-              
-              setBlockedUserId(userId)
-              setShowAccountDialog(true)
-              setIsLoading(false)
-              return
-            }
-          }
-
+  
           // Proceed with user data fetch if validation passes
           dispatch(fetchUserDataRequest({ 
             userId, 
@@ -163,9 +144,7 @@ export default function HomePage() {
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank')
   }
 
-  const handleCloseDialog = () => {
-    setShowAccountDialog(false)
-  }
+
 
   // Load ads settings on component mount
   useEffect(() => {
@@ -250,13 +229,7 @@ export default function HomePage() {
           </small>
         </div>
 
-        {/* Account Switch Dialog */}
-        <AccountSwitchDialog
-          visible={showAccountDialog}
-          onClose={handleCloseDialog}
-          blockedUserId={blockedUserId}
-           
-        />
+      
 
       </div>
     </PullToRefresh>

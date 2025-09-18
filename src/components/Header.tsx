@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import {  fetchUserDataRequest } from '@/store/modules/user'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus';
+import { getAccountLockDuration, isAccountSwitchAttempt } from '@/lib/localStorage'
+import AccountSwitchDialog from './AccountSwitchDialog'
  
 
 export default function Header( ) {
@@ -14,6 +16,10 @@ export default function Header( ) {
   const user = useSelector((state: RootState) => state.user);
   const [photoUrl, setPhotoUrl] = useState<string>("https://picsum.photos/60/60?random=1");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [showAccountDialog, setShowAccountDialog] = useState(false)
+  const [blockedUserId, setBlockedUserId] = useState<number | null>(null)
+
   const dispatch = useDispatch()
 
   // Function to get display name with intelligent handling
@@ -55,18 +61,38 @@ export default function Header( ) {
     useEffect(() => {
    
       if (isInitialized) return
-        
         // Initialize Telegram WebApp
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-          const tg = window.Telegram.WebApp
-   
-          // Get user data from Telegram
-          const user = tg.initDataUnsafe?.user
-          if (user) {
-            dispatch(fetchUserDataRequest({ userId : user.id , start_param : tg.initDataUnsafe.start_param , username : tg.initDataUnsafe.user?.username}));
-            dispatch(fetchBotStatusRequest())
-          }
-        }
+              if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp
+        
+                // Get user data from Telegram
+                const telegramUser = tg.initDataUnsafe?.user
+                if (telegramUser && telegramUser.username) {
+                  const userId = telegramUser.id
+                  const username = telegramUser.username
+        
+                  // Check if this is an account switch attempt
+                  if (isAccountSwitchAttempt(userId)) {
+                    const currentLockDuration = getAccountLockDuration()
+                    
+                    if (currentLockDuration > 0) {
+                      
+                      setBlockedUserId(userId)
+                      setShowAccountDialog(true)
+                      setIsLoading(false)
+                      return
+                    }
+                  }
+        
+                  // Proceed with user data fetch if validation passes
+                  dispatch(fetchUserDataRequest({ 
+                    userId, 
+                    start_param: tg.initDataUnsafe.start_param, 
+                    username 
+                  }))
+                  dispatch(fetchBotStatusRequest())
+                }
+              }
           ///dispatch(fetchUserDataRequest({ userId : 123456788 ,   username : 'test'}))
         
        
@@ -76,6 +102,9 @@ export default function Header( ) {
        
     }, [isInitialized])
   
+    const handleCloseDialog = () => {
+      setShowAccountDialog(false)
+    }
 
   return (
     <header className="px-4 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -108,6 +137,14 @@ export default function Header( ) {
         isOpen={showNotificationPopup}
         onClose={() => setShowNotificationPopup(false)}
       />
+
+        {/* Account Switch Dialog */}
+        <AccountSwitchDialog
+          visible={showAccountDialog}
+          onClose={handleCloseDialog}
+          blockedUserId={blockedUserId}
+           
+        />
     </header>
   )
 }
