@@ -10,7 +10,6 @@ import TasksPage from '@/components/pages/TasksPage'
 import SupportPage from '@/components/pages/SupportPage'
 import WithdrawPage from '@/components/pages/WithdrawPage'
 import LoadingOverlay from '@/components/LoadingOverlay'
-import NewsModal from '@/components/NewsModal'
 import TelegramPopup from '@/components/TelegramPopup'
 
 import { RootState } from '@/store'

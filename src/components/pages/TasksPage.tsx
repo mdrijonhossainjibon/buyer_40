@@ -224,7 +224,7 @@ export default function TasksPage( ) {
           <span>{isWatchingAd ? 'Watching Ad...' : 'Watch Ad'}</span>
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          পুরস্কার পেতে { adsSettings.adsWatchLimit } সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
+          পুরস্কার পেতে { adsSettings.minWatchTime } সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
         </p>
       </div>
 

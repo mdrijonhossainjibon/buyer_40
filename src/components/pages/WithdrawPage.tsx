@@ -55,9 +55,9 @@ export default function WithdrawPage() {
 
       if (response && response.success) {
         Toast.show({
-          content: response.message || 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
+          content: response.message || 'Withdrawal request submitted successfully.',
           duration: 3000,
-          position: 'bottom'
+          position:'center'
         })
 
         // Clear form
@@ -149,11 +149,13 @@ export default function WithdrawPage() {
             label="Account Number:"
             name="accountNumber"
             rules={[{ required: true, message: 'Account number required' }]}
+             
           >
             <Input
               value={accountNumber}
               onChange={(val) => setAccountNumber(val)}
               placeholder="০১XXXXXXXXX"
+              max={11}
               clearable
             />
           </Form.Item>
@@ -177,7 +179,7 @@ export default function WithdrawPage() {
             ]}
           >
             <Input
-              type="text"
+              type='number'
               value={amount}
               onChange={(val) => {
                 // Keep only numbers
@@ -185,6 +187,9 @@ export default function WithdrawPage() {
                 setAmount(numericValue)
               }}
               placeholder="১০০০"
+
+              min={minWithdraw}
+              max={user.balanceTK}
               clearable
             />
           </Form.Item>

@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'উইথড্র অনুরোধ সফলভাবে জমা দেওয়া হয়েছে',
+      message: 'Withdrawal request submitted successfully.',
       data: {
         withdrawalId: withdrawal.withdrawalId,
         remainingBalance: user.balanceTK - amount,
