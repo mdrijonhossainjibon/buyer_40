@@ -13,7 +13,7 @@ interface TelegramUser {
   username?: string
   language_code?: string
 }
- 
+
 
 interface TelegramChat {
   id: number
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     // Handle different types of updates when bot is online
     if (update.message) {
       await handleMessage(update.message, botConfig.botToken)
-    }  else if (update.inline_query) {
+    } else if (update.inline_query) {
       await handleInlineQuery(update.inline_query, botConfig.botToken)
     }
 
@@ -146,7 +146,7 @@ async function handleMessage(message: TelegramMessage, botToken: string) {
   }
 }
 
- 
+
 
 // Handle inline queries
 async function handleInlineQuery(inlineQuery: any, botToken: string) {
@@ -166,21 +166,32 @@ async function handleStartCommand(chatId: number, userId: number | undefined, us
     const miniAppUrl = await getMiniAppUrl(botToken)
     // Check if user exists, create if not
     let user = await User.findOne({ userId })
- 
-    
+
+
     if (!user) {
-     sendMessage(botToken, chatId, 'Welcome to EarnFromAds BD!' , { 
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: 'Open Mini App',
-              web_app: { url: `${miniAppUrl}?userId=${userId}` }
-            }
+      await sendMessage(botToken, chatId, `🎉 Welcome to *EarnFromAds BD*! 🇧🇩
+
+        Hello there! 👋  
+        We’re excited to have you join our platform where you can *earn rewards* simply by engaging with ads and completing tasks.  
+        
+        🚀 What you can do here:
+        - Open our Mini App to start earning instantly 💰  
+        - Stay updated with the latest news, promotions, and announcements 📢  
+        
+        ✨ Start your journey today and don’t miss out on exciting opportunities!`, {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '🚀 Open Mini App',
+                web_app: { url: `${miniAppUrl}?userId=${userId}` }
+              }
+            ] 
           ]
-        ]
-      }
-     })
+        },
+        parse_mode: "Markdown"
+      })
+
       return
     }
 
@@ -199,7 +210,7 @@ Start earning money by completing simple tasks! 🚀`
           [
 
             {
-              text: '📋 Open Mini App',
+              text: 'Open Mini App',
               web_app: { url: `${miniAppUrl}?userId=${userId}` }
             }
           ]
@@ -244,7 +255,7 @@ Type /help for more information! 💡`
   await sendMessage(botToken, chatId, response)
 }
 
- 
+
 
 // Handle messages when bot is offline
 async function handleOfflineMessage(message: TelegramMessage, botToken: string) {
@@ -289,9 +300,19 @@ I'm currently offline for maintenance. 🔧
 
 🛠️ We're working to get everything back online as soon as possible!
 
+📢 Stay updated by joining our Announcement Channel!
+
 Thank you for your patience! 🙏`
 
-    await sendMessage(botToken, chatId, offlineMessage)
+    const inlineKeyboard = {
+      inline_keyboard: [
+        [
+          { text: "📢 Join Announcement Channel", url: "https://t.me/earnfromads1" }
+        ]
+      ]
+    }
+
+    await sendMessage(botToken, chatId, offlineMessage, inlineKeyboard)
 
   } catch (error) {
     console.error('Error handling offline callback:', error)
