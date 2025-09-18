@@ -163,11 +163,24 @@ async function handleStartCommand(chatId: number, userId: number | undefined, us
   try {
     if (!userId) return
 
+    const miniAppUrl = await getMiniAppUrl(botToken)
     // Check if user exists, create if not
     let user = await User.findOne({ userId })
-
+ 
+    
     if (!user) {
-      sendMessage(botToken, chatId, 'User not found. Please use /start to open mini app')
+     sendMessage(botToken, chatId, 'Welcome to EarnFromAds BD!' , { 
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Open Mini App',
+              web_app: { url: `${miniAppUrl}?userId=${userId}` }
+            }
+          ]
+        ]
+      }
+     })
       return
     }
 
@@ -179,7 +192,6 @@ Hello ${username}! 👋
  
 Start earning money by completing simple tasks! 🚀`
 
-    const miniAppUrl = await getMiniAppUrl(botToken)
 
     await sendMessage(botToken, chatId, welcomeMessage, {
       reply_markup: {
