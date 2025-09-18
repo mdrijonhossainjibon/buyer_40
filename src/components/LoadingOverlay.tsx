@@ -34,6 +34,11 @@ export default function LoadingOverlay({ visible, onClose }: LoadingOverlayProps
         <div className="text-xs text-gray-500 mt-2">
           Please wait a moment...
         </div>
+
+        {/* Developer credit */}
+        <div className="text-xs text-amber-100 mt-4 opacity-70">
+          Developed by Future Apps Developer
+        </div>
       </div>
 
       <style jsx>{`
