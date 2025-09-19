@@ -6,6 +6,7 @@ import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { LoadAds } from '@/lib/ads'
+import { baseURL } from '@/lib/api-string'
  
  
 export default function TasksPage( ) {
@@ -49,6 +50,7 @@ export default function TasksPage( ) {
           setTimeout(async () => {
             try {
               const { response } = await API_CALL({
+                baseURL,
                 method: 'POST',
                 url: '/tasks/watch-ad',
                 body: {
@@ -114,6 +116,7 @@ export default function TasksPage( ) {
       setTimeout(async () => {
         try {
           const { response } = await API_CALL({
+            baseURL,
             method: 'POST',
             url: '/tasks/telegram-bonus',
             body: {
@@ -174,6 +177,7 @@ export default function TasksPage( ) {
       setTimeout(async () => {
         try {
           const { response } = await API_CALL({
+            baseURL,
             method: 'POST',
             url: '/tasks/youtube-bonus',
             body: {
