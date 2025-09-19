@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, Switch,  Toast, Form, PullToRefresh } from 'antd-mobile'
+import { Card, Switch, Toast, Form, PullToRefresh } from 'antd-mobile'
+import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { baseURL } from '@/lib/api-string'
 import { 
   PlayOutline,
   StopOutline,
@@ -12,7 +14,7 @@ import {
   CheckCircleOutline,
   CloseCircleOutline
 } from 'antd-mobile-icons'
-import { BotAPI, BotConfig, BotStatus } from '@/lib/api/bots'
+ 
 
 interface AdminBotsSettingsProps {
   loading?: boolean
@@ -21,9 +23,11 @@ interface AdminBotsSettingsProps {
 // Interfaces are now imported from the API module
 
 export default function AdminBotsSettings({ loading = false }: AdminBotsSettingsProps) {
-  const [botConfig, setBotConfig] = useState<BotConfig>({
+  
+  const [botConfig, setBotConfig] = useState({
+    _id: '',
     botToken: '',
-    botUsername: '@earnfromadsbd_bot',
+    botUsername: '',
     Status: 'offline',
     webhookUrl: '',
     lastUpdated: new Date(),
@@ -31,15 +35,15 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     updatedAt: new Date()
   })
 
-  const [botStatus, setBotStatus] = useState<BotStatus>({
-    botUsername: '@earnfromadsbd_bot',
+  const [botStatus, setBotStatus] = useState({
+    botUsername: '',
     botStatus: 'offline',
     botLastSeen: new Date(),
     botVersion: 'v2.1.0',
     createdAt: new Date(),
     updatedAt: new Date()
   })
-
+ 
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -57,12 +61,16 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         setIsLoading(true)
       }
       
-      // Fetch bot data from API
-      const response = await BotAPI.getBotData()
+      // Fetch bot data from API using auth-fingerprint
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'GET',
+        url: '/admin/bots/data'
+      })
       
-      if (response.success && response.data) {
-        setBotConfig(response.data.config)
-        setBotStatus(response.data.status)
+      if (response && response.success && response.data) {
+        setBotConfig(response.data.config || {})
+        setBotStatus(response.data.status || {})
         
         if (isRefresh) {
           Toast.show({
@@ -71,7 +79,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           })
         }
       } else {
-        throw new Error(response.message || 'Failed to fetch bot data')
+        throw new Error(response?.message || 'Failed to fetch bot data')
       }
     } catch (error) {
       console.error('Failed to fetch bot data:', error)
@@ -82,6 +90,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       
       // Set fallback data on error
       setBotConfig({
+        _id: '',
         botToken: '',
         botUsername: '@earnfromadsbd_bot',
         Status: 'offline',
@@ -117,10 +126,15 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       setIsLoading(true)
       const newStatus = botConfig.Status === 'online' ? 'offline' : 'online'
       
-      // Call API to update bot status
-      const response = await BotAPI.updateBotStatus(newStatus)
+      // Call API to update bot status using auth-fingerprint
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'PUT',
+        url: '/admin/bots/status',
+        body: { status: newStatus }
+      })
       
-      if (response.success) {
+      if (response && response.success) {
         setBotConfig(prev => ({ ...prev, Status: newStatus, lastUpdated: new Date() }))
         setBotStatus(prev => ({ 
           ...prev, 
@@ -134,7 +148,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           duration: 2000
         })
       } else {
-        throw new Error(response.message || 'Failed to update bot status')
+        throw new Error(response?.message || 'Failed to update bot status')
       }
     } catch (error) {
       console.error('Failed to toggle bot status:', error)
@@ -168,13 +182,18 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         return
       }
       
-      // Call API to save bot configuration
-      const response = await BotAPI.updateBotConfig({
-        botToken: botConfig.botToken,
-        webhookUrl: botConfig.webhookUrl
+      // Call API to save bot configuration using auth-fingerprint
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'PUT',
+        url: '/api/admin/bots/config',
+        body: {
+          botToken: botConfig.botToken,
+          webhookUrl: botConfig.webhookUrl
+        }
       })
       
-      if (response.success && response.data?.config) {
+      if (response && response.success && response.data?.config) {
         setBotConfig(response.data.config)
         setIsEditing(false)
         
@@ -183,7 +202,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           duration: 2000
         })
       } else {
-        throw new Error(response.message || 'Failed to save bot configuration')
+        throw new Error(response?.message || 'Failed to save bot configuration')
       }
     } catch (error) {
       console.error('Failed to save bot config:', error)
@@ -213,10 +232,15 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         duration: 2000
       })
 
-      // Call API to set webhook
-      const response = await BotAPI.setWebhook(botConfig.webhookUrl)
+      // Call API to set webhook using auth-fingerprint
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'POST',
+        url: '/api/admin/bots/webhook',
+        body: { webhookUrl: botConfig.webhookUrl }
+      })
       
-      if (response.success) {
+      if (response && response.success) {
         setBotConfig(prev => ({ ...prev, lastUpdated: new Date() }))
         
         Toast.show({
@@ -224,7 +248,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           duration: 2000
         })
       } else {
-        throw new Error(response.message || 'Failed to set webhook')
+        throw new Error(response?.message || 'Failed to set webhook')
       }
     } catch (error) {
       console.error('Failed to set webhook:', error)
@@ -253,7 +277,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     }
   }
 
-  const formatTimeAgo = (date: Date) => {
+ /*  const formatTimeAgo = (date: Date) => {
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
     
@@ -266,7 +290,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     const diffInDays = Math.floor(diffInHours / 24)
     return `${diffInDays} days ago`
   }
-
+ */
   if (loading || isLoading) {
     return (
       <div className="space-y-4">
@@ -350,21 +374,21 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
             <div>
               <span className="text-gray-500 dark:text-gray-400">Last Seen:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                {formatTimeAgo(botStatus.botLastSeen)}
+                { botStatus?.botLastSeen.toLocaleString()}
               </div>
             </div>
             
             <div>
               <span className="text-gray-500 dark:text-gray-400">Created:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                {formatTimeAgo(botStatus.createdAt)}
+                {botStatus.createdAt.toLocaleString()}
               </div>
             </div>
             
             <div>
               <span className="text-gray-500 dark:text-gray-400">Updated:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                {formatTimeAgo(botStatus.updatedAt)}
+                { botStatus.updatedAt.toLocaleString()}
               </div>
             </div>
           </div>
@@ -484,14 +508,18 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
                   setIsLoading(true)
                   Toast.show('Stopping bot...')
                   
-                  const response = await BotAPI.stopBot()
+                  const { response } = await API_CALL({
+                    baseURL,
+                    method: 'POST',
+                    url: '/api/admin/bots/stop'
+                  })
                   
-                  if (response.success) {
+                  if (response && response.success) {
                     setBotConfig(prev => ({ ...prev, Status: 'offline' }))
                     setBotStatus(prev => ({ ...prev, botStatus: 'offline' }))
                     Toast.show('Bot stopped successfully')
                   } else {
-                    throw new Error(response.message || 'Failed to stop bot')
+                    throw new Error(response?.message || 'Failed to stop bot')
                   }
                 } catch (error) {
                   console.error('Failed to stop bot:', error)
@@ -517,14 +545,14 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Last Updated:</span>
               <span className="text-gray-700 dark:text-gray-300">
-                {formatTimeAgo(botConfig.lastUpdated)}
+                {botConfig.lastUpdated.toLocaleString()}
               </span>
             </div>
             
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Created Date:</span>
               <span className="text-gray-700 dark:text-gray-300">
-                {botConfig.createdAt.toLocaleDateString('bn-BD')}
+                {botConfig.createdAt.toLocaleString()} 
               </span>
             </div>
             

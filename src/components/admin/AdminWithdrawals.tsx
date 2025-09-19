@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, Skeleton, List , PullToRefresh } from 'antd-mobile'
+import { Card, Skeleton, List , PullToRefresh , Empty } from 'antd-mobile'
 import { useState, useEffect } from 'react'
 import WithdrawalDetailsPopup from './WithdrawalDetailsPopup'
 
@@ -132,6 +132,13 @@ export default function AdminWithdrawals() {
                 <Skeleton.Paragraph lineCount={3} animated />
               </Card>
             ))}
+          </div>
+        ) : withdrawals.length === 0 ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <Empty 
+              description="No withdrawal requests found"
+              imageStyle={{ height: 60 }}
+            />
           </div>
         ) : (
           <List className="!bg-transparent">

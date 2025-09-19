@@ -7,6 +7,7 @@ import { BellOutline, CloseOutline } from 'antd-mobile-icons'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { RootState } from '@/store'
 import NotificationDetailsPopup from './NotificationDetailsPopup'
+import { baseURL } from '@/lib/api-string'
 
 interface NotificationItem {
   id: string
@@ -43,12 +44,11 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
     setLoading(true)
     try {
       const { response } = await API_CALL({
+         baseURL,
         method: 'POST',
         url: '/notifications',
         body: {
-          userId: user.userId,
-          action: 'list',
-          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+          ...generateSignature(JSON.stringify({ action: 'list' , userId : user.userId }), process.env.NEXT_PUBLIC_SECRET_KEY || '')
         }
       })
 
