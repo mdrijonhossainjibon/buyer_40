@@ -34,14 +34,14 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
  
 
   const handleGigaPubLoad = () => {
-    if (adsSettings.enableGigaPubAds && window.gigapub) {
+    if (adsSettings.enableGigaPubAds ) {
       console.log('GigaPub ads loaded successfully')
       window.initializeAds?.()
     }
   }
 
   const handleMonetagLoad = () => {
-    if (adsSettings.monetagEnabled && window.monetag) {
+    if (adsSettings.monetagEnabled ) {
       console.log('Monetag ads loaded successfully')
     }
   }
