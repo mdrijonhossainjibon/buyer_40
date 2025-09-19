@@ -12,6 +12,8 @@ import {
 } from './actions'
 import { adsAPI } from '@/lib/api/ads'
 import { Toast } from 'antd-mobile'
+import { API_CALL } from 'auth-fingerprint';
+import { baseURL } from '@/lib/api-string';
 
 // Fetch ads settings saga
 function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator<any, void, any> {
