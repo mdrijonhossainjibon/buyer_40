@@ -24,37 +24,14 @@ declare global {
 export default function AdsLoader({ children }: AdsLoaderProps) {
   const dispatch = useDispatch()
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
-  const [adsInitialized, setAdsInitialized] = useState(false)
+  
 
+  console.log(adsSettings)
   // Load ads settings on component mount
   useEffect(() => {
     dispatch(fetchAdsSettingsRequest())
   }, [dispatch])
-
-  // Initialize ads when settings are loaded
-  useEffect(() => {
-    if (!adsSettings.isLoading && !adsInitialized) {
-      initializeAdsSystem()
-      setAdsInitialized(true)
-    }
-  }, [adsSettings.isLoading, adsInitialized])
-
-  const initializeAdsSystem = () => {
-    // Initialize global ads functions
-    window.initializeAds = () => {
-      console.log('Ads system initialized')
-    }
-
-    window.showAd = (zoneId: string) => {
-      console.log(`Showing ad for zone: ${zoneId}`)
-      // This will be called when user watches an ad
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(true)
-        }, adsSettings.minWatchTime * 1000)
-      })
-    }
-  }
+ 
 
   const handleGigaPubLoad = () => {
     if (adsSettings.enableGigaPubAds && window.gigapub) {
