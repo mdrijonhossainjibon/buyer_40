@@ -1,35 +1,42 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Card, Button, Toast, List, SpinLoading, PullToRefresh } from 'antd-mobile'
 import {
   SearchOutline,
   FilterOutline
 } from 'antd-mobile-icons'
 import ActivityDetailPopup from './ActivityDetailPopup'
-import { ActivityAPI, ActivityData } from '@/lib/api/activities'
+import { RootState } from '@/store'
+import {
+  setSearchQuery,
+  setStatusFilter,
+  setTypeFilter,
+  setSelectedActivity,
+  fetchActivitiesRequest,
+  loadMoreActivitiesRequest,
+  updateActivityStatusRequest,
+  clearError
+} from '@/store/modules/activities/actions'
+import { ActivityData } from '@/lib/api/activities'
 
-export default function AdminReports() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedActivity, setSelectedActivity] = useState<ActivityData | null>(null)
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [activityHistory, setActivityHistory] = useState<ActivityData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    completed: 0,
-    failed: 0,
-    cancelled: 0,
-    totalAmount: 0
-  })
-  const [pagination, setPagination] = useState({
-    offset: 0,
-    limit: 20,
-    hasMore: false
-  })
+export default function AdminActivity() {
+  const dispatch = useDispatch()
+  const {
+    activities,
+    selectedActivity,
+    searchQuery,
+    statusFilter,
+    typeFilter,
+    pagination,
+    stats,
+    isLoading,
+    isLoadingMore,
+    error
+  } = useSelector((state: RootState) => state.activities)
+
+  const isModalVisible = selectedActivity !== null
 
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date()
@@ -62,113 +69,54 @@ export default function AdminReports() {
   }
 
   // Activity history is already filtered by the API
-  const filteredActivityHistory = activityHistory
+  const filteredActivityHistory = activities
 
-  // Load activities from API
-  const loadActivities = async (reset = false) => {
-    try {
-      setLoading(true)
-      const currentOffset = reset ? 0 : pagination.offset
-
-      const response = await ActivityAPI.listActivities({
-        search: searchQuery,
-        status: statusFilter,
-        activityType: typeFilter,
-        limit: pagination.limit,
-        offset: currentOffset,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      })
-
-      if (response.success) {
-        if (reset) {
-          setActivityHistory(response.data.activities)
-          setPagination({
-            offset: response.data.activities.length,
-            limit: pagination.limit,
-            hasMore: response.data.hasMore
-          })
-        } else {
-          setActivityHistory(prev => [...prev, ...response.data.activities])
-          setPagination(prev => ({
-            ...prev,
-            offset: prev.offset + response.data.activities.length,
-            hasMore: response.data.hasMore
-          }))
-        }
-
-        if (response.data.stats) {
-          setStats(response.data.stats)
-        }
-      } else {
-        Toast.show({
-          content: response.message || 'Failed to load activities',
-          position: 'center'
-        })
-      }
-    } catch (error) {
-      console.error('Error loading activities:', error)
-      Toast.show({
-        content: 'Error loading activities',
-        position: 'center'
-      })
-    } finally {
-      setLoading(false)
-    }
+  // Load activities from Redux
+  const loadActivities = (showToast = false) => {
+    dispatch(fetchActivitiesRequest(showToast))
   }
 
   // Load activities on component mount and when filters change
   useEffect(() => {
-    loadActivities(true)
+    loadActivities()
   }, [searchQuery, statusFilter, typeFilter])
 
+ 
+
   const handleItemClick = (activity: ActivityData) => {
-    setSelectedActivity(activity)
-    setIsModalVisible(true)
+    dispatch(setSelectedActivity(activity))
   }
 
   const handleCloseModal = () => {
-    setIsModalVisible(false)
-    setSelectedActivity(null)
+    dispatch(setSelectedActivity(null))
   }
 
-  const handleAction = async (action: string, activity: ActivityData) => {
-  
-    if(action === 'view_user') {
+  const handleAction = (action: string, activity: ActivityData) => {
+    if (action === 'view_user') {
       Toast.show({
         content: `Viewing user ${activity.userId}`,
         position: 'center'
       })
-      return;
+      return
     }
-    
 
+    if (action === 'update_status') {
+      // This would be implemented based on your requirements
+      // dispatch(updateActivityStatusRequest(activity._id, newStatus))
+    }
 
     // Close modal after action
     handleCloseModal()
   }
 
   const handleLoadMore = () => {
-    if (!loading && pagination.hasMore) {
-      loadActivities(false)
+    if (!isLoading && !isLoadingMore && pagination.hasMore) {
+      dispatch(loadMoreActivitiesRequest())
     }
   }
 
   const handleRefresh = async () => {
-    try {
-      await loadActivities(true)
-      Toast.show({
-        content: 'Activities refreshed',
-        position: 'center',
-        duration: 1000
-      })
-    } catch (error) {
-      console.error('Error refreshing activities:', error)
-      Toast.show({
-        content: 'Failed to refresh activities',
-        position: 'center'
-      })
-    }
+    loadActivities(true)
   }
 
   return (
@@ -189,14 +137,14 @@ export default function AdminReports() {
                       type="text"
                       placeholder="Search by username, user ID"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => dispatch(setSearchQuery(e.target.value))}
                       className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
                     />
            </div>
 
         {/* Activity List using antd-mobile List */}
         <div className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
-          {loading && activityHistory.length === 0 ? (
+          {isLoading && activities.length === 0 ? (
             <div className="flex justify-center items-center py-8">
               <SpinLoading style={{ '--size': '32px' }} />
               <span className="ml-2 text-gray-600 dark:text-gray-400">Loading activities...</span>
@@ -254,7 +202,7 @@ export default function AdminReports() {
                     <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700">
                       <Button
                         onClick={handleLoadMore}
-                        loading={loading}
+                        loading={isLoadingMore}
                         color="primary"
                         fill="outline"
                         size="small"

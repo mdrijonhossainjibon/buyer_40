@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Card, Switch, Selector, Toast, Stepper, PullToRefresh } from 'antd-mobile'
 import { 
   EyeOutline,
@@ -11,110 +12,78 @@ import {
   BankcardOutline,
   GlobalOutline
 } from 'antd-mobile-icons'
-import { adsAPI, AdsSettings } from '@/lib/api/ads'
+import { RootState } from '@/store'
+import {
+  fetchAdsSettingsRequest,
+  updateAdsSettingsRequest,
+  updateAdsSettingsField,
+  setEditing,
+  clearError
+} from '@/store/modules/adsSettings/actions'
+import { AdsSettings } from '@/store/modules/adsSettings/types'
+ 
 
 export default function AdminAdsSettings() {
-  const [adsSettings, setAdsSettings] = useState<AdsSettings>({
-    enableGigaPubAds: true,
-    gigaPubAppId: '',
-    defaultAdsReward: 50,
-    adsWatchLimit: 10,
-    adsRewardMultiplier: 1.0,
-    minWatchTime: 30,
-    monetagEnabled: true,
-    monetagZoneId: ''
-  })
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const dispatch = useDispatch()
+  const {
+    enableGigaPubAds,
+    gigaPubAppId,
+    defaultAdsReward,
+    adsWatchLimit,
+    adsRewardMultiplier,
+    minWatchTime,
+    monetagEnabled,
+    monetagZoneId,
+    isLoading,
+    isSaving,
+    isEditing,
+    error
+  } = useSelector((state: RootState) => state.adsSettings)
 
   const updateAdsSettings = (field: keyof AdsSettings, value: any) => {
-    setAdsSettings(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    dispatch(updateAdsSettingsField(field, value))
   }
 
-  const handleSaveSettings = async () => {
-    setSaving(true)
-    try {
-      const response = await adsAPI.updateSettings({
-        enableGigaPubAds: adsSettings.enableGigaPubAds,
-        gigaPubAppId: adsSettings.gigaPubAppId,
-        defaultAdsReward: adsSettings.defaultAdsReward,
-        adsWatchLimit: adsSettings.adsWatchLimit,
-        adsRewardMultiplier: adsSettings.adsRewardMultiplier,
-        minWatchTime: adsSettings.minWatchTime,
-        monetagEnabled: adsSettings.monetagEnabled,
-        monetagZoneId: adsSettings.monetagZoneId
-      })
-
-      if (response.success && response.data) {
-        setAdsSettings(response.data)
-        setIsEditing(false)
-        Toast.show({
-          content: 'Ad settings saved successfully',
-          duration: 2000
-        })
-      } else {
-        Toast.show({
-          content: response.error || 'Failed to save settings',
-          duration: 3000
-        })
-      }
-    } catch (error) {
-      console.error('Error saving ads settings:', error)
-      Toast.show({
-        content: 'Failed to save settings',
-        duration: 3000
-      })
-    } finally {
-      setSaving(false)
+  const handleSaveSettings = () => {
+    const settingsData: AdsSettings = {
+      enableGigaPubAds,
+      gigaPubAppId,
+      defaultAdsReward,
+      adsWatchLimit,
+      adsRewardMultiplier,
+      minWatchTime,
+      monetagEnabled,
+      monetagZoneId
     }
+    
+    dispatch(updateAdsSettingsRequest(settingsData))
   }
 
   // Load ads settings function
-  const loadAdsSettings = async (showToast = false) => {
-    try {
-      const response = await adsAPI.getSettings()
-      if (response.success && response.data) {
-        setAdsSettings(response.data)
-        if (showToast) {
-          Toast.show({
-            content: 'Settings refreshed successfully',
-            duration: 2000
-          })
-        }
-      } else {
-        Toast.show({
-          content: response.error || 'Failed to load settings',
-          duration: 3000
-        })
-      }
-    } catch (error) {
-      console.error('Error loading ads settings:', error)
-      Toast.show({
-        content: 'Failed to load settings',
-        duration: 3000
-      })
-    }
+  const loadAdsSettings = (showToast = false) => {
+    dispatch(fetchAdsSettingsRequest(showToast))
   }
 
   // Handle pull to refresh
   const handleRefresh = async () => {
-    await loadAdsSettings(true)
+    loadAdsSettings(true)
   }
 
   // Load ads settings on component mount
   useEffect(() => {
-    const initialLoad = async () => {
-      await loadAdsSettings()
-      setLoading(false)
-    }
-    initialLoad()
+    loadAdsSettings()
   }, [])
 
-  if (loading) {
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => {
+      if (error) {
+        dispatch(clearError())
+      }
+    }
+  }, [])
+
+  if (isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3, 4].map((i) => (
@@ -144,9 +113,9 @@ export default function AdminAdsSettings() {
               </p>
             </div>
             <Switch
-              checked={adsSettings.enableGigaPubAds}
+              checked={enableGigaPubAds}
               onChange={(checked) => updateAdsSettings('enableGigaPubAds', checked)}
-              disabled={!isEditing || saving}
+              disabled={!isEditing || isSaving}
               style={{
                 '--checked-color': '#10b981',
                 '--height': '28px',
@@ -179,10 +148,10 @@ export default function AdminAdsSettings() {
               </label>
               <input
                 type="text"
-                value={adsSettings.gigaPubAppId}
+                value={gigaPubAppId}
                 onChange={(e) => updateAdsSettings('gigaPubAppId', e.target.value)}
                 placeholder="Enter App ID"
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors duration-200"
               />
             </div>
@@ -190,9 +159,9 @@ export default function AdminAdsSettings() {
             <div className="flex items-center justify-between">
               <span className="text-gray-700 dark:text-gray-300">Monetag Enabled</span>
               <Switch
-                checked={adsSettings.monetagEnabled}
+                checked={monetagEnabled}
                 onChange={(checked) => updateAdsSettings('monetagEnabled', checked)}
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 style={{
                   '--checked-color': '#3b82f6',
                   '--height': '24px',
@@ -201,17 +170,17 @@ export default function AdminAdsSettings() {
               />
             </div>
 
-            {adsSettings.monetagEnabled && (
+            {monetagEnabled && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Monetag Zone ID:
                 </label>
                 <input
                   type="text"
-                  value={adsSettings.monetagZoneId}
+                  value={monetagZoneId}
                   onChange={(e) => updateAdsSettings('monetagZoneId', e.target.value)}
                   placeholder="Enter Zone ID"
-                  disabled={!isEditing || saving}
+                  disabled={!isEditing || isSaving}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors duration-200"
                 />
               </div>
@@ -241,19 +210,19 @@ export default function AdminAdsSettings() {
                 Minimum Watch Time (seconds):
               </label>
               <Stepper
-                value={adsSettings.minWatchTime}
+                value={minWatchTime}
                 onChange={(val) => updateAdsSettings('minWatchTime', val)}
                 min={5}
                 max={300}
                 step={5}
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Current: {adsSettings.minWatchTime} seconds
+                Current: {minWatchTime} seconds
               </p>
             </div>
 
@@ -262,12 +231,12 @@ export default function AdminAdsSettings() {
                 Reward Multiplier:
               </label>
               <Stepper
-                value={adsSettings.adsRewardMultiplier}
+                value={adsRewardMultiplier}
                 onChange={(val) => updateAdsSettings('adsRewardMultiplier', val)}
                 min={0.1}
                 max={10.0}
                 step={0.1}
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 digits={1}
                 style={{
                   '--border': '1px solid #d1d5db',
@@ -275,7 +244,7 @@ export default function AdminAdsSettings() {
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Current: {adsSettings.adsRewardMultiplier}x
+                Current: {adsRewardMultiplier}x
               </p>
             </div>
           </div>
@@ -303,19 +272,19 @@ export default function AdminAdsSettings() {
                 Default Ad Reward (BDT):
               </label>
               <Stepper
-                value={adsSettings.defaultAdsReward}
+                value={defaultAdsReward}
                 onChange={(val) => updateAdsSettings('defaultAdsReward', val)}
                 min={1}
                 max={1000}
                 step={1}
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Current: {adsSettings.defaultAdsReward} BDT
+                Current: {defaultAdsReward} BDT
               </p>
             </div>
 
@@ -324,19 +293,19 @@ export default function AdminAdsSettings() {
                 Ad Watch Limit:
               </label>
               <Stepper
-                value={adsSettings.adsWatchLimit}
+                value={adsWatchLimit}
                 onChange={(val) => updateAdsSettings('adsWatchLimit', val)}
                 min={1}
                 max={100}
                 step={1}
-                disabled={!isEditing || saving}
+                disabled={!isEditing || isSaving}
                 style={{
                   '--border': '1px solid #d1d5db',
                   '--border-radius': '8px'
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Current: {adsSettings.adsWatchLimit} ads
+                Current: {adsWatchLimit} ads
               </p>
             </div>
           </div>
@@ -349,8 +318,8 @@ export default function AdminAdsSettings() {
         <div className="p-4 space-y-3">
           {!isEditing ? (
             <button
-              onClick={() => setIsEditing(true)}
-              disabled={saving}
+              onClick={() => dispatch(setEditing(true))}
+              disabled={isSaving}
               className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
             >
               <SetOutline className="text-lg" />
@@ -360,14 +329,14 @@ export default function AdminAdsSettings() {
             <div className="flex space-x-3">
               <button
                 onClick={handleSaveSettings}
-                disabled={saving}
+                disabled={isSaving}
                 className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
               >
-                <span>{saving ? 'Saving...' : 'Save'}</span>
+                <span>{isSaving ? 'Saving...' : 'Save'}</span>
               </button>
               <button
-                onClick={() => setIsEditing(false)}
-                disabled={saving}
+                onClick={() => dispatch(setEditing(false))}
+                disabled={isSaving}
                 className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 font-medium rounded-lg transition-colors duration-200"
               >
                 Cancel

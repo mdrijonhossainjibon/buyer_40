@@ -1,71 +1,74 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose'
 
+// AdsSettings interface
 export interface IAdsSettings extends Document {
-  enableGigaPubAds: boolean;
-  gigaPubAppId: string;
-  defaultAdsReward: number;
-  adsWatchLimit: number;
-  adsRewardMultiplier: number;
-  minWatchTime: number;
-  monetagEnabled: boolean;
-  monetagZoneId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  _id: string
+  enableGigaPubAds: boolean
+  gigaPubAppId: string
+  defaultAdsReward: number
+  adsWatchLimit: number
+  adsRewardMultiplier: number
+  minWatchTime: number
+  monetagEnabled: boolean
+  monetagZoneId: string
+  createdAt: Date
+  updatedAt: Date
 }
 
-const AdsSettingsSchema = new Schema<IAdsSettings>({
+// AdsSettings schema
+const AdsSettingsSchema: Schema = new Schema({
   enableGigaPubAds: {
     type: Boolean,
-    default: true,
-    required: true
+    required: true,
+    default: true
   },
   gigaPubAppId: {
     type: String,
-    default: '',
-    trim: true
+    required: true,
+    default: ''
   },
   defaultAdsReward: {
     type: Number,
+    required: true,
     default: 50,
-    min: 1,
-    max: 1000,
-    required: true
+    min: 0
   },
   adsWatchLimit: {
     type: Number,
+    required: true,
     default: 10,
-    min: 1,
-    max: 100,
-    required: true
+    min: 1
   },
   adsRewardMultiplier: {
     type: Number,
+    required: true,
     default: 1.0,
     min: 0.1,
-    max: 10.0,
-    required: true
+    max: 10.0
   },
   minWatchTime: {
     type: Number,
+    required: true,
     default: 30,
-    min: 5,
-    max: 300,
-    required: true
+    min: 5
   },
   monetagEnabled: {
     type: Boolean,
-    default: false,
+    required: true,
+    default: true
   },
   monetagZoneId: {
     type: String,
-    default: null
-  },
-  
+    required: true,
+    default: ''
+  }
 }, {
   timestamps: true,
-});
+  collection: 'ads_settings'
+})
 
-// Create or export the model
-const AdsSettings = mongoose.models.AdsSettings || mongoose.model<IAdsSettings>('AdsSettings', AdsSettingsSchema);
+// Ensure only one settings document exists
+AdsSettingsSchema.index({}, { unique: true })
 
-export default AdsSettings;
+// Export the model
+export default mongoose.models.AdsSettings || mongoose.model<IAdsSettings>('AdsSettings', AdsSettingsSchema)

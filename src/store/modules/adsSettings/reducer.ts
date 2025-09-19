@@ -1,18 +1,20 @@
 import { AdsSettingsState, AdsSettingsActionTypes, ADS_SETTINGS_ACTIONS } from './types'
 
 const initialState: AdsSettingsState = {
-  _id : '',
-  enableGigaPubAds: false,
+  _id: '',
+  enableGigaPubAds: true,
   gigaPubAppId: '',
-  defaultAdsReward: 0,
-  adsRewardMultiplier: 1,
-  adsWatchLimit : 15,
-  monetagEnabled: false,
+  defaultAdsReward: 50,
+  adsRewardMultiplier: 1.0,
+  adsWatchLimit: 10,
+  monetagEnabled: true,
   monetagZoneId: '',
-  minWatchTime : 30,
+  minWatchTime: 30,
   isLoading: false,
+  isSaving: false,
+  isEditing: false,
   createdAt: new Date().toISOString(),
-  updatedAt:  new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
   error: null
 }
 
@@ -65,6 +67,47 @@ export const adsSettingsReducer = (
       return {
         ...state,
         isLoading: false,
+        error: action.payload
+      }
+
+    case ADS_SETTINGS_ACTIONS.SET_EDITING:
+      return {
+        ...state,
+        isEditing: action.payload
+      }
+
+    case ADS_SETTINGS_ACTIONS.SET_SAVING:
+      return {
+        ...state,
+        isSaving: action.payload
+      }
+
+    case ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_FIELD:
+      return {
+        ...state,
+        [action.payload.field]: action.payload.value
+      }
+
+    case ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_REQUEST:
+      return {
+        ...state,
+        isSaving: true,
+        error: null
+      }
+
+    case ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_SUCCESS:
+      return {
+        ...state,
+        ...action.payload,
+        isSaving: false,
+        isEditing: false,
+        error: null
+      }
+
+    case ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_FAILURE:
+      return {
+        ...state,
+        isSaving: false,
         error: action.payload
       }
 

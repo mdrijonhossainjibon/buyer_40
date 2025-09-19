@@ -15,6 +15,9 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: 'Earn From Ads BD',
   description: 'Earn money by watching ads and completing tasks',
+  icons: {
+    icon: "/favicon.ico", // path from public/
+  },
 }
 
 export default function RootLayout({

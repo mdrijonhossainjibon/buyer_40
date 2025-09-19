@@ -18,13 +18,14 @@ import { RootState } from '@/store'
 
 export default function Home() {
  
-  const userState = useSelector((state: RootState) => state.user)
+  const userState = useSelector((state: RootState) => state.user);
+
+  const [showLoading, setShowLoading] = useState(true)
+  
   
   const [currentPage, setCurrentPage] = useState('home')
  
-  const [showTelegramPopup, setShowTelegramPopup] = useState(false)
   
- 
   useLayoutEffect(() => {
     // Check if document element has dark class and sync with state
     const hasDarkClass = document.documentElement.classList.contains('dark')
@@ -47,15 +48,14 @@ export default function Home() {
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram?.WebApp.initDataUnsafe?.user;
      
     // If not in Telegram WebApp, show TelegramPopup
-    if (!isTelegramWebApp) {
+  /*   if (!isTelegramWebApp) {
       return (
         <TelegramPopup 
           isOpen={true}
-          onClose={() => setShowTelegramPopup(false)} 
-          miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} 
+          
         />
       );
-    }
+    } */
 
     // If in Telegram WebApp, render the appropriate page
     switch (currentPage) {
@@ -76,8 +76,16 @@ export default function Home() {
       <div 
         className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
       >
-        {userState.isLoading && <LoadingOverlay visible />}
-        <div
+     
+        <LoadingOverlay 
+              visible={showLoading}
+              onClose={() => setShowLoading(false)}
+              
+         />
+        
+        {
+          !showLoading && (
+            <div
           id="app"
           className={`max-w-[500px] mx-auto pb-[86px] transition-opacity duration-300 bg-white dark:bg-gray-800 shadow-lg dark:shadow-2xl ${userState.isLoading ? 'opacity-0 invisible' : 'opacity-100 visible'}`}
         >
@@ -87,10 +95,9 @@ export default function Home() {
           </main>
           <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
         </div>
-        {/* <NewsModal
-          isOpen={showNewsModal}
-          onClose={() => setShowNewsModal(false)}
-        /> */}
+          )
+        }
+       
       </div>
  
   )

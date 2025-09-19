@@ -1,81 +1,79 @@
-// API client for ads settings management
+import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { baseURL } from '@/lib/api-string'
+import { AdsSettings } from '@/store/modules/adsSettings/types'
 
-export interface AdsSettings {
-  _id?: string;
-  enableGigaPubAds: boolean;
-  gigaPubAppId: string;
-  defaultAdsReward: number;
-  adsWatchLimit: number;
-  adsRewardMultiplier: number;
-  minWatchTime: number;
-  monetagEnabled: boolean;
-  monetagZoneId: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+export interface AdsAPIResponse<T = any> {
+  success: boolean
+  data?: T
+  message?: string
+  error?: string
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
-
-class AdsAPI {
-  private baseUrl = '/api/admin/ads';
-
+export class AdsAPI {
   // Get ads settings
-  async getSettings(): Promise<ApiResponse<AdsSettings>> {
+  static async getSettings(): Promise<AdsAPIResponse<AdsSettings>> {
     try {
-      const response = await fetch(`${this.baseUrl}/settings`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await API_CALL({
+        baseURL,
+        url: '/ads-settings',
+        method: 'GET'
+      })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.status === 200 && response.response?.success) {
+        return {
+          success: true,
+          data: response.response.data
+        }
+      } else {
+        return {
+          success: false,
+          error: response.response?.message || 'Failed to fetch ads settings'
+        }
       }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching ads settings:', error);
+    } catch (error: any) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch ads settings'
-      };
+        error: error.message || 'Network error occurred'
+      }
     }
   }
 
   // Update ads settings
-  async updateSettings(settings: Omit<AdsSettings, '_id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<AdsSettings>> {
+  static async updateSettings(settings: AdsSettings): Promise<AdsAPIResponse<AdsSettings>> {
     try {
-      const response = await fetch(`${this.baseUrl}/settings`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const body = {
+        ...generateSignature(
+          JSON.stringify(settings),
+          process.env.NEXT_PUBLIC_SECRET_KEY || ''
+        )
       }
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error updating ads settings:', error);
+      const response = await API_CALL({
+        baseURL,
+        url: '/ads-settings',
+        method: 'PUT',
+        body
+      })
+
+      if (response.status === 200 && response.response?.success) {
+        return {
+          success: true,
+          data: response.response.data
+        }
+      } else {
+        return {
+          success: false,
+          error: response.response?.message || 'Failed to update ads settings'
+        }
+      }
+    } catch (error: any) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update ads settings'
-      };
+        error: error.message || 'Network error occurred'
+      }
     }
   }
 }
 
 // Export singleton instance
-export const adsAPI = new AdsAPI();
-export default adsAPI;
+export const adsAPI = AdsAPI

@@ -4,10 +4,17 @@ import {
   SetLoadingAction,
   SetErrorAction,
   ClearErrorAction,
+  SetEditingAction,
+  SetSavingAction,
+  UpdateAdsSettingsFieldAction,
   FetchAdsSettingsRequestAction,
   FetchAdsSettingsSuccessAction,
   FetchAdsSettingsFailureAction,
-  AdsSettingsState
+  UpdateAdsSettingsRequestAction,
+  UpdateAdsSettingsSuccessAction,
+  UpdateAdsSettingsFailureAction,
+  AdsSettingsState,
+  AdsSettings
 } from './types'
 
 // Action creators
@@ -30,24 +37,48 @@ export const clearError = (): ClearErrorAction => ({
   type: ADS_SETTINGS_ACTIONS.CLEAR_ERROR
 })
 
-// Saga action creators
-export const fetchAdsSettingsRequest = (): FetchAdsSettingsRequestAction => ({
-  type: ADS_SETTINGS_ACTIONS.FETCH_ADS_SETTINGS_REQUEST
+export const setEditing = (payload: boolean): SetEditingAction => ({
+  type: ADS_SETTINGS_ACTIONS.SET_EDITING,
+  payload
 })
 
-export const fetchAdsSettingsSuccess = (payload: {
-  dailyAdLimit: number
-  adEarningAmount: number
-  adWatchEnabled: boolean
-  minWatchTime: number
-  rewardMultiplier: number
-  lastUpdated: string
-}): FetchAdsSettingsSuccessAction => ({
+export const setSaving = (payload: boolean): SetSavingAction => ({
+  type: ADS_SETTINGS_ACTIONS.SET_SAVING,
+  payload
+})
+
+export const updateAdsSettingsField = (field: keyof AdsSettings, value: any): UpdateAdsSettingsFieldAction => ({
+  type: ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_FIELD,
+  payload: { field, value }
+})
+
+// Saga action creators
+export const fetchAdsSettingsRequest = (showToast?: boolean): FetchAdsSettingsRequestAction => ({
+  type: ADS_SETTINGS_ACTIONS.FETCH_ADS_SETTINGS_REQUEST,
+  payload: { showToast }
+})
+
+export const fetchAdsSettingsSuccess = (payload: AdsSettings): FetchAdsSettingsSuccessAction => ({
   type: ADS_SETTINGS_ACTIONS.FETCH_ADS_SETTINGS_SUCCESS,
   payload
 })
 
 export const fetchAdsSettingsFailure = (payload: string): FetchAdsSettingsFailureAction => ({
   type: ADS_SETTINGS_ACTIONS.FETCH_ADS_SETTINGS_FAILURE,
+  payload
+})
+
+export const updateAdsSettingsRequest = (payload: AdsSettings): UpdateAdsSettingsRequestAction => ({
+  type: ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_REQUEST,
+  payload
+})
+
+export const updateAdsSettingsSuccess = (payload: AdsSettings): UpdateAdsSettingsSuccessAction => ({
+  type: ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_SUCCESS,
+  payload
+})
+
+export const updateAdsSettingsFailure = (payload: string): UpdateAdsSettingsFailureAction => ({
+  type: ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_FAILURE,
   payload
 })

@@ -23,7 +23,7 @@ import AdminDashboard from '@/components/admin/AdminDashboard'
 import AdminWithdrawals from '@/components/admin/AdminWithdrawals'
 import AdminUsers from '@/components/admin/AdminUsers'
 import AdminSettings from '@/components/admin/AdminSettings'
-import AdminReports from '@/components/admin/AdminReports'
+import AdminReports from '@/components/admin/AdminActivity'
 import AdminAdsSettings from '@/components/admin/AdminAdsSettings'
 import AdminBotsSettings from '@/components/admin/AdminBotsSettings'
  

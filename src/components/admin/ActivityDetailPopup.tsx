@@ -1,28 +1,7 @@
 'use client'
 
 import { Popup, Button } from 'antd-mobile'
-
-// Activity data interface
-interface ActivityData {
-  _id: string
-  userId: number
-  activityType: 'ad_watch' | 'task_complete' | 'referral' | 'bonus' | 'withdrawal' | 'login' | 'signup'
-  description: string
-  amount: number
-  status: 'pending' | 'completed' | 'failed' | 'cancelled'
-  metadata?: {
-    adId?: string
-    taskId?: string
-    referralUserId?: number
-    withdrawalMethod?: string
-    ipAddress?: string
-    userAgent?: string
-    [key: string]: any
-  }
-  createdAt: Date
-  updatedAt: Date
-  completedAt?: Date
-}
+import { ActivityData } from '@/lib/api/activities'
 
 interface ActivityDetailPopupProps {
   visible: boolean
@@ -156,7 +135,7 @@ export default function ActivityDetailPopup({
                   Created At
                 </label>
                 <p className="text-sm text-gray-900 dark:text-white">
-                  {activity.createdAt.toLocaleString()}
+                  {new Date(activity.createdAt).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -168,7 +147,7 @@ export default function ActivityDetailPopup({
                   Last Updated
                 </label>
                 <p className="text-sm text-gray-900 dark:text-white">
-                  {activity.updatedAt.toLocaleString()}
+                  {new Date(activity.updatedAt).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -181,7 +160,7 @@ export default function ActivityDetailPopup({
                     Completed At
                   </label>
                   <p className="text-sm text-gray-900 dark:text-white">
-                    {activity.completedAt.toLocaleString()}
+                    {new Date(activity.completedAt).toLocaleString()}
                   </p>
                 </div>
               </div>

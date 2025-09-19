@@ -1,126 +1,99 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
-// Function to generate referral code like UID1542qA
-function generateReferralCode(): string {
-  const prefix = 'UID'
-  const numbers = Math.floor(1000 + Math.random() * 9000) // 4 digit number
-  const letters = Math.random().toString(36).substring(2, 4).toLowerCase() // 2 random letters
-  const upperLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)) // 1 uppercase letter
-  return `${prefix}${numbers}${letters}${upperLetter}`
-}
-
+// User interface
 export interface IUser extends Document {
-  userId: number
-  username?: string
-  referralCode: string
-  balanceTK: number
-  referralCount: number
-  dailyAdLimit: number
-  watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
-  status: 'active' | 'suspend'
-  lastAdWatch?: Date
-  lastLogin?: Date
-  referredBy?: number
+  _id: string
+  username: string
+  email?: string
+  telegramId?: string
+  balance: number
   totalEarned: number
-  withdrawnAmount: number
-  profile: {
+  referralCount: number
+  isActive: boolean
+  isBlocked: boolean
+  lastLoginAt?: Date
+  createdAt: Date
+  updatedAt: Date
+  profile?: {
     firstName?: string
     lastName?: string
     avatar?: string
     bio?: string
   }
-  settings: {
+  settings?: {
     notifications: boolean
     language: string
-    timezone: string
+    theme: 'light' | 'dark' | 'auto'
   }
-  createdAt: Date
-  updatedAt: Date
+  referral?: {
+    referredBy?: string
+    referralCode: string
+    referralEarnings: number
+  }
 }
 
-const UserSchema = new Schema<IUser>({
-  userId: {
-    type: Number,
-    required: [true, 'User ID is required'],
+// User schema
+const UserSchema: Schema = new Schema({
+  username: {
+    type: String,
+    required: true,
     unique: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 30,
     index: true
   },
-  username: {
+  email: {
     type: String,
     unique: true,
     sparse: true,
     trim: true,
-    minlength: [3, 'Username must be at least 3 characters'],
-    maxlength: [30, 'Username cannot exceed 30 characters']
+    lowercase: true
   },
-  referralCode: {
+  telegramId: {
     type: String,
     unique: true,
-    required: true,
-    default: generateReferralCode,
+    sparse: true,
     index: true
   },
-  balanceTK: {
+  balance: {
     type: Number,
+    required: true,
     default: 0,
-    min: [0, 'Balance cannot be negative']
+    min: 0
+  },
+  totalEarned: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
   },
   referralCount: {
     type: Number,
+    required: true,
     default: 0,
-    min: [0, 'Referral count cannot be negative']
+    min: 0
   },
- 
-  telegramBonus: {
-    type: Number,
-    default: 0,
-    min: [0, 'Telegram bonus cannot be negative']
+  isActive: {
+    type: Boolean,
+    required: true,
+    default: true,
+    index: true
   },
-  youtubeBonus: {
-    type: Number,
-    default: 0,
-    min: [0, 'YouTube bonus cannot be negative']
+  isBlocked: {
+    type: Boolean,
+    required: true,
+    default: false,
+    index: true
   },
-  status: {
-    type: String,
-    enum: ['active', 'suspend'],
-    default: 'active',
-    required: true
-  },
-  lastAdWatch: {
+  lastLoginAt: {
     type: Date
   },
-  lastLogin: {
-    type: Date,
-    default: Date.now
-  },
-  referredBy: {
-    type: Number,
-    ref: 'User'
-  },
-  
   profile: {
-    firstName: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'First name cannot exceed 50 characters']
-    },
-    lastName: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'Last name cannot exceed 50 characters']
-    },
-    avatar: {
-      type: String,
-      trim: true
-    },
-    bio: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Bio cannot exceed 500 characters']
-    }
+    firstName: String,
+    lastName: String,
+    avatar: String,
+    bio: String
   },
   settings: {
     notifications: {
@@ -129,19 +102,54 @@ const UserSchema = new Schema<IUser>({
     },
     language: {
       type: String,
-      default: 'en',
-      enum: ['en', 'bn']
+      default: 'en'
     },
-    timezone: {
+    theme: {
       type: String,
-      default: 'Asia/Dhaka'
+      enum: ['light', 'dark', 'auto'],
+      default: 'auto'
+    }
+  },
+  referral: {
+    referredBy: {
+      type: String,
+      index: true
+    },
+    referralCode: {
+      type: String,
+      unique: true,
+      required: true,
+      index: true
+    },
+    referralEarnings: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   }
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  collection: 'users'
 })
+
+// Indexes for better query performance
+UserSchema.index({ username: 1 })
+UserSchema.index({ telegramId: 1 })
+UserSchema.index({ 'referral.referralCode': 1 })
+UserSchema.index({ 'referral.referredBy': 1 })
+UserSchema.index({ isActive: 1, isBlocked: 1 })
+UserSchema.index({ createdAt: -1 })
+
  
- 
+// Helper function to generate referral code
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
+// Export the model
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema)
