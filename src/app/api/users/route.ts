@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
         watchedToday: todayAdWatchCount,
         telegramBonus: user.telegramBonus,
         youtubeBonus: user.youtubeBonus,
-        isBotVerified: user.isBotVerified,
+        
         username: user.username,
         status: user.status,
         profile: {

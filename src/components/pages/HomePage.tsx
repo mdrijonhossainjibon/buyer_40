@@ -7,7 +7,7 @@ import { RootState } from '@/store'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
 import { fetchUserDataRequest } from '@/store/modules/user'
-import { getStoredUserData, getAccountLockDuration, isAccountSwitchAttempt } from '@/lib/localStorage'
+import { getStoredUserData } from '@/lib/localStorage'
  
 
 
@@ -15,7 +15,6 @@ export default function HomePage() {
   const dispatch = useDispatch()
   const botStatus = useSelector((state: RootState) => state.botStatus)
   const user = useSelector((state: RootState) => state.user)
-  const adsSettings = useSelector((state: RootState) => state.adsSettings)
   const [isLoading, setIsLoading] = useState(false)
  
   const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`

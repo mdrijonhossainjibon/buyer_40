@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Form, Input, Button, Selector, Toast, Card } from 'antd-mobile'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { baseURL } from '@/lib/api-string'
 
 
 export default function WithdrawPage() {
@@ -38,6 +39,7 @@ export default function WithdrawPage() {
 
     try {
       const { response } = await API_CALL({
+         baseURL,
         url: '/withdraw',
         method: 'POST',
         body: {

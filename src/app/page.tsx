@@ -46,7 +46,7 @@ export default function Home() {
     // Check if Telegram WebApp is available
     const isTelegramWebApp = typeof window !== 'undefined' && window.Telegram?.WebApp.initDataUnsafe?.user;
      
-    /* // If not in Telegram WebApp, show TelegramPopup
+    // If not in Telegram WebApp, show TelegramPopup
     if (!isTelegramWebApp) {
       return (
         <TelegramPopup 
@@ -55,7 +55,7 @@ export default function Home() {
           miniAppUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/miniapp`} 
         />
       );
-    } */
+    }
 
     // If in Telegram WebApp, render the appropriate page
     switch (currentPage) {

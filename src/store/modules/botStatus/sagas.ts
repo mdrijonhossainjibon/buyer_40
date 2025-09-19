@@ -9,6 +9,7 @@ import {
   fetchBotStatusFailure, 
   setLoading 
 } from './actions'
+import { baseURL } from '@/lib/api-string'
 
  
 
@@ -18,6 +19,7 @@ function* fetchBotStatusSaga(action: FetchBotStatusRequestAction) {
     yield put(setLoading(true))
     
     const { response } = yield call(API_CALL, {
+      baseURL,
       method: 'POST',
       url: '/bot_status',
       body: {

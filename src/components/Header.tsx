@@ -92,7 +92,7 @@ export default function Header( ) {
                   dispatch(fetchBotStatusRequest())
                 }
               }
-          dispatch(fetchUserDataRequest({ userId : 709148502 }))
+          //dispatch(fetchUserDataRequest({ userId : 709148502 }))
         
        
        

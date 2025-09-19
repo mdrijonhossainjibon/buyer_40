@@ -1,38 +1,18 @@
 import { call, put, takeEvery } from 'redux-saga/effects'
 import { ADS_SETTINGS_ACTIONS, FetchAdsSettingsRequestAction } from './types'
 import { fetchAdsSettingsSuccess, fetchAdsSettingsFailure } from './actions'
+import { API_CALL } from 'auth-fingerprint'
+import { baseURL } from '@/lib/api-string'
 
-// API call function
-async function fetchAdsSettingsAPI() {
-  const response = await fetch('/api/ads/settings', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || 'Failed to fetch ads settings')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
+ 
 // Saga worker function
 function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction) {
   try {
-    const adsSettings: {
-      dailyAdLimit: number
-      adEarningAmount: number
-      adWatchEnabled: boolean
-      minWatchTime: number
-      rewardMultiplier: number
-      lastUpdated: string
-    } = yield call(fetchAdsSettingsAPI)
-
-    yield put(fetchAdsSettingsSuccess(adsSettings))
+    const adsSettings: { response: any , status: number} =  yield call(API_CALL, {  baseURL, url : '/ads-settings' , method : 'GET'})
+    if (adsSettings.status === 200) {
+     
+    yield put(fetchAdsSettingsSuccess(adsSettings.response.data))
+    }
   } catch (error: any) {
     yield put(fetchAdsSettingsFailure(error.message || 'Failed to fetch ads settings'))
   }

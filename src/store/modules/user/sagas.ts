@@ -19,6 +19,7 @@ import {
   clearStoredUserData,
   getAccountLockDuration
 } from '@/lib/localStorage'
+import { baseURL } from '@/lib/api-string'
 
 // Account validation saga
 function* validateAccountSaga(action: ValidateAccountRequestAction) {
@@ -64,6 +65,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
      
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
+      baseURL,
       url: '/users',
       method: 'POST',
       body: {
