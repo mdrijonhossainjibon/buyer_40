@@ -43,24 +43,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
     <>
     
 
-      <Script
-        src={`https://ad.gigapub.tech/script?id=3085`}
-        strategy="afterInteractive"
-        onLoad={handleGigaPubLoad}
-        onError={() => handleScriptError('GigaPub')}
-      />
-
-
-      <Script
-        src="//libtl.com/sdk.js"
-        data-zone="9890517"
-        data-sdk={`show_9890517`}
-        strategy="afterInteractive"
-        onLoad={handleMonetagLoad}
-        onError={() => handleScriptError('Monetag')}
-      />
-
-
+     
 
       {children}
     </>

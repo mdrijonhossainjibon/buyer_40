@@ -34,6 +34,22 @@ export default function RootLayout({
             src="https://telegram.org/js/telegram-web-app.js"
             strategy="beforeInteractive"
           /> 
+
+<Script
+        src={`https://ad.gigapub.tech/script?id=3085`}
+        strategy="afterInteractive"
+       
+      />
+
+
+      <Script
+        src="//libtl.com/sdk.js"
+        data-zone="9890517"
+        data-sdk={`show_9890517`}
+        strategy="afterInteractive"
+       
+      />
+
       </head>
       <body className={nunito.className}>
         <AuthSessionProvider>
