@@ -121,8 +121,18 @@ export default function LoadingOverlay({
               version: 'detected',
               user: user
             })
-          } 
+          } else {
+            setTelegramStatus('unavailable')
+            console.log('Telegram Web App not detected - running in fallback mode')
+            
+            // For web fallback, generate a demo user ID
+            setUserId(Math.floor(Math.random() * 1000000))
+            setUsername('web_user')
+            setFirstName('Web')
+            setLastName('User')
+          }
         }
+      
       } catch (error) {
         console.error('Error detecting Telegram Web App:', error)
         setTelegramStatus('error')

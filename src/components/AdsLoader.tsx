@@ -10,17 +10,7 @@ interface AdsLoaderProps {
   children?: React.ReactNode
 }
 
-// Global ads interface for TypeScript
-declare global {
-  interface Window {
-    gigapub?: any
-    monetag?: any
-    adsbygoogle?: any
-    showAd?: (zoneId: string) => void
-    initializeAds?: () => void
-  }
-}
-
+ 
 export default function AdsLoader({ children }: AdsLoaderProps) {
   const dispatch = useDispatch()
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
@@ -36,7 +26,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
   const handleGigaPubLoad = () => {
     if (adsSettings.enableGigaPubAds ) {
       console.log('GigaPub ads loaded successfully')
-      window.initializeAds?.()
+ 
     }
   }
 
