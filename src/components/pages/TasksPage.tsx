@@ -52,7 +52,7 @@ export default function TasksPage( ) {
               const { response } = await API_CALL({
                 baseURL,
                 method: 'POST',
-                url: '/tasks/watch-ad',
+                url: '/watch-ad',
                 body: {
                   userId: user.userId,
                   ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
@@ -118,7 +118,7 @@ export default function TasksPage( ) {
           const { response } = await API_CALL({
             baseURL,
             method: 'POST',
-            url: '/tasks/telegram-bonus',
+            url: '/telegram-bonus',
             body: {
              
               ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
@@ -179,7 +179,7 @@ export default function TasksPage( ) {
           const { response } = await API_CALL({
             baseURL,
             method: 'POST',
-            url: '/tasks/youtube-bonus',
+            url: '/youtube-bonus',
             body: {
               
               ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
