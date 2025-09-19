@@ -69,20 +69,7 @@ export default function Header( ) {
                 if (telegramUser && telegramUser.username) {
                   const userId = telegramUser.id
                   const username = telegramUser.username
-        
-                  // Check if this is an account switch attempt
-                  if (isAccountSwitchAttempt(userId)) {
-                    const currentLockDuration = getAccountLockDuration()
-                    
-                    if (currentLockDuration > 0) {
-                      
-                      setBlockedUserId(userId)
-                      setShowAccountDialog(true)
-                      setIsLoading(false)
-                      return
-                    }
-                  }
-        
+         
                   // Proceed with user data fetch if validation passes
                   dispatch(fetchUserDataRequest({ 
                     userId, 
