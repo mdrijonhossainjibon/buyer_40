@@ -62,23 +62,7 @@ export default function HomePage() {
     }
 
 
-/* 
-       // Check if this is an account switch attempt
-       if (isAccountSwitchAttempt(123456788)) {
-        const currentLockDuration = getAccountLockDuration()
-        
-        console.log('Current lock duration:', currentLockDuration)
-        if (currentLockDuration > 0) {
-         
-          setBlockedUserId(123456788)
-          setShowAccountDialog(true)
-          setIsLoading(false)
-          return
-        }
-      } */
-
-      // Proceed with user data fetch if validation passes
-      //dispatch(fetchUserDataRequest({ userId : 123456788 ,   username : 'test'}))
+ 
   }
 
   const copyReferralLink = async () => {

@@ -15,8 +15,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
   const dispatch = useDispatch()
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
   
-
-  console.log(adsSettings)
+ 
   // Load ads settings on component mount
   useEffect(() => {
     dispatch(fetchAdsSettingsRequest())

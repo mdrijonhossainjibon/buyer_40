@@ -41,9 +41,43 @@ export default function TasksPage( ) {
     })
 
     // Rewarded interstitial
+    try {
+      if (window.showGiga) {
+        await window.showGiga()
+          .then((response) => {
+            // Handle successful ad completion
+            Toast.show({
+              content: 'Ad watched successfully! Reward credited.',
+              duration: 2000,
+            })
+            setIsWatchingAd(false)
+          })
+          .catch((error) => {
+            console.error('Giga ads error:', error)
+            Toast.show({
+              content: 'Failed to complete ad watching',
+              duration: 2000,
+            })
+            setIsWatchingAd(false)
+          })
+      } else {
+        Toast.show({
+          content: 'Ad service not available',
+          duration: 2000,
+        })
+        setIsWatchingAd(false)
+      }
+    } catch (error) {
+      console.error('Ad watching error:', error)
+      Toast.show({
+        content: 'Failed to start ad watching',
+        duration: 2000,
+      })
+      setIsWatchingAd(false)
+    }
 
     
-    if (adsSettings.monetagEnabled) {
+    /* if (adsSettings.monetagEnabled) {
       LoadAds(adsSettings.monetagZoneId).then(() => {
         try {
           // Simulate ad watching delay
@@ -88,7 +122,7 @@ export default function TasksPage( ) {
           })
         }
        })
-    }
+    } */
 
    
   }
