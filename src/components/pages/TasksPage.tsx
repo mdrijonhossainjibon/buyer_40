@@ -54,8 +54,8 @@ export default function TasksPage( ) {
                 method: 'POST',
                 url: '/watch-ad',
                 body: {
-                  userId: user.userId,
-                  ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+                 
+                  ...generateSignature(user.userId as any, process.env.NEXT_PUBLIC_SECRET_KEY || '')
                 }
               })
     
@@ -121,7 +121,7 @@ export default function TasksPage( ) {
             url: '/telegram-bonus',
             body: {
              
-              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              ...generateSignature(user.userId as any, process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
 
@@ -182,7 +182,7 @@ export default function TasksPage( ) {
             url: '/youtube-bonus',
             body: {
               
-              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+              ...generateSignature(user.userId as any, process.env.NEXT_PUBLIC_SECRET_KEY || '')
             }
           })
 
