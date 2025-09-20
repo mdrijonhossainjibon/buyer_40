@@ -135,7 +135,6 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
     case USER_ACTIONS.CLAIM_YOUTUBE_REQUEST:
       return {
         ...state,
-        isLoading: true,
         error: null
       }
     
@@ -159,7 +158,7 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
     case USER_ACTIONS.CLAIM_CHANNEL_REQUEST:
       return {
         ...state,
-        isLoading: true,
+        isLoading: false,
         error: null
       }
     

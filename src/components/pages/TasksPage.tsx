@@ -16,8 +16,7 @@ import {
  
 export default function TasksPage() {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
-  const [channelClaimed, setChannelClaimed] = useState(false)
-  const [youtubeClaimed, setYoutubeClaimed] = useState(false)
+ 
   const user = useSelector((state: RootState) => state.user);
   const  adsSettings   = useSelector((state: RootState) => state.adsSettings);
   const dispatch = useDispatch();
@@ -159,13 +158,10 @@ export default function TasksPage() {
     })
     
     try {
-      // Use Promise instead of setTimeout for better error handling
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+  
       // Dispatch Redux action to claim channel bonus
       if (user.userId) {
         dispatch(claimChannelRequest(user.userId))
-        setChannelClaimed(true)
       }
     } catch (error) {
       console.error('Telegram bonus error:', error)
@@ -202,7 +198,7 @@ export default function TasksPage() {
       // Dispatch Redux action to claim YouTube bonus
       if (user.userId) {
         dispatch(claimYoutubeRequest(user.userId))
-        setYoutubeClaimed(true)
+ 
       }
     } catch (error) {
       console.error('YouTube bonus error:', error)
@@ -245,10 +241,10 @@ export default function TasksPage() {
           <button 
             className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed" 
             onClick={checkChannel}
-            disabled={channelClaimed || Boolean(user.telegramBonus && user.telegramBonus > 0)}
+            disabled={  Boolean(user.telegramBonus && user.telegramBonus > 0)}
           >
             <span>
-              {(channelClaimed || (user.telegramBonus && user.telegramBonus > 0)) ? (
+              {( (user.telegramBonus && user.telegramBonus > 0)) ? (
                 <>
                   <i className="fas fa-check-circle text-green-300 mr-1"></i>
                   Claimed!
@@ -279,10 +275,10 @@ export default function TasksPage() {
           <button
             className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={claimYoutube}
-            disabled={youtubeClaimed || Boolean(user.youtubeBonus && user.youtubeBonus > 0)}
+            disabled={Boolean(user.youtubeBonus && user.youtubeBonus > 0)}
           >
             <span>
-              {(youtubeClaimed || (user.youtubeBonus && user.youtubeBonus > 0)) ? (
+              {((user.youtubeBonus && user.youtubeBonus > 0)) ? (
                 <>
                   <i className="fas fa-check-circle text-green-300 mr-1"></i>
                   Claimed!
@@ -301,12 +297,7 @@ export default function TasksPage() {
         </p>
        
         
-        {(youtubeClaimed || (user.youtubeBonus && user.youtubeBonus > 0)) && (
-          <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
-            <i className="fas fa-check-circle text-green-500 mr-1"></i>
-            YouTube bonus claimed!
-          </small>
-        )}
+     
       </div>
     </div>
   )

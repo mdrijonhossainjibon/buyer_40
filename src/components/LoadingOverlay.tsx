@@ -170,7 +170,7 @@ export default function LoadingOverlay({
 
 
   useEffect(() =>{
-    dispatch(fetchUserDataRequest({ userId : 709148502}))
+    //dispatch(fetchUserDataRequest({ userId : 709148502}))
   }, [ dispatch ])
     
 
