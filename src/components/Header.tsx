@@ -63,26 +63,9 @@ export default function Header( ) {
         // Initialize Telegram WebApp
               if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp
-        
-                // Get user data from Telegram
-                const telegramUser = tg.initDataUnsafe?.user
-                if (telegramUser && telegramUser.username) {
-                  const userId = telegramUser.id
-                  const username = telegramUser.username
-         
-                  // Proceed with user data fetch if validation passes
-                  dispatch(fetchUserDataRequest({ 
-                    userId, 
-                    start_param: tg.initDataUnsafe.start_param, 
-                    username 
-                  }))
-                  dispatch(fetchBotStatusRequest())
-                }
+                dispatch(fetchBotStatusRequest())
               }
-          ///dispatch(fetchUserDataRequest({ userId : 709148502 }))
-        
-       
-       
+         
     }, [])
   
     const handleCloseDialog = () => {
