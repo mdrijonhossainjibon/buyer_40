@@ -1,6 +1,5 @@
 import { call, put, takeEvery, all } from 'redux-saga/effects'
 import { Toast } from 'antd-mobile'
-import { AdminUsersAPI } from '@/lib/api/adminUsers'
 import {
   ADMIN_USERS_ACTIONS,
   FetchUsersRequestAction,
