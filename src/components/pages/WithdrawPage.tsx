@@ -1,89 +1,59 @@
 'use client'
 
 import { RootState } from '@/store'
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import CustomToast from '@/components/CustomToast'
-import { Form, Input, Button, Selector, Card } from 'antd-mobile'
-import { API_CALL, generateSignature } from 'auth-fingerprint'
-import { baseURL } from '@/lib/api-string'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { Form, Selector, Card } from 'antd-mobile'
+import { Input, InputNumber, Button } from 'antd'
+import {
+  setWithdrawMethod,
+  setAccountNumber,
+  setAmount,
+  submitWithdrawRequest,
+  fetchWithdrawConfigRequest,
+  clearError,
+  clearSuccessMessage
+} from '@/store/modules/withdraw/actions'
 
 
 export default function WithdrawPage() {
-  const [withdrawMethod, setWithdrawMethod] = useState('Bkash')
-  const [accountNumber, setAccountNumber] = useState('')
-  const [amount, setAmount] = useState('')
+  const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.user)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const withdraw = useSelector((state: RootState) => state.withdraw)
 
-  const minWithdraw = 1000
-  const requiredReferrals = 20
+  const {
+    withdrawMethod,
+    accountNumber,
+    amount,
+    isSubmitting,
+    isLoading,
+    error,
+    successMessage,
+    minWithdraw,
+    requiredReferrals
+  } = withdraw
 
-  const handleSubmit = async () => {
+  
+  // Clear messages on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearError())
+      dispatch(clearSuccessMessage())
+    }
+  }, [dispatch])
+
+  const handleSubmit = () => {
     if (!user.userId || !withdrawMethod || !accountNumber || !amount) {
-      CustomToast.show({
-        content: 'সকল ক্ষেত্র পূরণ করুন',
-        duration: 3000,
-        position: 'bottom'
-      })
       return
     }
 
-
-    setIsSubmitting(true)
-
-    CustomToast.show({
-      content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
-      duration: 3000,
-      type: 'loading',
-    })
-
-    try {
-      const { response } = await API_CALL({
-         baseURL,
-        url: '/withdraw',
-        method: 'POST',
-        body: {
-          ...generateSignature(
-            JSON.stringify({
-              userId: user.userId,
-              withdrawMethod,
-              accountNumber,
-              amount: parseInt(amount)
-            }),
-            process.env.NEXT_PUBLIC_SECRET_KEY || ''
-          )
-        }
-      })
-
-      if (response && response.success) {
-        CustomToast.show({
-          content: response.message || 'Withdrawal request submitted successfully.',
-          duration: 3000,
-          position:'center'
-        })
-
-        // Clear form
-        setAccountNumber('')
-        setAmount('')
-
-
-      } else {
-        CustomToast.show({
-          content: response?.message || 'উইথড্র অনুরোধে সমস্যা হয়েছে',
-          duration: 3000,
-          position: 'bottom'
-        })
-      }
-    } catch (error) {
-      console.error('Withdraw error:', error)
-      CustomToast.show({
-        content: 'নেটওয়ার্ক সমস্যা! আবার চেষ্টা করুন।',
-        duration: 3000, position: 'bottom'
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
+    // Dispatch Redux action to submit withdrawal request
+    dispatch(submitWithdrawRequest({
+      userId: user.userId,
+      withdrawMethod,
+      accountNumber,
+      amount: parseInt(amount)
+    }))
   }
 
   const paymentMethods = [
@@ -121,11 +91,11 @@ export default function WithdrawPage() {
           footer={
             <Button
               block
-              type='submit'
-              color='primary'
+              type='primary'
               size='large'
               disabled={user.status === 'suspend' || isSubmitting}
               loading={isSubmitting}
+              htmlType="submit"
             >
               {user.status === 'suspend'
                 ? 'Account suspended'
@@ -144,22 +114,31 @@ export default function WithdrawPage() {
             <Selector
               options={paymentMethods}
               value={[withdrawMethod]}
-              onChange={(val) => setWithdrawMethod(val[0] || 'Bkash')}
+              onChange={(val) => dispatch(setWithdrawMethod(val[0] || 'Bkash'))}
             />
           </Form.Item>
 
           <Form.Item
             label="Account Number:"
             name="accountNumber"
-            rules={[{ required: true, message: 'Account number required' }]}
-             
+            rules={[
+              { required: true, message: 'Account number required' },
+              { max: 11, message: 'Account number must be maximum 11 digits' },
+              { min: 11, message: 'Account number must be exactly 11 digits' }
+            ]}
           >
             <Input
               value={accountNumber}
-              onChange={(val) => setAccountNumber(val)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '') // Only allow digits
+                if (value.length <= 11) {
+                  dispatch(setAccountNumber(value))
+                }
+              }}
               placeholder="০১XXXXXXXXX"
-              max={11}
-              clearable
+              size="large"
+              className="w-full"
+              maxLength={11}
             />
           </Form.Item>
 
@@ -181,20 +160,31 @@ export default function WithdrawPage() {
               }
             ]}
           >
-            <Input
-              type='number'
-              value={amount}
-              onChange={(val) => {
-                // Keep only numbers
-                const numericValue = val.replace(/\D/g, '')
-                setAmount(numericValue)
-              }}
-              placeholder="১০০০"
-
-              min={minWithdraw}
-              max={user.balanceTK}
-              clearable
-            />
+            <div className="flex gap-2">
+              <InputNumber
+                value={amount ? parseInt(amount) : undefined}
+                onChange={(value) => {
+                  dispatch(setAmount(value ? value.toString() : ''))
+                }}
+                placeholder="১০০০"
+                min={minWithdraw}
+                max={user.balanceTK}
+                size="large"
+                className="flex-1"
+                controls={false}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => parseFloat(value!.replace(/\$\s?|(,*)/g, '')) || 0}
+              />
+              <Button
+                size="large"
+                onClick={() => {
+                  dispatch(setAmount(user.balanceTK.toString()))
+                }}
+                className="px-4 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600 font-medium"
+              >
+                Max
+              </Button>
+            </div>
           </Form.Item>
         </Form>
       </Card>

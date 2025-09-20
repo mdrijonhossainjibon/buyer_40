@@ -13,6 +13,7 @@
     "@redux-devtools/extension": "^3.3.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/mongoose": "^5.11.97",
+    "antd": "^5.27.4",
     "antd-mobile": "^5.39.0",
     "auth-fingerprint": "^1.0.20",
     "mongoose": "^8.18.1",

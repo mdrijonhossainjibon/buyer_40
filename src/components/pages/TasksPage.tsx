@@ -67,7 +67,7 @@ export default function TasksPage() {
           } catch (error) {
             console.error('Giga ads error:', error)
             CustomToast.show({
-              content: 'Failed to complete ad watching',
+              content: 'Failed to Scipt Loads ads',
               duration: 2000,
             })
           }
