@@ -1,3 +1,4 @@
+ 
 export const LoadAds = (data: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const fnName = `show_${data}`; // e.g., "show_9827587"
@@ -21,4 +22,4 @@ export const LoadAds = (data: string): Promise<void> => {
       }
     });
   };
-  
+ 

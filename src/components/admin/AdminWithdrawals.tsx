@@ -3,6 +3,8 @@
 import { Card, Skeleton, List , PullToRefresh , Empty } from 'antd-mobile'
 import { useState, useEffect } from 'react'
 import WithdrawalDetailsPopup from './WithdrawalDetailsPopup'
+import { API_CALL } from 'auth-fingerprint'
+import { baseURL } from '@/lib/api-string'
 
 interface WithdrawalRequest {
   id: string
@@ -43,22 +45,17 @@ export default function AdminWithdrawals() {
   const fetchWithdrawals = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/withdrawals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'list-withdrawals',
-          ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-        })
-      })
 
-      const data = await response.json()
-      if (data.success) {
-        setWithdrawals(data.data.withdrawals || [])
+      const { response , status } = await API_CALL({ baseURL , url : '/admin/withdrawals', method : 'POST', body : JSON.stringify({
+        action: 'list-withdrawals',
+        ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
+      })});
+ 
+    
+      if (status === 200) {
+        setWithdrawals(response.data.withdrawals || [])
       } else {
-        console.error('Failed to fetch withdrawals:', data.message)
+        console.error('Failed to fetch withdrawals:', response.message)
       }
     } catch (error) {
       console.error('Error fetching withdrawals:', error)

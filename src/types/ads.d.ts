@@ -17,11 +17,26 @@ interface MonetagResponse {
   reward?: number;
 }
 
+// Ad Provider Types
+export interface AdProvider {
+  name: string;
+  displayName: string;
+  category: 'giga' | 'monetag'; // Provider category for distribution
+  isAvailable: () => boolean;
+  execute: () => Promise<any>;
+  priority: number; // Higher number = higher priority
+}
+
+export interface AdSelectionResult {
+  provider: AdProvider;
+  success: boolean;
+  error?: string;
+  response?: any;
+}
+
 declare global {
   interface Window {
     showGiga?: () => Promise<GigaAdsResponse>;
-    showGigaAd?: () => Promise<GigaAdsResponse>;
-    showMonetagAd?: () => Promise<MonetagResponse>;
     [key: string]: any; // For dynamic Monetag functions like show_9890517
   }
 }

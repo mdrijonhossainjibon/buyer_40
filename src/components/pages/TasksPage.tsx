@@ -12,6 +12,20 @@ import {
 } from '@/store/modules/user/actions'
 
  
+
+async function showAlternatingAds(zoneId: string, limit = 10 , userId : number) {
+  for (let i = 0; i < limit; i++) {
+    if (i % 2 === 0) {
+      // even index → LoadAds
+     await LoadAds(zoneId);
+      watchAdRequest(userId)
+    } else {
+      // odd index → showGiga
+     await window.showGiga?.();
+      watchAdRequest(userId)
+    }
+  }
+}
  
  
 export default function TasksPage() {
@@ -37,105 +51,11 @@ export default function TasksPage() {
       })
       return
     }
-
-    setIsWatchingAd(true)
-    
-    CustomToast.show({
-      content: 'Watching ad...',
-      duration: 3000,
-    })
-
-    // Rewarded interstitial
-    try {
-      // Use the exposed ad function from AdsLoader
-      if (typeof window !== 'undefined' && (window.showGigaAd || window.showGiga)) {
-        const adFunction = window.showGigaAd || window.showGiga
-        if (adFunction) {
-          try {
-            const response = await adFunction()
-            // Handle successful ad completion
-            CustomToast.show({
-              content: 'Ad watched successfully! Reward credited.',
-              duration: 2000,
-            })
-            
-            // Dispatch Redux action to credit the reward
-            if (user.userId) {
-              dispatch(watchAdRequest(user.userId))
-            }
-          } catch (error) {
-            console.error('Giga ads error:', error)
-            CustomToast.show({
-              content: 'Failed to Scipt Loads ads',
-              duration: 2000,
-            })
-          }
-        }
-      } else {
-        CustomToast.show({
-          content: 'Ad service not available',
-          duration: 2000,
-        })
-      }
-    } catch (error) {
-      console.error('Ad watching error:', error)
-      CustomToast.show({
-        content: 'Failed to start ad watching',
-        duration: 2000,
-      })
-    } finally {
-      setIsWatchingAd(false)
-    }
-
-    
-    /* if (adsSettings.monetagEnabled) {
-      LoadAds(adsSettings.monetagZoneId).then(() => {
-        try {
-          // Simulate ad watching delay
-          setTimeout(async () => {
-            try {
-              const { response } = await API_CALL({
-                baseURL,
-                method: 'POST',
-                url: '/watch-ad',
-                body: {
-                
-                  ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-                }
-              })
-    
-              if (response && response.success) {
-                CustomToast.show({
-                  content: response.message,
-                  duration: 2000,
-                })
-              } else {
-                CustomToast.show({
-                  content: response?.message || 'Failed to watch ad',
-                  duration: 2000,
-                })
-              }
-            } catch (error) {
-              console.error('Watch ad error:', error)
-              CustomToast.show({
-                content: 'Failed to process ad watching',
-                duration: 2000,
-              })
-            } finally {
-              setIsWatchingAd(false)
-            }
-          }, 3000)
-        } catch (error) {
-          setIsWatchingAd(false)
-          CustomToast.show({
-            content: 'Failed to start ad watching',
-            duration: 2000,
-          })
-        }
-       })
-    } */
-
    
+
+    showAlternatingAds(adsSettings.monetagZoneId , 10 , user.userId as any)
+
+    
   }
 
   const openChannel = () => {
@@ -218,12 +138,14 @@ export default function TasksPage() {
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Rewarded Ad</h3>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{adsSettings.defaultAdsReward || 0}</b> টাকা আয় করুন।</p>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
+        
+       
         <button
           className="w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={watchAd}
           disabled={isWatchingAd || (user.watchedToday || 0) >= (adsSettings.adsWatchLimit || 5000) || user.status === 'suspend'}
         >
-          <span>{isWatchingAd ? 'Watching Ad...' : 'Watch Ad'}</span>
+          Wach ads 
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           পুরস্কার পেতে {adsSettings.minWatchTime || 30} সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।

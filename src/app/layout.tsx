@@ -35,8 +35,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
 
-        <Script src="https://ad.gigapub.tech/script?id=3085" />
-
+     
       </head>
       <body className={nunito.className}>
         <AuthSessionProvider>
