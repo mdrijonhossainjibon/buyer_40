@@ -111,7 +111,7 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
     case USER_ACTIONS.WATCH_AD_REQUEST:
       return {
         ...state,
-        isLoading: true,
+        isLoading: false,
         error: null
       }
     
