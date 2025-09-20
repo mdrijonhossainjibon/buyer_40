@@ -242,18 +242,30 @@ export default function TasksPage() {
           <button className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200" onClick={openChannel}>
             <span>Open Channel</span>
           </button>
-          <button className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200" onClick={checkChannel}>
-            <span>Check & Claim</span>
+          <button 
+            className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed" 
+            onClick={checkChannel}
+            disabled={channelClaimed || Boolean(user.telegramBonus && user.telegramBonus > 0)}
+          >
+            <span>
+              {(channelClaimed || (user.telegramBonus && user.telegramBonus > 0)) ? (
+                <>
+                  <i className="fas fa-check-circle text-green-300 mr-1"></i>
+                  Claimed!
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-search mr-1"></i>
+                  Check & Claim
+                </>
+              )}
+            </span>
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           Earn 15 BDT by joining our Telegram channel!
         </p>
-        {(channelClaimed || (user.telegramBonus && user.telegramBonus > 0)) && (
-          <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
-            ✅ Channel bonus claimed!
-          </small>
-        )}
+        
       </div>
 
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -267,9 +279,21 @@ export default function TasksPage() {
           <button
             className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={claimYoutube}
-   
+            disabled={youtubeClaimed || Boolean(user.youtubeBonus && user.youtubeBonus > 0)}
           >
-            <span>{ 'Check & Claim'}</span>
+            <span>
+              {(youtubeClaimed || (user.youtubeBonus && user.youtubeBonus > 0)) ? (
+                <>
+                  <i className="fas fa-check-circle text-green-300 mr-1"></i>
+                  Claimed!
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-search mr-1"></i>
+                  Check & Claim
+                </>
+              )}
+            </span>
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
@@ -279,7 +303,8 @@ export default function TasksPage() {
         
         {(youtubeClaimed || (user.youtubeBonus && user.youtubeBonus > 0)) && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
-            ✅ YouTube bonus claimed!
+            <i className="fas fa-check-circle text-green-500 mr-1"></i>
+            YouTube bonus claimed!
           </small>
         )}
       </div>
