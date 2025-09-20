@@ -13,17 +13,22 @@ import {
 
  
 
-async function showAlternatingAds(zoneId: string, limit = 10 , userId : number) {
-  for (let i = 0; i < limit; i++) {
-    if (i % 2 === 0) {
-      // even index → LoadAds
-     await LoadAds(zoneId);
-      watchAdRequest(userId)
-    } else {
-      // odd index → showGiga
-     await window.showGiga?.();
-      watchAdRequest(userId)
-    }
+export async function showAlternatingAds(zoneId: string, userId: number) {
+  // get last state from localStorage
+  let lastAd = localStorage.getItem("lastAd");
+
+  if (lastAd === "load") {
+    // last was LoadAds → now showGiga
+    await window.showGiga?.();
+    watchAdRequest(userId);
+    localStorage.setItem("lastAd", "giga");
+    return "giga";
+  } else {
+    // default or last was giga → now LoadAds
+    await LoadAds(zoneId);
+    watchAdRequest(userId);
+    localStorage.setItem("lastAd", "load");
+    return "load";
   }
 }
  
@@ -53,7 +58,7 @@ export default function TasksPage() {
     }
    
 
-    showAlternatingAds(adsSettings.monetagZoneId , 10 , user.userId as any)
+    showAlternatingAds(adsSettings.monetagZoneId ,  user.userId as any)
 
     
   }
