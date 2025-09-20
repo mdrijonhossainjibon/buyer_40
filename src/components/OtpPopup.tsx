@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Popup, Button, Toast } from 'antd-mobile'
+import { Popup, Button } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
 import { CloseOutline } from 'antd-mobile-icons'
 
 interface OtpPopupProps {
@@ -100,7 +101,7 @@ export default function OtpPopup({
   const handleVerify = () => {
     const otpString = otp.join('')
     if (otpString.length !== 6) {
-      Toast.show({
+      CustomToast.show({
         content: 'Enter the 6-digit OTP code.',
         duration: 2000,
       })
@@ -115,7 +116,7 @@ export default function OtpPopup({
       setTimer(60)
       setCanResend(false)
       setOtp(['', '', '', '', '', ''])
-      Toast.show({
+      CustomToast.show({
         content: 'New OTP sent',
         duration: 2000,
       })

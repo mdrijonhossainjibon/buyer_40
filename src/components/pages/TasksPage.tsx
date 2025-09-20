@@ -1,20 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Toast} from 'antd-mobile'
-import { API_CALL, generateSignature } from 'auth-fingerprint'
+import CustomToast from '@/components/CustomToast'
 import { RootState } from '@/store'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { LoadAds } from '@/lib/ads'
-import { baseURL } from '@/lib/api-string'
+import { 
+  watchAdRequest, 
+  claimYoutubeRequest, 
+  claimChannelRequest 
+} from '@/store/modules/user/actions'
 
-// Extend window interface for ad functions
-declare global {
-  interface Window {
-    showGigaAd?: () => Promise<any>;
-    showGiga?: () => Promise<any>;
-  }
-}
+ 
  
  
 export default function TasksPage() {
@@ -23,10 +20,11 @@ export default function TasksPage() {
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
   const user = useSelector((state: RootState) => state.user);
   const  adsSettings   = useSelector((state: RootState) => state.adsSettings);
+  const dispatch = useDispatch();
 
   const watchAd = async () => {
     if (user.watchedToday >= 5000) {
-      Toast.show({
+      CustomToast.show({
         content: 'Daily ad limit reached!',
         duration: 2000,
       })
@@ -34,7 +32,7 @@ export default function TasksPage() {
     }
 
     if (user.status === 'suspend') {
-      Toast.show({
+      CustomToast.show({
         content: 'Your account has been suspended!',
         duration: 2000,
       })
@@ -43,7 +41,7 @@ export default function TasksPage() {
 
     setIsWatchingAd(true)
     
-    Toast.show({
+    CustomToast.show({
       content: 'Watching ad...',
       duration: 3000,
     })
@@ -57,52 +55,32 @@ export default function TasksPage() {
           try {
             const response = await adFunction()
             // Handle successful ad completion
-            Toast.show({
+            CustomToast.show({
               content: 'Ad watched successfully! Reward credited.',
               duration: 2000,
             })
             
-            // Call API to credit the reward
-            try {
-              const { response: apiResponse } = await API_CALL({
-                baseURL,
-                method: 'POST',
-                url: '/watch-ad',
-                body: {
-                  ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-                }
-              })
-              
-              if (apiResponse && apiResponse.success) {
-                Toast.show({
-                  content: apiResponse.message || 'Reward credited successfully!',
-                  duration: 2000,
-                })
-              }
-            } catch (apiError) {
-              console.error('API call error:', apiError)
-              Toast.show({
-                content: 'Ad watched but failed to credit reward. Please contact support.',
-                duration: 3000,
-              })
+            // Dispatch Redux action to credit the reward
+            if (user.userId) {
+              dispatch(watchAdRequest(user.userId))
             }
           } catch (error) {
             console.error('Giga ads error:', error)
-            Toast.show({
+            CustomToast.show({
               content: 'Failed to complete ad watching',
               duration: 2000,
             })
           }
         }
       } else {
-        Toast.show({
+        CustomToast.show({
           content: 'Ad service not available',
           duration: 2000,
         })
       }
     } catch (error) {
       console.error('Ad watching error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'Failed to start ad watching',
         duration: 2000,
       })
@@ -128,19 +106,19 @@ export default function TasksPage() {
               })
     
               if (response && response.success) {
-                Toast.show({
+                CustomToast.show({
                   content: response.message,
                   duration: 2000,
                 })
               } else {
-                Toast.show({
+                CustomToast.show({
                   content: response?.message || 'Failed to watch ad',
                   duration: 2000,
                 })
               }
             } catch (error) {
               console.error('Watch ad error:', error)
-              Toast.show({
+              CustomToast.show({
                 content: 'Failed to process ad watching',
                 duration: 2000,
               })
@@ -150,7 +128,7 @@ export default function TasksPage() {
           }, 3000)
         } catch (error) {
           setIsWatchingAd(false)
-          Toast.show({
+          CustomToast.show({
             content: 'Failed to start ad watching',
             duration: 2000,
           })
@@ -167,47 +145,31 @@ export default function TasksPage() {
 
   const checkChannel = async () => {
     if (user.telegramBonus && user.telegramBonus > 0) {
-      Toast.show({
+      CustomToast.show({
         content: 'Already claimed!',
         duration: 2000,
       })
       return
     }
 
-    Toast.show({
+    CustomToast.show({
       content: 'Checking channel...',
       duration: 2000,
-      icon: 'loading'
+      type: 'loading'
     })
     
     try {
       // Use Promise instead of setTimeout for better error handling
       await new Promise(resolve => setTimeout(resolve, 2000))
       
-      const { response } = await API_CALL({
-        baseURL,
-        method: 'POST',
-        url: '/telegram-bonus',
-        body: {
-          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-        }
-      })
-
-      if (response && response.success) {
+      // Dispatch Redux action to claim channel bonus
+      if (user.userId) {
+        dispatch(claimChannelRequest(user.userId))
         setChannelClaimed(true)
-        Toast.show({
-          content: response.message || 'Telegram bonus claimed successfully!',
-          duration: 2000,
-        })
-      } else {
-        Toast.show({
-          content: response?.message || 'Failed to claim telegram bonus',
-          duration: 2000,
-        })
       }
     } catch (error) {
       console.error('Telegram bonus error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'Failed to process telegram bonus',
         duration: 2000,
       })
@@ -220,47 +182,31 @@ export default function TasksPage() {
  
   const claimYoutube = async () => {
     if (user.youtubeBonus && user.youtubeBonus > 0) {
-      Toast.show({
+      CustomToast.show({
         content: 'Already claimed!',
         duration: 2000,
       })
       return
     }
  
-    Toast.show({
+    CustomToast.show({
       content: 'Checking subscription...',
       duration: 2000,
-      icon: 'loading'
+      type: 'loading'
     })
     
     try {
       // Use Promise instead of setTimeout for better error handling
       await new Promise(resolve => setTimeout(resolve, 2500))
       
-      const { response } = await API_CALL({
-        baseURL,
-        method: 'POST',
-        url: '/youtube-bonus',
-        body: {
-          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-        }
-      })
-
-      if (response && response.success) {
+      // Dispatch Redux action to claim YouTube bonus
+      if (user.userId) {
+        dispatch(claimYoutubeRequest(user.userId))
         setYoutubeClaimed(true)
-        Toast.show({
-          content: response.message || 'YouTube bonus claimed successfully!',
-          duration: 3000,
-        })
-      } else {
-        Toast.show({
-          content: response?.message || 'Failed to claim YouTube bonus',
-          duration: 2000,
-        })
       }
     } catch (error) {
       console.error('YouTube bonus error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'Failed to process YouTube bonus',
         duration: 2000,
       })

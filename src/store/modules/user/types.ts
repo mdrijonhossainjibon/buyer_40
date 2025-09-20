@@ -30,7 +30,17 @@ export const USER_ACTIONS = {
   VALIDATE_ACCOUNT_REQUEST: 'VALIDATE_ACCOUNT_REQUEST',
   VALIDATE_ACCOUNT_SUCCESS: 'VALIDATE_ACCOUNT_SUCCESS',
   VALIDATE_ACCOUNT_FAILURE: 'VALIDATE_ACCOUNT_FAILURE',
-  CLEAR_STORED_ACCOUNT: 'CLEAR_STORED_ACCOUNT'
+  CLEAR_STORED_ACCOUNT: 'CLEAR_STORED_ACCOUNT',
+  // Ad watching and task completion actions
+  WATCH_AD_REQUEST: 'WATCH_AD_REQUEST',
+  WATCH_AD_SUCCESS: 'WATCH_AD_SUCCESS',
+  WATCH_AD_FAILURE: 'WATCH_AD_FAILURE',
+  CLAIM_YOUTUBE_REQUEST: 'CLAIM_YOUTUBE_REQUEST',
+  CLAIM_YOUTUBE_SUCCESS: 'CLAIM_YOUTUBE_SUCCESS',
+  CLAIM_YOUTUBE_FAILURE: 'CLAIM_YOUTUBE_FAILURE',
+  CLAIM_CHANNEL_REQUEST: 'CLAIM_CHANNEL_REQUEST',
+  CLAIM_CHANNEL_SUCCESS: 'CLAIM_CHANNEL_SUCCESS',
+  CLAIM_CHANNEL_FAILURE: 'CLAIM_CHANNEL_FAILURE'
 } as const
 
 // Action interfaces
@@ -112,6 +122,61 @@ export interface ClearStoredAccountAction {
   [key: string]: any
 }
 
+// Ad watching and task completion action interfaces
+export interface WatchAdRequestAction {
+  type: typeof USER_ACTIONS.WATCH_AD_REQUEST
+  payload: { userId: number }
+  [key: string]: any
+}
+
+export interface WatchAdSuccessAction {
+  type: typeof USER_ACTIONS.WATCH_AD_SUCCESS
+  payload: { balance: number, watchedToday: number, message: string }
+  [key: string]: any
+}
+
+export interface WatchAdFailureAction {
+  type: typeof USER_ACTIONS.WATCH_AD_FAILURE
+  payload: string
+  [key: string]: any
+}
+
+export interface ClaimYoutubeRequestAction {
+  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_REQUEST
+  payload: { userId: number }
+  [key: string]: any
+}
+
+export interface ClaimYoutubeSuccessAction {
+  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_SUCCESS
+  payload: { balance: number, youtubeBonus: number, message: string }
+  [key: string]: any
+}
+
+export interface ClaimYoutubeFailureAction {
+  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_FAILURE
+  payload: string
+  [key: string]: any
+}
+
+export interface ClaimChannelRequestAction {
+  type: typeof USER_ACTIONS.CLAIM_CHANNEL_REQUEST
+  payload: { userId: number }
+  [key: string]: any
+}
+
+export interface ClaimChannelSuccessAction {
+  type: typeof USER_ACTIONS.CLAIM_CHANNEL_SUCCESS
+  payload: { balance: number, telegramBonus: number, message: string }
+  [key: string]: any
+}
+
+export interface ClaimChannelFailureAction {
+  type: typeof USER_ACTIONS.CLAIM_CHANNEL_FAILURE
+  payload: string
+  [key: string]: any
+}
+
 export type UserActionTypes = 
   | SetUserDataAction
   | SetLoadingAction
@@ -126,3 +191,12 @@ export type UserActionTypes =
   | ValidateAccountSuccessAction
   | ValidateAccountFailureAction
   | ClearStoredAccountAction
+  | WatchAdRequestAction
+  | WatchAdSuccessAction
+  | WatchAdFailureAction
+  | ClaimYoutubeRequestAction
+  | ClaimYoutubeSuccessAction
+  | ClaimYoutubeFailureAction
+  | ClaimChannelRequestAction
+  | ClaimChannelSuccessAction
+  | ClaimChannelFailureAction

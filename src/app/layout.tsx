@@ -5,7 +5,7 @@ import ReduxProvider from '@/components/ReduxProvider'
 import AuthSessionProvider from '@/components/SessionProvider'
 import AdsLoader from '@/components/AdsLoader'
 import Script from 'next/script'
- 
+
 const nunito = Nunito({
   subsets: ['latin'],
   weight: ['400', '600', '700'],
@@ -31,9 +31,11 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
         <Script
-            src="https://telegram.org/js/telegram-web-app.js"
-            strategy="beforeInteractive"
-          />
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+
+        <Script src="https://ad.gigapub.tech/script?id=3085" />
 
       </head>
       <body className={nunito.className}>

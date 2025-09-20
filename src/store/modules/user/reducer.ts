@@ -106,6 +106,78 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
       return {
         ...initialState
       }
+
+    // Ad watching actions
+    case USER_ACTIONS.WATCH_AD_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      }
+    
+    case USER_ACTIONS.WATCH_AD_SUCCESS:
+      return {
+        ...state,
+        balanceTK: action.payload.balance,
+        watchedToday: action.payload.watchedToday,
+        isLoading: false,
+        error: null
+      }
+    
+    case USER_ACTIONS.WATCH_AD_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
+      }
+
+    // YouTube claim actions
+    case USER_ACTIONS.CLAIM_YOUTUBE_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      }
+    
+    case USER_ACTIONS.CLAIM_YOUTUBE_SUCCESS:
+      return {
+        ...state,
+        balanceTK: action.payload.balance,
+        youtubeBonus: action.payload.youtubeBonus,
+        isLoading: false,
+        error: null
+      }
+    
+    case USER_ACTIONS.CLAIM_YOUTUBE_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
+      }
+
+    // Channel claim actions
+    case USER_ACTIONS.CLAIM_CHANNEL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      }
+    
+    case USER_ACTIONS.CLAIM_CHANNEL_SUCCESS:
+      return {
+        ...state,
+        balanceTK: action.payload.balance,
+        telegramBonus: action.payload.telegramBonus,
+        isLoading: false,
+        error: null
+      }
+    
+    case USER_ACTIONS.CLAIM_CHANNEL_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
+      }
     
     default:
       return state

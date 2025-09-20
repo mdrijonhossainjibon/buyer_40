@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Popup, List, Toast , PullToRefresh , Skeleton } from 'antd-mobile'
+import { Popup, List, PullToRefresh, Skeleton } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
 import { BellOutline, CloseOutline } from 'antd-mobile-icons'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { RootState } from '@/store'
@@ -55,20 +56,20 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
       if (response && response.success) {
         setNotifications(response.data.notifications)
         if (showToast) {
-          Toast.show({
+          CustomToast.show({
             content: 'নোটিফিকেশন আপডেট হয়েছে',
             duration: 1500,
           })
         }
       } else {
-        Toast.show({
+        CustomToast.show({
           content: response?.message || 'নোটিফিকেশন লোড করতে ব্যর্থ',
           duration: 2000,
         })
       }
     } catch (error) {
       console.error('Fetch notifications error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'নোটিফিকেশন লোড করতে ব্যর্থ',
         duration: 2000,
       })

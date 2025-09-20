@@ -3,7 +3,8 @@
 import { RootState } from '@/store'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Form, Input, Button, Selector, Toast, Card } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
+import { Form, Input, Button, Selector, Card } from 'antd-mobile'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { baseURL } from '@/lib/api-string'
 
@@ -20,7 +21,7 @@ export default function WithdrawPage() {
 
   const handleSubmit = async () => {
     if (!user.userId || !withdrawMethod || !accountNumber || !amount) {
-      Toast.show({
+      CustomToast.show({
         content: 'সকল ক্ষেত্র পূরণ করুন',
         duration: 3000,
         position: 'bottom'
@@ -31,7 +32,7 @@ export default function WithdrawPage() {
 
     setIsSubmitting(true)
 
-    Toast.show({
+    CustomToast.show({
       content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
       duration: 3000,
       icon: 'loading',
@@ -56,7 +57,7 @@ export default function WithdrawPage() {
       })
 
       if (response && response.success) {
-        Toast.show({
+        CustomToast.show({
           content: response.message || 'Withdrawal request submitted successfully.',
           duration: 3000,
           position:'center'
@@ -68,7 +69,7 @@ export default function WithdrawPage() {
 
 
       } else {
-        Toast.show({
+        CustomToast.show({
           content: response?.message || 'উইথড্র অনুরোধে সমস্যা হয়েছে',
           duration: 3000,
           position: 'bottom'
@@ -76,7 +77,7 @@ export default function WithdrawPage() {
       }
     } catch (error) {
       console.error('Withdraw error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'নেটওয়ার্ক সমস্যা! আবার চেষ্টা করুন।',
         duration: 3000, position: 'bottom'
       })

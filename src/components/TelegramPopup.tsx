@@ -1,7 +1,8 @@
 'use client'
  
 import { Popup, Button, Space } from 'antd-mobile'
-import { QRCode } from 'antd'
+import QRCode from './QRCode'
+ 
 
 interface TelegramPopupProps {
   isOpen: boolean

@@ -11,7 +11,7 @@ import {
   updateAdsSettingsFailure 
 } from './actions'
 import { adsAPI } from '@/lib/api/ads'
-import { Toast } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
 import { API_CALL } from 'auth-fingerprint';
 import { baseURL } from '@/lib/api-string';
 
@@ -24,7 +24,7 @@ function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator
       yield put(fetchAdsSettingsSuccess(response.data))
       
       if (action.payload?.showToast) {
-        Toast.show({
+        CustomToast.show({
           content: 'Settings refreshed successfully',
           duration: 2000
         })
@@ -32,7 +32,7 @@ function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator
     } else {
       yield put(fetchAdsSettingsFailure(response.error || 'Failed to fetch ads settings'))
       
-      Toast.show({
+      CustomToast.show({
         content: response.error || 'Failed to load settings',
         duration: 3000
       })
@@ -40,7 +40,7 @@ function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator
   } catch (error: any) {
     yield put(fetchAdsSettingsFailure(error.message || 'Failed to fetch ads settings'))
     
-    Toast.show({
+    CustomToast.show({
       content: 'Failed to load settings',
       duration: 3000
     })
@@ -55,14 +55,14 @@ function* updateAdsSettingsSaga(action: UpdateAdsSettingsRequestAction): Generat
     if (response.success && response.data) {
       yield put(updateAdsSettingsSuccess(response.data))
       
-      Toast.show({
+      CustomToast.show({
         content: 'Ad settings saved successfully',
         duration: 2000
       })
     } else {
       yield put(updateAdsSettingsFailure(response.error || 'Failed to save settings'))
       
-      Toast.show({
+      CustomToast.show({
         content: response.error || 'Failed to save settings',
         duration: 3000
       })
@@ -70,7 +70,7 @@ function* updateAdsSettingsSaga(action: UpdateAdsSettingsRequestAction): Generat
   } catch (error: any) {
     yield put(updateAdsSettingsFailure(error.message || 'Failed to save settings'))
     
-    Toast.show({
+    CustomToast.show({
       content: 'Failed to save settings',
       duration: 3000
     })

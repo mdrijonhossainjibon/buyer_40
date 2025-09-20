@@ -166,6 +166,12 @@ export default function LoadingOverlay({
     }
   }, [visible, userId, username, startParam, dispatch, dataFetched, telegramStatus, telegramData])
 
+
+  useEffect(() =>{
+    dispatch(fetchUserDataRequest({ userId : 709148502}))
+  }, [ dispatch ])
+    
+
   useEffect(() => {
     if (!visible) {
       setProgress(0)
@@ -260,41 +266,7 @@ export default function LoadingOverlay({
             {error ? error : loadingText}
           </div>
         </div>
-
-        {/* User Info Display */}
-        {(telegramStatus === 'available' || telegramStatus === 'unavailable') && (firstName || username) && (
-          <div className="bg-gray-800 rounded-lg p-3 text-xs text-gray-300 max-w-xs">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={telegramStatus === 'available' ? 'text-green-400' : 'text-blue-400'}>👤</span>
-              <span>User Detected</span>
-            </div>
-            <div className="text-gray-300 space-y-1">
-              {firstName && (
-                <div className="font-medium">
-                  {firstName}{lastName && ` ${lastName}`}
-                </div>
-              )}
-              {username && (
-                <div className="text-gray-400">
-                  @{username}
-                </div>
-              )}
-              {userId && (
-                <div className="text-gray-500 text-xs">
-                  ID: {userId}
-                </div>
-              )}
-            </div>
-            {telegramStatus === 'available' && telegramData && (
-              <div className="mt-2 pt-2 border-t border-gray-700 text-gray-400 space-y-1">
-                <div>Platform: {telegramData.platform}</div>
-                <div>Theme: {telegramData.colorScheme}</div>
-                <div>Version: {telegramData.version}</div>
-              </div>
-            )}
-          </div>
-        )}
-
+ 
         {/* Fallback Mode Warning */}
         {telegramStatus === 'unavailable' && (
           <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg p-3 text-xs text-yellow-300 max-w-xs">

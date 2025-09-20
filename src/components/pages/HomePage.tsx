@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Toast, PullToRefresh, Skeleton } from 'antd-mobile'
+import { PullToRefresh, Skeleton } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
 import { RootState } from '@/store'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
@@ -45,14 +46,14 @@ export default function HomePage() {
         }
       }
 
-      Toast.show({
+      CustomToast.show({
         content: 'Refreshed successfully!',
         position: 'bottom',
         duration: 1500,
       })
     } catch (error) {
       console.error('Refresh error:', error)
-      Toast.show({
+      CustomToast.show({
         content: 'Refresh failed. Please try again.',
         position: 'bottom',
         duration: 2000,
@@ -70,7 +71,7 @@ export default function HomePage() {
       // Try modern Clipboard API first
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(referralLink)
-        Toast.show({
+        CustomToast.show({
           content: 'Referral link copied!',
           position: 'bottom',
           duration: 2000,
@@ -92,7 +93,7 @@ export default function HomePage() {
       document.body.removeChild(textArea)
 
       if (successful) {
-        Toast.show({
+        CustomToast.show({
           content: 'Referral link copied!',
           position: 'bottom',
           duration: 2000,
@@ -104,7 +105,7 @@ export default function HomePage() {
       console.error('Failed to copy: ', err)
 
       // Final fallback - show the link for manual copying
-      Toast.show({
+      CustomToast.show({
         content: 'Copy not supported. Link shown above for manual copy.',
         position: 'center',
         duration: 3000,

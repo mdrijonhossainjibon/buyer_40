@@ -15,7 +15,7 @@ import {
   updateActivityStatusFailure
 } from './actions'
 import ActivityAPI from '@/lib/api/activities'
-import { Toast } from 'antd-mobile'
+import CustomToast from '@/components/CustomToast'
 import { RootState } from '@/store/rootReducer'
 
 // Fetch activities saga
@@ -41,7 +41,7 @@ function* fetchActivitiesSaga(action: FetchActivitiesRequestAction): Generator<a
       }))
       
       if (action.payload?.showToast) {
-        Toast.show({
+        CustomToast.show({
           content: 'Activities refreshed successfully',
           duration: 2000
         })
@@ -49,7 +49,7 @@ function* fetchActivitiesSaga(action: FetchActivitiesRequestAction): Generator<a
     } else {
       yield put(fetchActivitiesFailure(response.error || 'Failed to fetch activities'))
       
-      Toast.show({
+      CustomToast.show({
         content: response.error || 'Failed to load activities',
         duration: 3000
       })
@@ -57,7 +57,7 @@ function* fetchActivitiesSaga(action: FetchActivitiesRequestAction): Generator<a
   } catch (error: any) {
     yield put(fetchActivitiesFailure(error.message || 'Failed to fetch activities'))
     
-    Toast.show({
+    CustomToast.show({
       content: 'Failed to load activities',
       duration: 3000
     })
@@ -87,7 +87,7 @@ function* loadMoreActivitiesSaga(action: LoadMoreActivitiesRequestAction): Gener
     } else {
       yield put(loadMoreActivitiesFailure(response.error || 'Failed to load more activities'))
       
-      Toast.show({
+      CustomToast.show({
         content: response.error || 'Failed to load more activities',
         duration: 3000
       })
@@ -95,7 +95,7 @@ function* loadMoreActivitiesSaga(action: LoadMoreActivitiesRequestAction): Gener
   } catch (error: any) {
     yield put(loadMoreActivitiesFailure(error.message || 'Failed to load more activities'))
     
-    Toast.show({
+    CustomToast.show({
       content: 'Failed to load more activities',
       duration: 3000
     })
@@ -112,14 +112,14 @@ function* updateActivityStatusSaga(action: UpdateActivityStatusRequestAction): G
     if (response.success && response.data) {
       yield put(updateActivityStatusSuccess(response.data))
       
-      Toast.show({
+      CustomToast.show({
         content: `Activity status updated to ${status}`,
         duration: 2000
       })
     } else {
       yield put(updateActivityStatusFailure(response.error || 'Failed to update activity status'))
       
-      Toast.show({
+      CustomToast.show({
         content: response.error || 'Failed to update activity status',
         duration: 3000
       })
@@ -127,7 +127,7 @@ function* updateActivityStatusSaga(action: UpdateActivityStatusRequestAction): G
   } catch (error: any) {
     yield put(updateActivityStatusFailure(error.message || 'Failed to update activity status'))
     
-    Toast.show({
+    CustomToast.show({
       content: 'Failed to update activity status',
       duration: 3000
     })
