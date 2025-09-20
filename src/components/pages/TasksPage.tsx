@@ -10,6 +10,7 @@ import {
   claimYoutubeRequest, 
   claimChannelRequest 
 } from '@/store/modules/user/actions'
+import { toast } from 'react-toastify'
 
  
 
@@ -76,11 +77,8 @@ export default function TasksPage() {
       return
     }
 
-    CustomToast.show({
-      content: 'Checking channel...',
-      duration: 2000,
-      type: 'loading'
-    })
+   
+    toast.loading('Checking channel...', { delay : 2000 })
     
     try {
   

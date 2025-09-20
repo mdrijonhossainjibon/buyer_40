@@ -5,6 +5,7 @@ import ReduxProvider from '@/components/ReduxProvider'
 import AuthSessionProvider from '@/components/SessionProvider'
 import AdsLoader from '@/components/AdsLoader'
 import Script from 'next/script'
+import { ToastContainer } from 'react-toastify'
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -35,13 +36,16 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
 
-     
+
       </head>
       <body className={nunito.className}>
         <AuthSessionProvider>
           <ReduxProvider>
             <AdsLoader>
+              <ToastContainer />
               {children}
+
+
             </AdsLoader>
           </ReduxProvider>
         </AuthSessionProvider>

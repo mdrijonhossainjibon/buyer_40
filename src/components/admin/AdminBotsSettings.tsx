@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, Switch, Toast, Form, PullToRefresh } from 'antd-mobile'
-import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { API_CALL } from 'auth-fingerprint'
 import { baseURL } from '@/lib/api-string'
 import { 
   PlayOutline,
@@ -148,7 +148,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       const { response } = await API_CALL({
         baseURL,
         method: 'PUT',
-        url: '/api/admin/bots/config',
+        url: '/admin/bots/config',
         body: {
           botToken: botConfig.botToken,
         }
@@ -415,51 +415,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         </div>
       </Card>
 
-      {/* Bot Actions */}
-      <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bot Actions</h3>
-          
-          <div className="space-y-3">
-            
-            
-          
-            
-            <button
-              className="w-full px-4 py-3 border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
-              onClick={async () => {
-                try {
-                  setIsLoading(true)
-                  Toast.show('Stopping bot...')
-                  
-                  const { response } = await API_CALL({
-                    baseURL,
-                    method: 'POST',
-                    url: '/api/admin/bots/stop'
-                  })
-                  
-                  if (response && response.success) {
-                    setBotConfig((prev :any) => ({ ...prev, Status: 'offline' }))
-                   
-                    Toast.show('Bot stopped successfully')
-                  } else {
-                    throw new Error(response?.message || 'Failed to stop bot')
-                  }
-                } catch (error) {
-                  console.error('Failed to stop bot:', error)
-                  Toast.show('Failed to stop bot')
-                } finally {
-                  setIsLoading(false)
-                }
-              }}
-            >
-              <StopOutline />
-              <span>Stop Bot</span>
-            </button>
-          </div>
-        </div>
-      </Card>
-
+  
       {/* Bot Information */}
       <Card className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700">
         <div className="p-4">

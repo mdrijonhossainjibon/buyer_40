@@ -18,6 +18,7 @@ import {
 } from './actions'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { baseURL } from '@/lib/api-string'
+import { toast } from 'react-toastify'
 
 // Fetch users saga
 function* fetchUsersSaga(action: FetchUsersRequestAction): Generator<any, void, any> {
@@ -69,18 +70,12 @@ function* updateUserStatusSaga(action: UpdateUserStatusRequestAction): Generator
    }
     
 
-    Toast.show({
-      content: `User ${newStatus === 'suspend' ? 'suspended' : 'activated'} successfully`,
-      position: 'top'
-    })
+  toast.success(`User ${newStatus === 'suspend' ? 'suspended' : 'activated'} successfully`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update user status'
     yield put(updateUserStatusFailure(errorMessage))
 
-    Toast.show({
-      content: 'Failed to update user status',
-      position: 'top'
-    })
+   toast.error('Failed to update user status')
   }
 }
 
@@ -88,22 +83,21 @@ function* updateUserStatusSaga(action: UpdateUserStatusRequestAction): Generator
 function* updateUserBalanceSaga(action: UpdateUserBalanceRequestAction): Generator<any, void, any> {
   try {
     const { userId, newBalance } = action.payload
-    const updatedUser: User = yield call(AdminUsersAPI.updateUserBalance, userId, newBalance)
-
+   const { } = yield call(API_CALL, { baseURL , url : '/admin/users' , method : 'POST' , body :  JSON.stringify({
+    action: 'update-user-balance',
+    userId,
+    newBalance,
+    ...generateSignature('admin',   process.env.NEXT_PUBLIC_SECRET_KEY || '')
+  })})  
+   
     yield put(updateUserBalanceSuccess(userId, newBalance))
 
-    Toast.show({
-      content: 'User balance updated successfully',
-      position: 'top'
-    })
+    toast('User balance updated successfully')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update user balance'
     yield put(updateUserBalanceFailure(errorMessage))
 
-    Toast.show({
-      content: 'Failed to update balance',
-      position: 'top'
-    })
+    toast('Failed to update balance' )
   }
 }
 

@@ -40,6 +40,7 @@ export class AdsAPI {
 
   // Update ads settings
   static async updateSettings(settings: AdsSettings): Promise<AdsAPIResponse<AdsSettings>> {
+ 
     try {
       const body = {
         ...generateSignature(
@@ -50,7 +51,7 @@ export class AdsAPI {
 
       const response = await API_CALL({
         baseURL,
-        url: '/ads-settings',
+        url: '/admin/ads/settings',
         method: 'PUT',
         body
       })

@@ -23,6 +23,7 @@
     "react": "^19.2.0-canary-fa3feba6-20250623",
     "react-dom": "^19.2.0-canary-fa3feba6-20250623",
     "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5",
     "redux": "^5.0.1",
     "redux-saga": "^1.3.0"
   },
