@@ -24,25 +24,17 @@ interface AdminBotsSettingsProps {
 
 export default function AdminBotsSettings({ loading = false }: AdminBotsSettingsProps) {
   
-  const [botConfig, setBotConfig] = useState({
-    _id: '',
+  const [botConfig, setBotConfig] = useState<any>({
     botToken: '',
     botUsername: '',
     Status: 'offline',
-    webhookUrl: '',
+    botVersion : '',
     lastUpdated: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   })
 
-  const [botStatus, setBotStatus] = useState({
-    botUsername: '',
-    botStatus: 'offline',
-    botLastSeen: new Date(),
-    botVersion: 'v2.1.0',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  })
+  
  
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -70,8 +62,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       
       if (response && response.success && response.data) {
         setBotConfig(response.data.config || {})
-        setBotStatus(response.data.status || {})
-        
+     
         if (isRefresh) {
           Toast.show({
             content: 'Bot data refreshed successfully',
@@ -87,27 +78,9 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         content: 'Failed to load bot data',
         duration: 2000
       })
+     
       
-      // Set fallback data on error
-      setBotConfig({
-        _id: '',
-        botToken: '',
-        botUsername: '@earnfromadsbd_bot',
-        Status: 'offline',
-        webhookUrl: '',
-        lastUpdated: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
       
-      setBotStatus({
-        botUsername: '@earnfromadsbd_bot',
-        botStatus: 'offline',
-        botLastSeen: new Date(),
-        botVersion: 'v2.1.0',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
     } finally {
       if (isRefresh) {
         setIsRefreshing(false)
@@ -135,13 +108,8 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
       })
       
       if (response && response.success) {
-        setBotConfig(prev => ({ ...prev, Status: newStatus, lastUpdated: new Date() }))
-        setBotStatus(prev => ({ 
-          ...prev, 
-          botStatus: newStatus, 
-          botLastSeen: new Date(),
-          updatedAt: new Date()
-        }))
+        setBotConfig((prev : any) => ({ ...prev, Status: newStatus, lastUpdated: new Date() }))
+      
 
         Toast.show({
           content: `Bot ${newStatus === 'online' ? 'started' : 'stopped'}`,
@@ -174,13 +142,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         return
       }
       
-      if (!botConfig.webhookUrl.trim()) {
-        Toast.show({
-          content: 'Webhook URL is required',
-          duration: 2000
-        })
-        return
-      }
+     
       
       // Call API to save bot configuration using auth-fingerprint
       const { response } = await API_CALL({
@@ -189,7 +151,6 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
         url: '/api/admin/bots/config',
         body: {
           botToken: botConfig.botToken,
-          webhookUrl: botConfig.webhookUrl
         }
       })
       
@@ -215,52 +176,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     }
   }
 
-  const handleSetWebhook = async () => {
-    try {
-      setIsLoading(true)
-      
-      if (!botConfig.webhookUrl.trim()) {
-        Toast.show({
-          content: 'Webhook URL is required',
-          duration: 2000
-        })
-        return
-      }
-      
-      Toast.show({
-        content: 'Setting webhook...',
-        duration: 2000
-      })
-
-      // Call API to set webhook using auth-fingerprint
-      const { response } = await API_CALL({
-        baseURL,
-        method: 'POST',
-        url: '/api/admin/bots/webhook',
-        body: { webhookUrl: botConfig.webhookUrl }
-      })
-      
-      if (response && response.success) {
-        setBotConfig(prev => ({ ...prev, lastUpdated: new Date() }))
-        
-        Toast.show({
-          content: 'Webhook set successfully',
-          duration: 2000
-        })
-      } else {
-        throw new Error(response?.message || 'Failed to set webhook')
-      }
-    } catch (error) {
-      console.error('Failed to set webhook:', error)
-      Toast.show({
-        content: 'Failed to set webhook',
-        duration: 2000
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+ 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'online': return <CheckCircleOutline className="text-green-500" />
@@ -277,20 +193,47 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
     }
   }
 
- /*  const formatTimeAgo = (date: Date) => {
-    const now = new Date()
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return 'N/A'
     
-    if (diffInMinutes < 1) return 'Just now'
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
-    
-    const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) return `${diffInHours} hours ago`
-    
-    const diffInDays = Math.floor(diffInHours / 24)
-    return `${diffInDays} days ago`
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date
+      if (isNaN(dateObj.getTime())) return 'Invalid Date'
+      
+      return dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch (error) {
+      return 'Invalid Date'
+    }
   }
- */
+
+  const formatTimeAgo = (date: Date | string | null | undefined) => {
+    if (!date) return 'N/A'
+    
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date
+      if (isNaN(dateObj.getTime())) return 'Invalid Date'
+      
+      const now = new Date()
+      const diffInMinutes = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60))
+      
+      if (diffInMinutes < 1) return 'Just now'
+      if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
+      
+      const diffInHours = Math.floor(diffInMinutes / 60)
+      if (diffInHours < 24) return `${diffInHours} hours ago`
+      
+      const diffInDays = Math.floor(diffInHours / 24)
+      return `${diffInDays} days ago`
+    } catch (error) {
+      return 'Invalid Date'
+    }
+  }
   if (loading || isLoading) {
     return (
       <div className="space-y-4">
@@ -340,12 +283,12 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                {getStatusIcon(botStatus.botStatus)}
+                {getStatusIcon(botConfig.Status)}
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Bot Status</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {botStatus.botUsername} • {getStatusText(botStatus.botStatus)}
+                  {botConfig.botUsername} • {getStatusText(botConfig.Status)}
                 </p>
               </div>
             </div>
@@ -367,28 +310,28 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
  
               <span className="text-gray-500 dark:text-gray-400">Version:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                {botStatus.botVersion}
+                {botConfig.botVersion}
               </div>
             </div>
             
             <div>
               <span className="text-gray-500 dark:text-gray-400">Last Seen:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                { botStatus?.botLastSeen.toLocaleString()}
+                {formatTimeAgo(botConfig?.lastUpdated)}
               </div>
             </div>
             
             <div>
               <span className="text-gray-500 dark:text-gray-400">Created:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                {botStatus.createdAt.toLocaleString()}
+                {formatDate(botConfig.createdAt)}
               </div>
             </div>
             
             <div>
               <span className="text-gray-500 dark:text-gray-400">Updated:</span>
               <div className="font-medium text-gray-900 dark:text-white">
-                { botStatus.updatedAt.toLocaleString()}
+                {formatDate(botConfig.updatedAt)}
               </div>
             </div>
           </div>
@@ -428,7 +371,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
               <input
                 type={isEditing ? 'text' : 'password'}
                 value={botConfig.botToken}
-                onChange={(e) => setBotConfig(prev => ({ ...prev, botToken: e.target.value }))}
+                onChange={(e) => setBotConfig((prev :any) => ({ ...prev, botToken: e.target.value }))}
                 placeholder="Enter bot token"
                 disabled={!isEditing}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
@@ -442,26 +385,14 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
               <input
                 type="text"
                 value={botConfig.botUsername}
-                onChange={(e) => setBotConfig(prev => ({ ...prev, botUsername: e.target.value }))}
+                onChange={(e) => setBotConfig((prev :any) => ({ ...prev, botUsername: e.target.value }))}
                 placeholder="@username"
                 disabled={true}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Webhook URL:
-              </label>
-              <input
-                type="url"
-                value={botConfig.webhookUrl}
-                onChange={(e) => setBotConfig(prev => ({ ...prev, webhookUrl: e.target.value }))}
-                placeholder="https://your-domain.com/webhook"
-                disabled={!isEditing}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
-              />
-            </div>
+         
 
             {isEditing && (
               <div className="flex space-x-3">
@@ -490,14 +421,7 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bot Actions</h3>
           
           <div className="space-y-3">
-            <button
-              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium flex items-center justify-center space-x-2"
-              onClick={handleSetWebhook}
-              disabled={isLoading || !botConfig.botToken || !botConfig.webhookUrl}
-            >
-              <SetOutline />
-              <span>Set Webhook</span>
-            </button>
+            
             
           
             
@@ -515,8 +439,8 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
                   })
                   
                   if (response && response.success) {
-                    setBotConfig(prev => ({ ...prev, Status: 'offline' }))
-                    setBotStatus(prev => ({ ...prev, botStatus: 'offline' }))
+                    setBotConfig((prev :any) => ({ ...prev, Status: 'offline' }))
+                   
                     Toast.show('Bot stopped successfully')
                   } else {
                     throw new Error(response?.message || 'Failed to stop bot')
@@ -545,14 +469,14 @@ export default function AdminBotsSettings({ loading = false }: AdminBotsSettings
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Last Updated:</span>
               <span className="text-gray-700 dark:text-gray-300">
-                {botConfig.lastUpdated.toLocaleString()}
+                {formatTimeAgo(botConfig.lastUpdated)}
               </span>
             </div>
             
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Created Date:</span>
               <span className="text-gray-700 dark:text-gray-300">
-                {botConfig.createdAt.toLocaleString()} 
+                {formatDate(botConfig.createdAt)}
               </span>
             </div>
             

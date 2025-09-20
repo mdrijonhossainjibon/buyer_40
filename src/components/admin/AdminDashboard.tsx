@@ -10,17 +10,12 @@ import {
 import BarChartOutline from '@/components/BarChartOutline'
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { formatNumber, formatCurrency } from '@/lib/formatNumber'
+import { baseURL } from '@/lib/api-string'
 
-interface UserStats {
-  totalUsers: number
-  activeUsers: number
-  totalWithdrawals: number
-  totalEarnings: number
-  averageEarningsPerUser: number
-}
+ 
 
 export default function AdminDashboard() {
-  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [userStats, setUserStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,7 +26,8 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const { response } = await API_CALL({
-        method: 'POST',
+        baseURL,
+        method : 'GET',
         url: '/admin/stats',
         body: {
           action: 'get-stats',
@@ -72,7 +68,7 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton.Title animated />
             ) : (
-              <div className="text-2xl font-bold">{formatNumber(userStats?.totalUsers || 0)}</div>
+              <div className="text-2xl font-bold">{formatNumber(userStats?.users.total || 0)}</div>
             )}
             <div className="text-sm opacity-90">Total Users</div>
           </div>
@@ -84,7 +80,7 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton.Title animated />
             ) : (
-              <div className="text-2xl font-bold">{formatCurrency(userStats?.totalWithdrawals || 0)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(userStats?.withdrawals?.totalWithdrawn || 0)}</div>
             )}
             <div className="text-sm opacity-90">Total Withdrawals</div>
           </div>
@@ -96,7 +92,7 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton.Title animated />
             ) : (
-              <div className="text-2xl font-bold">{formatCurrency(userStats?.totalEarnings || 0)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(userStats?.earnings.totalEarned || 0)}</div>
             )}
             <div className="text-sm opacity-90">Total Earnings</div>
           </div>
@@ -108,7 +104,7 @@ export default function AdminDashboard() {
             {loading ? (
               <Skeleton.Title animated />
             ) : (
-              <div className="text-2xl font-bold">{formatNumber(userStats?.activeUsers || 0)}</div>
+              <div className="text-2xl font-bold">{formatNumber(userStats?.users?.active || 0)}</div>
             )}
             <div className="text-sm opacity-90">Active Users</div>
           </div>

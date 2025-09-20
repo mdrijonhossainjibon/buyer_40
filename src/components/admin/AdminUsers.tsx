@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Card, Button, Skeleton, Toast, PullToRefresh } from 'antd-mobile'
 import { 
   SearchOutline,
@@ -9,143 +10,62 @@ import {
   TeamOutline
 } from 'antd-mobile-icons'
 import UserDetailsPopup from './UserDetailsPopup'
-
-interface User {
-  id: string
-  username: string
-  email: string
-  phone: string
-  status: 'active' | 'inactive' | 'suspend'
-  joinDate: string
-  lastActive: string
-  totalEarnings: number
-  totalWithdrawals: number
-  referralCount: number
-}
+import { RootState } from '@/store'
+import {
+  fetchUsersRequest,
+  setSearchQuery,
+  setUserFilter,
+  setSelectedUser,
+  setShowDetailsPopup,
+  updateUserStatusRequest,
+  updateUserBalanceRequest,
+  clearError,
+  User,
+  UserFilter
+} from '@/store/modules/adminUsers'
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [userFilter, setUserFilter] = useState<'all' | 'active' | 'inactive' | 'suspend'>('all')
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [showDetailsPopup, setShowDetailsPopup] = useState(false)
+  const dispatch = useDispatch()
+  const {
+    users,
+    isLoading,
+    isUpdating,
+    searchQuery,
+    userFilter,
+    selectedUser,
+    showDetailsPopup,
+    error
+  } = useSelector((state: RootState) => state.adminUsers)
 
-  const generateSignature = (action: string, secretKey: string) => {
-    const timestamp = Date.now().toString()
-    const nonce = Math.random().toString(36).substring(2, 15)
-    const hash = btoa(`${action}-${timestamp}-${nonce}`)
-    const signature = btoa(`${hash}-${secretKey}`)
-    
-    return {
-      timestamp,
-      nonce,
-      signature,
-      hash
-    }
-  }
-
-  const fetchUsers = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'list-users',
-          ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-        })
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        setUsers(data.data.users || [])
-      } else {
-        console.error('Failed to fetch users:', data.message)
-        Toast.show({
-          content: 'Failed to load users',
-          position: 'top'
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error)
-      Toast.show({
-        content: 'Error loading users',
-        position: 'top'
-      })
-    } finally {
-      setLoading(false)
-    }
+  const handleRefresh = async () => {
+    dispatch(fetchUsersRequest({ showToast: true }))
   }
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    dispatch(fetchUsersRequest())
+  }, [dispatch])
+
+  // Clear error on unmount
+  useEffect(() => {
+    return () => {
+      if (error) {
+        dispatch(clearError())
+      }
+    }
+  }, [dispatch, error])
 
   const handleUserClick = (user: User) => {
-    setSelectedUser(user)
-    setShowDetailsPopup(true)
+    dispatch(setSelectedUser(user))
+    dispatch(setShowDetailsPopup(true))
   }
 
-  const handleUserAction = async (userId: string, action: string) => {
-    try {
-      let requestBody: any = {
-        ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-      }
-
-      if (action.startsWith('update-balance:')) {
-        const newBalance = action.split(':')[1]
-        requestBody = {
-          ...requestBody,
-          action: 'update-user-balance',
-          userId,
-          newBalance: parseFloat(newBalance)
-        }
-      } else {
-        requestBody = {
-          ...requestBody,
-          action: 'update-user-status',
-          userId,
-          newStatus: action === 'suspend' ? 'suspend' : 'active'
-        }
-      }
-
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        if (action.startsWith('update-balance:')) {
-          Toast.show({
-            content: 'User balance updated successfully',
-            position: 'top'
-          })
-        } else {
-          Toast.show({
-            content: `User ${action === 'suspend' ? 'suspend' : 'activated'} successfully`,
-            position: 'top'
-          })
-        }
-        fetchUsers() // Refresh the list
-      } else {
-        Toast.show({
-          content: action.startsWith('update-balance:') ? 'Failed to update balance' : 'Failed to update user status',
-          position: 'top'
-        })
-      }
-    } catch (error) {
-      console.error('Error updating user:', error)
-      Toast.show({
-        content: 'Error updating user',
-        position: 'top'
-      })
+  const handleUserAction = (userId: string, action: string) => {
+    if (action.startsWith('update-balance:')) {
+      const newBalance = parseFloat(action.split(':')[1])
+      dispatch(updateUserBalanceRequest(userId, newBalance))
+    } else {
+      const newStatus = action === 'suspend' ? 'suspend' : 'active'
+      dispatch(updateUserStatusRequest(userId, newStatus as 'active' | 'suspend'))
     }
   }
 
@@ -175,7 +95,7 @@ export default function AdminUsers() {
   })
 
   return (
-    <PullToRefresh onRefresh={fetchUsers}>
+    <PullToRefresh onRefresh={handleRefresh}>
       <div className="space-y-6 p-6">
       {/* Search and Filter */}
       <Card className="!bg-white dark:!bg-gray-800">
@@ -187,7 +107,7 @@ export default function AdminUsers() {
               type="text"
               placeholder="Search by name, email or phone..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
             />
           </div>
@@ -202,7 +122,7 @@ export default function AdminUsers() {
             ].map((filter) => (
               <button
                 key={filter.key}
-                onClick={() => setUserFilter(filter.key as any)}
+                onClick={() => dispatch(setUserFilter(filter.key as UserFilter))}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                   userFilter === filter.key
                     ? 'bg-purple-500 text-white'
@@ -218,7 +138,7 @@ export default function AdminUsers() {
 
       {/* Users List */}
       <div className="space-y-4">
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, index) => (
               <Card key={index} className="!bg-white dark:!bg-gray-800">
@@ -284,7 +204,7 @@ export default function AdminUsers() {
       <UserDetailsPopup
         visible={showDetailsPopup}
         user={selectedUser}
-        onClose={() => setShowDetailsPopup(false)}
+        onClose={() => dispatch(setShowDetailsPopup(false))}
         onUserAction={handleUserAction}
       />
       </div>

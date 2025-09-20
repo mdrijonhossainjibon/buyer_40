@@ -67,26 +67,19 @@ export default function AdminWithdrawals() {
   // Handle withdrawal action
   const onWithdrawalAction = async (withdrawalId: string, action: 'approve' | 'reject', note?: string) => {
     try {
-      const response = await fetch('/api/admin/withdrawal-action', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          withdrawalId,
-          action,
-          adminNote: note,
-          ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-        })
-      })
-
-      const data = await response.json()
-      if (data.success) {
+      const response = await API_CALL({ baseURL , url : '/admin/withdrawal-action' , method : 'POST', body : JSON.stringify({
+        withdrawalId,
+        action,
+        adminNote: note,
+        ...generateSignature('admin', process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
+      }) })
+      
+     
+ 
+      if (response) {
         // Refresh withdrawals list
         fetchWithdrawals()
-      } else {
-        console.error('Failed to process withdrawal:', data.message)
-      }
+      } 
     } catch (error) {
       console.error('Error processing withdrawal:', error)
     }
