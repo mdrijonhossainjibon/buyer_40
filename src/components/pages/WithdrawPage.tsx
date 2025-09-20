@@ -35,7 +35,7 @@ export default function WithdrawPage() {
     CustomToast.show({
       content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
       duration: 3000,
-      icon: 'loading',
+      type: 'loading',
     })
 
     try {
