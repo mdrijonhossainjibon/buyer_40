@@ -7,9 +7,17 @@ import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { LoadAds } from '@/lib/ads'
 import { baseURL } from '@/lib/api-string'
+
+// Extend window interface for ad functions
+declare global {
+  interface Window {
+    showGigaAd?: () => Promise<any>;
+    showGiga?: () => Promise<any>;
+  }
+}
  
  
-export default function TasksPage( ) {
+export default function TasksPage() {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
   const [channelClaimed, setChannelClaimed] = useState(false)
   const [youtubeClaimed, setYoutubeClaimed] = useState(false)
@@ -42,30 +50,55 @@ export default function TasksPage( ) {
 
     // Rewarded interstitial
     try {
-      if (window.showGiga) {
-        await window.showGiga()
-          .then((response) => {
+      // Use the exposed ad function from AdsLoader
+      if (typeof window !== 'undefined' && (window.showGigaAd || window.showGiga)) {
+        const adFunction = window.showGigaAd || window.showGiga
+        if (adFunction) {
+          try {
+            const response = await adFunction()
             // Handle successful ad completion
             Toast.show({
               content: 'Ad watched successfully! Reward credited.',
               duration: 2000,
             })
-            setIsWatchingAd(false)
-          })
-          .catch((error) => {
+            
+            // Call API to credit the reward
+            try {
+              const { response: apiResponse } = await API_CALL({
+                baseURL,
+                method: 'POST',
+                url: '/watch-ad',
+                body: {
+                  ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
+                }
+              })
+              
+              if (apiResponse && apiResponse.success) {
+                Toast.show({
+                  content: apiResponse.message || 'Reward credited successfully!',
+                  duration: 2000,
+                })
+              }
+            } catch (apiError) {
+              console.error('API call error:', apiError)
+              Toast.show({
+                content: 'Ad watched but failed to credit reward. Please contact support.',
+                duration: 3000,
+              })
+            }
+          } catch (error) {
             console.error('Giga ads error:', error)
             Toast.show({
               content: 'Failed to complete ad watching',
               duration: 2000,
             })
-            setIsWatchingAd(false)
-          })
+          }
+        }
       } else {
         Toast.show({
           content: 'Ad service not available',
           duration: 2000,
         })
-        setIsWatchingAd(false)
       }
     } catch (error) {
       console.error('Ad watching error:', error)
@@ -73,6 +106,7 @@ export default function TasksPage( ) {
         content: 'Failed to start ad watching',
         duration: 2000,
       })
+    } finally {
       setIsWatchingAd(false)
     }
 
@@ -132,9 +166,9 @@ export default function TasksPage( ) {
   }
 
   const checkChannel = async () => {
-    if (user.telegramBonus > 0) {
+    if (user.telegramBonus && user.telegramBonus > 0) {
       Toast.show({
-        content: 'already claimed!',
+        content: 'Already claimed!',
         duration: 2000,
       })
       return
@@ -143,46 +177,38 @@ export default function TasksPage( ) {
     Toast.show({
       content: 'Checking channel...',
       duration: 2000,
-      icon : 'loading'
+      icon: 'loading'
     })
     
     try {
-      setTimeout(async () => {
-        try {
-          const { response } = await API_CALL({
-            baseURL,
-            method: 'POST',
-            url: '/telegram-bonus',
-            body: {
-             
-              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-            }
-          })
-
-          if (response && response.success) {
-          
-            setChannelClaimed(true)
-            Toast.show({
-              content: response.message,
-              duration: 2000,
-            })
-          } else {
-            Toast.show({
-              content: response?.message || 'Failed to claim telegram bonus',
-              duration: 2000,
-            })
-          }
-        } catch (error) {
-          console.error('Telegram bonus error:', error)
-          Toast.show({
-            content: 'Failed to process telegram bonus',
-            duration: 2000,
-          })
+      // Use Promise instead of setTimeout for better error handling
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'POST',
+        url: '/telegram-bonus',
+        body: {
+          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
         }
-      }, 2000)
+      })
+
+      if (response && response.success) {
+        setChannelClaimed(true)
+        Toast.show({
+          content: response.message || 'Telegram bonus claimed successfully!',
+          duration: 2000,
+        })
+      } else {
+        Toast.show({
+          content: response?.message || 'Failed to claim telegram bonus',
+          duration: 2000,
+        })
+      }
     } catch (error) {
+      console.error('Telegram bonus error:', error)
       Toast.show({
-        content: 'Failed to check channel',
+        content: 'Failed to process telegram bonus',
         duration: 2000,
       })
     }
@@ -193,9 +219,9 @@ export default function TasksPage( ) {
   }
  
   const claimYoutube = async () => {
-    if (user.youtubeBonus > 0) {
+    if (user.youtubeBonus && user.youtubeBonus > 0) {
       Toast.show({
-        content: 'already claimed!',
+        content: 'Already claimed!',
         duration: 2000,
       })
       return
@@ -208,41 +234,34 @@ export default function TasksPage( ) {
     })
     
     try {
-      setTimeout(async () => {
-        try {
-          const { response } = await API_CALL({
-            baseURL,
-            method: 'POST',
-            url: '/youtube-bonus',
-            body: {
-              
-              ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
-            }
-          })
-
-          if (response && response.success) {
-             
-            Toast.show({
-              content: response.message,
-              duration: 3000,
-            })
-          } else {
-            Toast.show({
-              content: response?.message || 'Failed to claim YouTube bonus',
-              duration: 2000,
-            })
-          }
-        } catch (error) {
-          console.error('YouTube bonus error:', error)
-          Toast.show({
-            content: 'Failed to process YouTube bonus',
-            duration: 2000,
-          })
+      // Use Promise instead of setTimeout for better error handling
+      await new Promise(resolve => setTimeout(resolve, 2500))
+      
+      const { response } = await API_CALL({
+        baseURL,
+        method: 'POST',
+        url: '/youtube-bonus',
+        body: {
+          ...generateSignature(user.userId?.toString() || '0', process.env.NEXT_PUBLIC_SECRET_KEY || '')
         }
-      }, 2500)
+      })
+
+      if (response && response.success) {
+        setYoutubeClaimed(true)
+        Toast.show({
+          content: response.message || 'YouTube bonus claimed successfully!',
+          duration: 3000,
+        })
+      } else {
+        Toast.show({
+          content: response?.message || 'Failed to claim YouTube bonus',
+          duration: 2000,
+        })
+      }
     } catch (error) {
+      console.error('YouTube bonus error:', error)
       Toast.show({
-        content: 'Failed to claim YouTube bonus',
+        content: 'Failed to process YouTube bonus',
         duration: 2000,
       })
     }
@@ -255,17 +274,17 @@ export default function TasksPage( ) {
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
         <i className="fas fa-video text-5xl mb-4 text-blue-600 dark:text-blue-400"></i>
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Rewarded Ad</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{ adsSettings.defaultAdsReward }</b> টাকা আয় করুন।</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{adsSettings.defaultAdsReward || 0}</b> টাকা আয় করুন।</p>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
         <button
           className="w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={watchAd}
-          disabled={isWatchingAd || user.watchedToday >= adsSettings.adsWatchLimit || user.status === 'suspend'}
+          disabled={isWatchingAd || (user.watchedToday || 0) >= (adsSettings.adsWatchLimit || 5000) || user.status === 'suspend'}
         >
           <span>{isWatchingAd ? 'Watching Ad...' : 'Watch Ad'}</span>
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          পুরস্কার পেতে { adsSettings.minWatchTime } সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
+          পুরস্কার পেতে {adsSettings.minWatchTime || 30} সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
         </p>
       </div>
 
@@ -284,7 +303,7 @@ export default function TasksPage( ) {
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           Earn 15 BDT by joining our Telegram channel!
         </p>
-        {channelClaimed && (
+        {(channelClaimed || (user.telegramBonus && user.telegramBonus > 0)) && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
             ✅ Channel bonus claimed!
           </small>
@@ -302,7 +321,7 @@ export default function TasksPage( ) {
           <button
             className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={claimYoutube}
-            disabled={  youtubeClaimed }
+   
           >
             <span>{ 'Check & Claim'}</span>
           </button>
@@ -312,7 +331,7 @@ export default function TasksPage( ) {
         </p>
        
         
-        {youtubeClaimed && (
+        {(youtubeClaimed || (user.youtubeBonus && user.youtubeBonus > 0)) && (
           <small className="block mt-1.5 opacity-80 text-gray-600 dark:text-gray-400">
             ✅ YouTube bonus claimed!
           </small>
