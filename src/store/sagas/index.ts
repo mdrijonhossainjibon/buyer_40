@@ -5,6 +5,7 @@ import { adsSettingsSaga } from '../modules/adsSettings'
 import { activitiesSaga } from '../modules/activities'
 import { withdrawSaga } from '../modules/withdraw'
 import { adminUsersSaga } from '../modules/adminUsers'
+import { adminWithdrawalsSaga } from '../modules/adminWithdrawals'
 
 // Root saga that combines all module sagas
 export function* rootSaga() {
@@ -14,6 +15,7 @@ export function* rootSaga() {
     fork(adsSettingsSaga),
     fork(activitiesSaga),
     fork(withdrawSaga),
-    fork(adminUsersSaga)
+    fork(adminUsersSaga),
+    fork(adminWithdrawalsSaga)
   ])
 }

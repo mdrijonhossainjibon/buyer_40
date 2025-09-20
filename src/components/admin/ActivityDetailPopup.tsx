@@ -1,6 +1,6 @@
 'use client'
 
-import { Popup, Button } from 'antd-mobile'
+import { Popup } from 'antd-mobile'
 import { ActivityData } from '@/lib/api/activities'
 
 interface ActivityDetailPopupProps {
@@ -42,146 +42,157 @@ export default function ActivityDetailPopup({
     }
   }
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-BD', {
+      style: 'currency',
+      currency: 'BDT',
+      minimumFractionDigits: 0
+    }).format(amount)
+  }
+
   return (
     <Popup
       visible={visible}
       onMaskClick={onClose}
-      onClose={onClose}
+      position="bottom"
       bodyStyle={{
-
-        maxHeight: '100vh',
-        overflow: 'auto'
+        borderTopLeftRadius: '16px',
+        borderTopRightRadius: '16px',
+        minHeight: '50vh',
+        maxHeight: '90vh',
+        backgroundColor: 'var(--adm-color-background)',
       }}
     >
-      <div className="p-6 space-y-6 text-gray-900 dark:text-white bg-white dark:bg-gray-800">
+      <div className="p-4 bg-white dark:bg-gray-800">
         {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
-              {activity.description}
-            </h3>
-            <Button
-              size="mini"
-              fill="none"
-              onClick={onClose}
-              className="!text-gray-400 hover:!text-gray-600 dark:hover:!text-gray-300 !p-1"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            Activity Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusStyle(activity.status)}`}>
+        {/* Activity Summary Card */}
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                {activity.description}
+              </h3>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {activity.activityType.replace('_', ' ')}
+              </div>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(activity.status)}`}>
               {activity.status}
             </span>
-            <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {activity.amount.toFixed(2)} BDT
-            </span>
           </div>
-        </div>
-
-        {/* Basic Information Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400">
-              Activity ID
-            </label>
-            <div className="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg font-mono">
-              {activity._id}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400">
-              User ID
-            </label>
-            <div className="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg font-mono">
-              {activity.userId}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400">
-              Activity Type
-            </label>
-            <div className="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg capitalize font-medium">
-              {activity.activityType.replace('_', ' ')}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-600 dark:text-gray-400">
-              Amount
-            </label>
-            <div className="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg font-bold text-green-600 dark:text-green-400">
-              {activity.amount.toFixed(2)} BDT
+          <div className="text-right">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {formatCurrency(activity.amount)}
             </div>
           </div>
         </div>
 
-        {/* Timestamps Section */}
+        {/* Information Grid */}
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+          <div className="grid grid-cols-1 gap-3">
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Activity ID</span>
+              <span className="text-sm font-mono text-gray-900 dark:text-white">{activity._id}</span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">User ID</span>
+              <span className="text-sm font-mono text-gray-900 dark:text-white">{activity.userId}</span>
+            </div>
+            
+            {activity.user?.username && (
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Username</span>
+                <span className="text-sm text-gray-900 dark:text-white">{activity.user.username}</span>
+              </div>
+            )}
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Activity Type</span>
+              <span className="text-sm capitalize text-gray-900 dark:text-white">{activity.activityType.replace('_', ' ')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline Section */}
+        <div className="space-y-4">
+          <h4 className="text-base font-semibold text-gray-900 dark:text-white">
             Timeline
           </h4>
-
+          
           <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Created At
-                </label>
-                <p className="text-sm text-gray-900 dark:text-white">
-                  {new Date(activity.createdAt).toLocaleString()}
-                </p>
-              </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Created</span>
+              <span className="text-sm text-gray-900 dark:text-white">
+                {new Date(activity.createdAt).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Last Updated
-                </label>
-                <p className="text-sm text-gray-900 dark:text-white">
-                  {new Date(activity.updatedAt).toLocaleString()}
-                </p>
-              </div>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Updated</span>
+              <span className="text-sm text-gray-900 dark:text-white">
+                {new Date(activity.updatedAt).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
             </div>
-
+            
             {activity.completedAt && (
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Completed At
-                  </label>
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    {new Date(activity.completedAt).toLocaleString()}
-                  </p>
-                </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</span>
+                <span className="text-sm text-gray-900 dark:text-white">
+                  {new Date(activity.completedAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Metadata Section */}
+        {/* Additional Details Section */}
         {activity.metadata && Object.keys(activity.metadata).length > 0 && (
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h4 className="text-base font-semibold text-gray-900 dark:text-white">
               Additional Details
             </h4>
-
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-3">
+            
+            <div className="space-y-2">
               {Object.entries(activity.metadata).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center py-1">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {formatMetadataKey(key)}:
+                <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {formatMetadataKey(key)}
                   </span>
-                  <span className="text-sm text-gray-900 dark:text-white font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">
+                  <span className="text-sm text-gray-900 dark:text-white font-mono">
                     {String(value)}
                   </span>
                 </div>
@@ -190,23 +201,21 @@ export default function ActivityDetailPopup({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <Button
+        {/* Action Buttons */}
+        <div className="flex space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <button
             onClick={() => handleAction('view_user')}
-            fill="outline"
-            color="primary"
-            className="w-full"
+            className="flex-1 px-4 py-3 border border-blue-200 dark:border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-semibold rounded-lg transition-colors duration-200"
           >
             View User
-          </Button>
-
-          <Button
+          </button>
+          
+          <button
             onClick={onClose}
-            fill="outline"
-            className="w-full"
+            className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200"
           >
             Close
-          </Button>
+          </button>
         </div>
 
       </div>

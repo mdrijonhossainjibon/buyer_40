@@ -2,10 +2,13 @@
 
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Card, Button, Toast, List, SpinLoading, PullToRefresh } from 'antd-mobile'
+import { Card, Toast, List, SpinLoading, PullToRefresh, Skeleton, SearchBar } from 'antd-mobile'
 import {
   SearchOutline,
-  FilterOutline
+  FilterOutline,
+  CheckCircleOutline,
+  ClockCircleOutline,
+  CloseCircleOutline
 } from 'antd-mobile-icons'
 import ActivityDetailPopup from './ActivityDetailPopup'
 import { RootState } from '@/store'
@@ -54,19 +57,7 @@ export default function AdminActivity() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return '#52c41a'
-      case 'pending':
-        return '#faad14'
-      case 'failed':
-      case 'cancelled':
-        return '#ff4d4f'
-      default:
-        return '#8c8c8c'
-    }
-  }
+ 
 
   // Activity history is already filtered by the API
   const filteredActivityHistory = activities
@@ -119,112 +110,231 @@ export default function AdminActivity() {
     loadActivities(true)
   }
 
+  // Get status icon and color
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return <ClockCircleOutline className="text-yellow-500" />
+      case 'completed': return <CheckCircleOutline className="text-green-500" />
+      case 'failed':
+      case 'cancelled': return <CloseCircleOutline className="text-red-500" />
+      default: return <ClockCircleOutline className="text-gray-500" />
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400'
+      case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400'
+      case 'failed':
+      case 'cancelled': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400'
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Pending'
+      case 'completed': return 'Completed'
+      case 'failed': return 'Failed'
+      case 'cancelled': return 'Cancelled'
+      default: return 'Unknown'
+    }
+  }
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-BD', {
+      style: 'currency',
+      currency: 'BDT',
+      minimumFractionDigits: 0
+    }).format(amount)
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   return (
-    <PullToRefresh
-      onRefresh={handleRefresh}
-      pullingText="Pull to refresh"
-      canReleaseText="Release to refresh"
-      refreshingText="Refreshing..."
-      completeText="Refresh complete"
-    >
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
-        {/* Header */}
-        
-
-            <div className="relative mb-[19px]">
-                    <SearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400  " />
-                    <input
-                      type="text"
-                      placeholder="Search by username, user ID"
-                      value={searchQuery}
-                      onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
-                    />
-           </div>
-
-        {/* Activity List using antd-mobile List */}
-        <div className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
-          {isLoading && activities.length === 0 ? (
-            <div className="flex justify-center items-center py-8">
-              <SpinLoading style={{ '--size': '32px' }} />
-              <span className="ml-2 text-gray-600 dark:text-gray-400">Loading activities...</span>
-            </div>
-          ) : (
-            <List className="bg-white dark:bg-gray-800">
-              {filteredActivityHistory.length > 0 ? (
-                <>
-                  {filteredActivityHistory.map((item) => (
-                    <List.Item
-                      key={item._id}
-                      className="!bg-white dark:!bg-gray-800 hover:!bg-gray-50 dark:hover:!bg-gray-700 !border-gray-200 dark:!border-gray-700 cursor-pointer"
-                      onClick={() => handleItemClick(item)}
-                      prefix={
-                        <div className={`p-2 rounded-full mr-3 ${item.status === 'completed'
-                            ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400'
-                            : item.status === 'pending'
-                              ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400'
-                              : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400'
-                          }`}>
-                          <div className="w-2 h-2 rounded-full bg-current"></div>
-                        </div>
-                      }
-                      description={
-                        <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
-                          <div className="flex items-center space-x-4">
-                            <span>{formatTimestamp(new Date(item.createdAt))}</span>
-                            <span className="text-blue-400">• User: {item.user?.username || `ID: ${item.userId}`}</span>
-                            <span className="text-green-400">• ৳{item.amount.toFixed(2)}</span>
-                          </div>
-                          <div className="text-gray-500 dark:text-gray-500 text-xs mt-1">
-                            <span className="capitalize">{item.activityType.replace('_', ' ')}</span> • {new Date(item.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      }
-                      extra={
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === 'completed'
-                            ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 border border-green-300 dark:border-green-700'
-                            : item.status === 'pending'
-                              ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-700'
-                              : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700'
-                          }`}>
-                          {item.status}
-                        </span>
-                      }
-                    >
-                      <div className="text-gray-900 dark:text-white font-medium text-sm">
-                        {item.description}
-                      </div>
-                    </List.Item>
-                  ))}
-
-                  {/* Load More Button */}
-                  {pagination.hasMore && (
-                    <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        onClick={handleLoadMore}
-                        loading={isLoadingMore}
-                        color="primary"
-                        fill="outline"
-                        size="small"
-                      >
-                        Load More Activities
-                      </Button>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header with Statistics */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Activity Management
+            </h1>
+            
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <Card className="!p-3 !bg-blue-50 dark:!bg-blue-900/20 !border-blue-200 dark:!border-blue-800">
+                <div className="text-center">
+                  {isLoading ? (
+                    <Skeleton.Title animated style={{ width: '60%' }} />
+                  ) : (
+                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {stats?.total || activities.length}
                     </div>
                   )}
-                </>
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <SearchOutline className="text-4xl mb-2 mx-auto" />
-                  <p>No activities found</p>
-                  <p className="text-sm mt-1">
-                    {searchQuery || statusFilter !== 'all' || typeFilter !== 'all'
-                      ? 'Try adjusting your search terms or filters'
-                      : 'No activities available'
-                    }
-                  </p>
+                  <div className="text-xs text-blue-600 dark:text-blue-400">Total Activities</div>
+                </div>
+              </Card>
+              
+              <Card className="!p-3 !bg-yellow-50 dark:!bg-yellow-900/20 !border-yellow-200 dark:!border-yellow-800">
+                <div className="text-center">
+                  {isLoading ? (
+                    <Skeleton.Title animated style={{ width: '60%' }} />
+                  ) : (
+                    <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                      {stats?.pending || activities.filter(a => a.status === 'pending').length}
+                    </div>
+                  )}
+                  <div className="text-xs text-yellow-600 dark:text-yellow-400">Pending</div>
+                </div>
+              </Card>
+              
+              <Card className="!p-3 !bg-green-50 dark:!bg-green-900/20 !border-green-200 dark:!border-green-800">
+                <div className="text-center">
+                  {isLoading ? (
+                    <Skeleton.Title animated style={{ width: '60%' }} />
+                  ) : (
+                    <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                      {stats?.completed || activities.filter(a => a.status === 'completed').length}
+                    </div>
+                  )}
+                  <div className="text-xs text-green-600 dark:text-green-400">Completed</div>
+                </div>
+              </Card>
+              
+              <Card className="!p-3 !bg-red-50 dark:!bg-red-900/20 !border-red-200 dark:!border-red-800">
+                <div className="text-center">
+                  {isLoading ? (
+                    <Skeleton.Title animated style={{ width: '60%' }} />
+                  ) : (
+                    <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                      {stats?.failed || activities.filter(a => a.status === 'failed' || a.status === 'cancelled').length}
+                    </div>
+                  )}
+                  <div className="text-xs text-red-600 dark:text-red-400">Failed</div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Section */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4">
+            <SearchBar
+              placeholder="Search by username, user ID, or description..."
+              value={searchQuery}
+              onChange={(value) => dispatch(setSearchQuery(value))}
+              showCancelButton
+              style={{
+                '--border-radius': '8px',
+                '--background': 'var(--adm-color-fill-content)',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
+          {isLoading && activities.length === 0 ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Card key={index} className="!bg-white dark:!bg-gray-800">
+                  <Skeleton.Title animated style={{ width: '60%' }} />
+                  <Skeleton.Paragraph lineCount={3} animated />
+                </Card>
+              ))}
+            </div>
+          ) : filteredActivityHistory.length === 0 ? (
+            <div className="flex justify-center items-center min-h-[300px]">
+              <div className="text-center">
+                <SearchOutline className="text-6xl text-gray-300 dark:text-gray-600 mb-4 mx-auto" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No activities found</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  {searchQuery || statusFilter !== 'all' || typeFilter !== 'all'
+                    ? 'Try adjusting your search terms or filters'
+                    : 'No activities available'
+                  }
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredActivityHistory.map((activity) => (
+                <Card
+                  key={activity._id}
+                  className="!bg-white dark:!bg-gray-800 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleItemClick(activity)}
+                >
+                  <div className="flex items-center space-x-4 p-2">
+                    {/* Activity Icon */}
+                    <div className="flex-shrink-0">
+                      {getStatusIcon(activity.status)}
+                    </div>
+                    
+                    {/* Activity Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 dark:text-white truncate">
+                        {activity.description}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        User: {activity.user?.username || `ID: ${activity.userId}`}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 truncate">
+                        {activity.activityType.replace('_', ' ')} • {formatDate(activity.createdAt)}
+                      </div>
+                    </div>
+                    
+                    {/* Amount */}
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900 dark:text-white">
+                        {formatCurrency(activity.amount)}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500">
+                        {formatTimestamp(new Date(activity.createdAt))}
+                      </div>
+                    </div>
+                    
+                    {/* Status */}
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(activity.status)}`}>
+                        {getStatusText(activity.status)}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+              
+              {/* Load More Button */}
+              {pagination.hasMore && (
+                <div className="flex justify-center pt-4">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <SpinLoading style={{ '--size': '16px' }} className="mr-2" />
+                        Loading...
+                      </>
+                    ) : (
+                      'Load More Activities'
+                    )}
+                  </button>
                 </div>
               )}
-            </List>
+            </div>
           )}
         </div>
 

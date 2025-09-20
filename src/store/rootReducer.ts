@@ -5,6 +5,7 @@ import { adsSettingsReducer } from './modules/adsSettings'
 import { activitiesReducer } from './modules/activities'
 import { withdrawReducer } from './modules/withdraw'
 import { adminUsersReducer } from './modules/adminUsers'
+import { adminWithdrawalsReducer } from './modules/adminWithdrawals'
 
 // Root reducer combining all module reducers
 export const rootReducer = combineReducers({
@@ -13,7 +14,8 @@ export const rootReducer = combineReducers({
   adsSettings: adsSettingsReducer,
   activities: activitiesReducer,
   withdraw: withdrawReducer,
-  adminUsers: adminUsersReducer
+  adminUsers: adminUsersReducer,
+  adminWithdrawals: adminWithdrawalsReducer
 })
 
 // Root state type
