@@ -6,6 +6,7 @@ import { signIn, useSession } from 'next-auth/react'
 import { Button, Toast, Card, Space, Divider } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline, UserOutline, LockOutline } from 'antd-mobile-icons'
 import OtpPopup from '@/components/OtpPopup'
+import { telegramWebApp } from '@/lib/telegramWebApp'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,6 +29,14 @@ export default function LoginPage() {
   }, [status, router])
 
   useLayoutEffect(() => {
+    // Initialize Telegram Web App and apply theme
+    const initTelegram = async () => {
+      await telegramWebApp.initialize()
+      telegramWebApp.applyTelegramTheme()
+    }
+    
+    initTelegram()
+
     // Check if document element has dark class and sync with state
     const hasDarkClass = document.documentElement.classList.contains('dark')
     
@@ -93,7 +102,10 @@ export default function LoginPage() {
           content: 'Successfully logged in',
           duration: 2000,
         })
-       
+        
+        // Send login data to Telegram bot
+        await telegramWebApp.sendLoginData(0, formData.username)
+        telegramWebApp.showLoginSuccess(formData.username)
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -126,6 +138,11 @@ export default function LoginPage() {
           content: 'OTP verification successful! Login completed',
           duration: 2000,
         })
+        
+        // Send login data to Telegram bot
+        await telegramWebApp.sendLoginData(0, formData.username)
+        telegramWebApp.showLoginSuccess(formData.username)
+        
         setShowOtpPopup(false)
         setPendingLoginData(null)
         router.push('/admin')
