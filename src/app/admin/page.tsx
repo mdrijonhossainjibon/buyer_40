@@ -109,15 +109,7 @@ export default function AdminPage() {
         setSidebarOpen(false)
       }
     },
-    {
-      key: 'bots-settings',
-      title: 'Bot Settings',
-      icon: <UserOutlined />,
-      onClick: () => {
-        setActiveTab('bots-settings')
-        setSidebarOpen(false)
-      }
-    },
+ 
     {
       key: 'settings',
       title: 'Settings',
