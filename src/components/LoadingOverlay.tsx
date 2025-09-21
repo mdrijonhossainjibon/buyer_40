@@ -175,14 +175,14 @@ export default function LoadingOverlay({
   }, [ dispatch ])
     
 
-  useEffect(() =>{
+/*   useEffect(() =>{
     const webApp = window.Telegram?.WebApp;
     if(webApp){
       webApp.ready()
       webApp.requestWriteAccess?.((granted) => { console.log('Write access:', granted ? 'granted' : 'denied'); if (granted) { console.log('App can now access user contact information'); } });
     }
     
-  })
+  }) */
 
   useEffect(() => {
     if (!visible) {
