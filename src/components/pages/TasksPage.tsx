@@ -75,11 +75,7 @@ export default function TasksPage() {
         duration: 2000,
       })
       return
-    }
-
-   
-    toast.loading('Checking channel...', { delay : 2000 })
-    
+    } 
     try {
   
       // Dispatch Redux action to claim channel bonus
@@ -101,18 +97,11 @@ export default function TasksPage() {
  
   const claimYoutube = async () => {
     if (user.youtubeBonus && user.youtubeBonus > 0) {
-      CustomToast.show({
-        content: 'Already claimed!',
-        duration: 2000,
-      })
+     toast.error('Already claimed!')
       return
     }
  
-    CustomToast.show({
-      content: 'Checking subscription...',
-      duration: 2000,
-      type: 'loading'
-    })
+    
     
     try {
       // Use Promise instead of setTimeout for better error handling
