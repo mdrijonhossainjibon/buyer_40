@@ -4,22 +4,22 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../store'
 import { fetchUserDataRequest, setLoading } from '../store/modules/user/actions'
- 
+
 
 interface LoadingOverlayProps {
   visible: boolean
   onClose?: () => void
- 
+
 }
 
-export default function LoadingOverlay({ 
-  visible, 
-  onClose, 
- 
+export default function LoadingOverlay({
+  visible,
+  onClose,
+
 }: LoadingOverlayProps) {
   const dispatch = useDispatch()
   const { isLoading, error } = useSelector((state: RootState) => state.user)
-  
+
   const [progress, setProgress] = useState(0)
   const [loadingText, setLoadingText] = useState('Initializing...')
   const [dataFetched, setDataFetched] = useState(false)
@@ -46,11 +46,11 @@ export default function LoadingOverlay({
           console.log(tg)
           // Initialize Telegram Web App
           tg.ready()
-          
+
           // Check if we have valid Telegram data
           if (tg.initData && tg.initDataUnsafe) {
             setTelegramStatus('available')
-            
+
             // Extract user data from Telegram
             const user = tg.initDataUnsafe.user
             if (user) {
@@ -59,13 +59,13 @@ export default function LoadingOverlay({
               setFirstName(user.first_name || null)
               setLastName(user.last_name || null)
             }
-            
+
             // Extract start parameter
-            const startParamValue = tg.initDataUnsafe.start_param 
+            const startParamValue = tg.initDataUnsafe.start_param
             if (startParamValue) {
               setStartParam(startParamValue)
             }
-            
+
             setTelegramData({
               initData: tg.initData,
               initDataUnsafe: tg.initDataUnsafe,
@@ -74,18 +74,13 @@ export default function LoadingOverlay({
               version: (tg as any).isVersionAtLeast?.('6.0') ? '6.0+' : 'legacy',
               user: user
             })
-            
+
             // Apply Telegram theme if available
             if (tg.themeParams) {
               document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#000000')
               document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff')
             }
-            
-            console.log('Telegram Web App detected:', {
-              platform: tg.platform,
-              colorScheme: tg.colorScheme,
-              hasInitData: !!tg.initData
-            })
+
           } else {
             setTelegramStatus('unavailable')
             console.warn('Telegram Web App found but no init data available')
@@ -93,12 +88,12 @@ export default function LoadingOverlay({
         } else {
           // Wait a bit more for Telegram to load
           await new Promise(resolve => setTimeout(resolve, 1000))
-          
+
           if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
             const tg = window.Telegram.WebApp
             tg.ready()
             setTelegramStatus('available')
-            
+
             // Try to extract user data even without full init data
             const user = tg.initDataUnsafe?.user
             if (user) {
@@ -107,12 +102,12 @@ export default function LoadingOverlay({
               setFirstName(user.first_name || null)
               setLastName(user.last_name || null)
             }
-            
+
             const startParamValue = tg.initDataUnsafe?.start_param
             if (startParamValue) {
               setStartParam(startParamValue)
             }
-            
+
             setTelegramData({
               initData: tg.initData || '',
               initDataUnsafe: tg.initDataUnsafe || {},
@@ -121,9 +116,9 @@ export default function LoadingOverlay({
               version: 'detected',
               user: user
             })
-          } 
+          }
         }
-      
+
       } catch (error) {
         console.error('Error detecting Telegram Web App:', error)
         setTelegramStatus('error')
@@ -137,43 +132,54 @@ export default function LoadingOverlay({
   useEffect(() => {
     if (visible && userId && !dataFetched && telegramStatus !== 'checking') {
       dispatch(setLoading(true))
-      
+
       // Include Telegram data in the request if available
-      const requestData: any = { 
-        userId, 
-        username, 
-        start_param: startParam ,
+      const requestData: any = {
+        userId,
+        username,
+        start_param: startParam,
         firstName,
         lastName
       }
-      
+
       if (telegramStatus === 'available' && telegramData) {
         requestData.telegramData = telegramData
         requestData.platform = 'telegram'
       } else {
         requestData.platform = 'web'
       }
-      
+
       dispatch(fetchUserDataRequest(requestData))
       setDataFetched(true)
     }
   }, [visible, userId, username, startParam, dispatch, dataFetched, telegramStatus, telegramData])
 
 
-  useEffect(() =>{
+  useEffect(() => {
     ///dispatch(fetchUserDataRequest({ userId : 709148502}))
-    
-  }, [ dispatch ])
-    
 
-  useEffect(() =>{
+  }, [dispatch])
+
+
+  useEffect(() => {
     const webApp = window.Telegram?.WebApp;
-    if(webApp){
-      webApp.ready()
-      webApp.requestWriteAccess?.((granted) => { console.log('Write access:', granted ? 'granted' : 'denied'); if (granted) { console.log('App can now access user contact information'); } });
+
+    if (webApp) {
+      // Initialize Telegram WebApp
+      webApp.ready();
+      // Request write access for enhanced user data
+      webApp.requestWriteAccess?.((granted) => {
+        console.log('Write access:', granted ? 'granted' : 'denied');
+        if (granted) {
+          console.log('App can now access user contact information');
+        }
+      });
+
+    } else {
+      console.warn('Telegram WebApp not available');
     }
-    
-  })
+
+  }, [])
 
   useEffect(() => {
     if (!visible) {
@@ -246,30 +252,29 @@ export default function LoadingOverlay({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900">
       {/* Content */}
       <div className="flex flex-col items-center gap-6 text-center px-6 py-8">
-        
+
         {/* Platform Status Indicator */}
         <div className="flex items-center gap-2 mb-2">
-          <div className={`w-3 h-3 rounded-full ${
-            telegramStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
-            telegramStatus === 'available' ? 'bg-green-500' :
-            telegramStatus === 'error' ? 'bg-red-500' :
-            'bg-gray-500'
-          }`}></div>
+          <div className={`w-3 h-3 rounded-full ${telegramStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
+              telegramStatus === 'available' ? 'bg-green-500' :
+                telegramStatus === 'error' ? 'bg-red-500' :
+                  'bg-gray-500'
+            }`}></div>
           <span className="text-xs text-gray-400">
             {telegramStatus === 'checking' ? 'Detecting Platform...' :
-             telegramStatus === 'available' ? 'Telegram Web App' :
-             telegramStatus === 'error' ? 'Platform Error' :
-             'Web Browser Mode'}
+              telegramStatus === 'available' ? 'Telegram Web App' :
+                telegramStatus === 'error' ? 'Platform Error' :
+                  'Web Browser Mode'}
           </span>
         </div>
-       
+
         {/* Loading text */}
         <div className="space-y-2">
           <div className="text-sm text-gray-300">
             {error ? error : loadingText}
           </div>
         </div>
- 
+
         {/* Fallback Mode Warning */}
         {telegramStatus === 'unavailable' && (
           <div className="bg-yellow-900/30 border border-yellow-600/30 rounded-lg p-3 text-xs text-yellow-300 max-w-xs">
@@ -282,17 +287,16 @@ export default function LoadingOverlay({
             </div>
           </div>
         )}
-        
+
         {/* Simple progress bar */}
         <div className="w-64 space-y-2">
           <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                error ? 'bg-red-500' : 
-                telegramStatus === 'available' ? 'bg-green-500' :
-                telegramStatus === 'checking' ? 'bg-yellow-500' :
-                'bg-blue-500'
-              }`}
+              className={`h-full rounded-full transition-all duration-300 ${error ? 'bg-red-500' :
+                  telegramStatus === 'available' ? 'bg-green-500' :
+                    telegramStatus === 'checking' ? 'bg-yellow-500' :
+                      'bg-blue-500'
+                }`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -303,10 +307,10 @@ export default function LoadingOverlay({
 
         {/* Status text */}
         <div className="text-xs text-gray-400">
-          {error 
-            ? 'An error occurred while loading data' 
-            : progress < 100 
-              ? 'Please wait a moment...' 
+          {error
+            ? 'An error occurred while loading data'
+            : progress < 100
+              ? 'Please wait a moment...'
               : 'Loading complete!'
           }
         </div>
@@ -318,10 +322,10 @@ export default function LoadingOverlay({
               setProgress(0)
               setDataFetched(false)
               setTelegramStatus('checking')
-              dispatch(fetchUserDataRequest({ 
-                userId, 
-                username: username || undefined, 
-                start_param: startParam || undefined 
+              dispatch(fetchUserDataRequest({
+                userId,
+                username: username || undefined,
+                start_param: startParam || undefined
               }))
             }}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
