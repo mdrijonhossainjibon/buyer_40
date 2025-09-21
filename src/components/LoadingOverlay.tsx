@@ -43,7 +43,7 @@ export default function LoadingOverlay({
         // Check if Telegram Web App is available
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp
-          
+          console.log(tg)
           // Initialize Telegram Web App
           tg.ready()
           
@@ -61,7 +61,7 @@ export default function LoadingOverlay({
             }
             
             // Extract start parameter
-            const startParamValue = tg.initDataUnsafe.start_param || new URLSearchParams(tg.initData).get('start_param')
+            const startParamValue = tg.initDataUnsafe.start_param 
             if (startParamValue) {
               setStartParam(startParamValue)
             }
@@ -121,16 +121,7 @@ export default function LoadingOverlay({
               version: 'detected',
               user: user
             })
-          } else {
-            setTelegramStatus('unavailable')
-            console.log('Telegram Web App not detected - running in fallback mode')
-            
-            // For web fallback, generate a demo user ID
-            setUserId(Math.floor(Math.random() * 1000000))
-            setUsername('web_user')
-            setFirstName('Web')
-            setLastName('User')
-          }
+          } 
         }
       
       } catch (error) {
