@@ -5,40 +5,74 @@ import CustomToast from '@/components/CustomToast'
 import { RootState } from '@/store'
 import { useSelector, useDispatch } from 'react-redux'
 import { LoadAds } from '@/lib/ads'
-import { 
-  watchAdRequest, 
-  claimYoutubeRequest, 
-  claimChannelRequest 
+import {
+  watchAdRequest,
+  claimYoutubeRequest,
+  claimChannelRequest
 } from '@/store/modules/user/actions'
 import { toast } from 'react-toastify'
 
- 
 
-export async function showAlternatingAds(zoneId: string, userId: number , dispatch : any) {
-  // get last state from localStorage
+
+/* export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
+  // Define all ad providers in rotation
+  const ads = ["load", "giga", "adexora"];
+
+  // Get last state from localStorage
   let lastAd = localStorage.getItem("lastAd");
 
+  // Find index of last shown ad
+  let lastIndex = ads.indexOf(lastAd || "");
+
+  // Calculate next ad index (rotate)
+  let nextIndex = (lastIndex + 1) % ads.length;
+  let nextAd = ads[nextIndex];
+
+  // Show the next ad
+  if (nextAd === "load") {
+    await LoadAds(zoneId);
+  } else if (nextAd === "giga") {
+    await window.showGiga?.();
+  } else if (nextAd === "adexora") {
+    await window.showAdexora?.();
+  }
+
+  // Dispatch ad watch request
+  dispatch(watchAdRequest(userId));
+
+  // Save state
+  localStorage.setItem("lastAd", nextAd);
+
+  return nextAd;
+}
+ */
+
+
+
+export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
+  // get last state from localStorage 
+  let lastAd = localStorage.getItem("lastAd");
   if (lastAd === "load") {
-    // last was LoadAds → now showGiga
+    // last was LoadAds → now showGiga 
     await window.showGiga?.();
     dispatch(watchAdRequest(userId));
     localStorage.setItem("lastAd", "giga");
     return "giga";
   } else {
-    // default or last was giga → now LoadAds
+    // default or last was giga → now LoadAds 
     await LoadAds(zoneId);
     dispatch(watchAdRequest(userId));
     localStorage.setItem("lastAd", "load");
     return "load";
   }
 }
- 
- 
+
+
 export default function TasksPage() {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
- 
+
   const user = useSelector((state: RootState) => state.user);
-  const  adsSettings   = useSelector((state: RootState) => state.adsSettings);
+  const adsSettings = useSelector((state: RootState) => state.adsSettings);
   const dispatch = useDispatch();
 
   const watchAd = async () => {
@@ -57,11 +91,11 @@ export default function TasksPage() {
       })
       return
     }
-   
 
-    showAlternatingAds(adsSettings.monetagZoneId ,  user.userId as any , dispatch)
 
-    
+    showAlternatingAds(adsSettings.monetagZoneId, user.userId as any, dispatch)
+
+
   }
 
   const openChannel = () => {
@@ -75,9 +109,9 @@ export default function TasksPage() {
         duration: 2000,
       })
       return
-    } 
+    }
     try {
-  
+
       // Dispatch Redux action to claim channel bonus
       if (user.userId) {
         dispatch(claimChannelRequest(user.userId))
@@ -94,23 +128,23 @@ export default function TasksPage() {
   const openYoutube = () => {
     window.open('https://www.youtube.com/@earnfromads-1', '_blank')
   }
- 
+
   const claimYoutube = async () => {
     if (user.youtubeBonus && user.youtubeBonus > 0) {
-     toast.error('Already claimed!')
+      toast.error('Already claimed!')
       return
     }
- 
-    
-    
+
+
+
     try {
       // Use Promise instead of setTimeout for better error handling
       await new Promise(resolve => setTimeout(resolve, 2500))
-      
+
       // Dispatch Redux action to claim YouTube bonus
       if (user.userId) {
         dispatch(claimYoutubeRequest(user.userId))
- 
+
       }
     } catch (error) {
       console.error('YouTube bonus error:', error)
@@ -130,14 +164,14 @@ export default function TasksPage() {
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Rewarded Ad</h3>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{adsSettings.defaultAdsReward || 0}</b> টাকা আয় করুন।</p>
         <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
-        
-       
+
+
         <button
           className="w-full p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={watchAd}
           disabled={isWatchingAd || (user.watchedToday || 0) >= (adsSettings.adsWatchLimit || 5000) || user.status === 'suspend'}
         >
-        watch Ads
+          watch Ads
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           পুরস্কার পেতে {adsSettings.minWatchTime || 30} সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
@@ -152,13 +186,13 @@ export default function TasksPage() {
           <button className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200" onClick={openChannel}>
             <span>Open Channel</span>
           </button>
-          <button 
-            className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed" 
+          <button
+            className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={checkChannel}
-            disabled={  Boolean(user.telegramBonus && user.telegramBonus > 0)}
+            disabled={Boolean(user.telegramBonus && user.telegramBonus > 0)}
           >
             <span>
-              {( (user.telegramBonus && user.telegramBonus > 0)) ? (
+              {((user.telegramBonus && user.telegramBonus > 0)) ? (
                 <>
                   <i className="fas fa-check-circle text-green-300 mr-1"></i>
                   Claimed!
@@ -175,7 +209,7 @@ export default function TasksPage() {
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           Earn 15 BDT by joining our Telegram channel!
         </p>
-        
+
       </div>
 
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -209,9 +243,9 @@ export default function TasksPage() {
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
           Earn 15 BDT by subscribing to our YouTube channel!
         </p>
-       
-        
-     
+
+
+
       </div>
     </div>
   )
