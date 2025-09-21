@@ -22,7 +22,7 @@ import {
   claimChannelFailure
 } from './actions'
 import { baseURL } from '@/lib/api-string'
-import CustomToast from '@/components/CustomToast'
+import { toast } from 'react-toastify'
 
  
 
@@ -30,9 +30,7 @@ import CustomToast from '@/components/CustomToast'
 function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
   try {
     yield put(setLoading(true))
-    
-    
-     console.log(action.payload)
+     
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
       baseURL,
@@ -52,10 +50,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
         ...response.data
       }))
     } else {
-     CustomToast.show({
-      content: response?.message || 'Failed to load user data',
-      duration: 2000,
-    })
+      toast.error(response?.message || 'Failed to load user data')
     }
   } catch (error: any) {
     console.error('User data fetch failed:', error)
@@ -82,24 +77,15 @@ function* watchAdSaga(action: WatchAdRequestAction) {
         response.message
       ))
       
-      CustomToast.show({
-        content: response.message || 'Ad watched successfully! Reward credited.',
-        duration: 2000,
-      })
+      toast.success(response.message || 'Ad watched successfully! Reward credited.')
     } else {
       yield put(watchAdFailure(response?.message || 'Failed to watch ad'))
-      CustomToast.show({
-        content: response?.message || 'Failed to watch ad',
-        duration: 2000,
-      })
+      toast.error(response?.message || 'Failed to watch ad')
     }
   } catch (error: any) {
     console.error('Watch ad failed:', error)
     yield put(watchAdFailure(error.message || 'Network error occurred'))
-    CustomToast.show({
-      content: 'Ad watched but failed to credit reward. Please contact support.',
-      duration: 3000,
-    })
+    toast.error('Ad watched but failed to credit reward. Please contact support.')
   }
 }
 
@@ -122,24 +108,15 @@ function* claimYoutubeSaga(action: ClaimYoutubeRequestAction) {
         response.message
       ))
       
-      CustomToast.show({
-        content: response.message || 'YouTube bonus claimed successfully!',
-        duration: 2000,
-      })
+      toast.success(response.message || 'YouTube bonus claimed successfully!')
     } else {
       yield put(claimYoutubeFailure(response?.message || 'Failed to claim YouTube bonus'))
-      CustomToast.show({
-        content: response?.message || 'Failed to claim YouTube bonus',
-        duration: 2000,
-      })
+      toast.error(response?.message || 'Failed to claim YouTube bonus')
     }
   } catch (error: any) {
     console.error('Claim YouTube failed:', error)
     yield put(claimYoutubeFailure(error.message || 'Network error occurred'))
-    CustomToast.show({
-      content: 'Failed to claim YouTube bonus. Please try again.',
-      duration: 2000,
-    })
+    toast.error('Failed to claim YouTube bonus. Please try again.')
   }
 }
 
@@ -162,24 +139,15 @@ function* claimChannelSaga(action: ClaimChannelRequestAction) {
         response.message
       ))
       
-      CustomToast.show({
-        content: response.message || 'Channel bonus claimed successfully!',
-        duration: 2000,
-      })
+      toast.success(response.message || 'Channel bonus claimed successfully!')
     } else {
       yield put(claimChannelFailure(response?.message || 'Failed to claim channel bonus'))
-      CustomToast.show({
-        content: response?.message || 'Failed to claim channel bonus',
-        duration: 2000,
-      })
+      toast.error(response?.message || 'Failed to claim channel bonus')
     }
   } catch (error: any) {
     console.error('Claim channel failed:', error)
     yield put(claimChannelFailure(error.message || 'Network error occurred'))
-    CustomToast.show({
-      content: 'Failed to claim channel bonus. Please try again.',
-      duration: 2000,
-    })
+    toast.error('Failed to claim channel bonus. Please try again.')
   }
 }
 
