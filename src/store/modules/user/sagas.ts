@@ -32,7 +32,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
     yield put(setLoading(true))
     
     
-     
+     console.log(action.payload)
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
       baseURL,
