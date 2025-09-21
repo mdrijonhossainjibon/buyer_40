@@ -60,12 +60,7 @@ export default function Header( ) {
 
     useEffect(() => {
     
-        // Initialize Telegram WebApp
-              if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp
-                tg.sendData(JSON.stringify({ action: "login", userId: tg?.initDataUnsafe?.user?.id }));
-                dispatch(fetchBotStatusRequest())
-              }
+        dispatch(fetchBotStatusRequest())
          
     }, [])
   

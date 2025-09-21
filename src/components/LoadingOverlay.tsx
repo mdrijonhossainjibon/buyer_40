@@ -171,8 +171,18 @@ export default function LoadingOverlay({
 
   useEffect(() =>{
     ///dispatch(fetchUserDataRequest({ userId : 709148502}))
+    
   }, [ dispatch ])
     
+
+  useEffect(() =>{
+    const webApp = window.Telegram?.WebApp;
+    if(webApp){
+      webApp.ready()
+      webApp.requestWriteAccess?.((granted) => { console.log('Write access:', granted ? 'granted' : 'denied'); if (granted) { console.log('App can now access user contact information'); } });
+    }
+    
+  })
 
   useEffect(() => {
     if (!visible) {

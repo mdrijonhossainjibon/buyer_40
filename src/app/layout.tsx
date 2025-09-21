@@ -31,23 +31,6 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-        <Script
-          src="https://telegram.org/js/telegram-web-app.js"
-          strategy="beforeInteractive"
-        />
-        <Script id="telegram-init" strategy="afterInteractive">
-          {`
-            // Initialize Telegram Web App when available
-            if (typeof window !== 'undefined') {
-              window.addEventListener('load', () => {
-                if (window.Telegram?.WebApp) {
-                  window.Telegram.WebApp.ready();
-                  console.log('🚀 Telegram Web App ready');
-                }
-              });
-            }
-          `}
-        </Script>
 
 
       </head>
