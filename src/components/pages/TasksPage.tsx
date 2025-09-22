@@ -14,7 +14,7 @@ import { toast } from 'react-toastify'
 
 
 
-/* export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
+  export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
   // Define all ad providers in rotation
   const ads = ["load", "giga", "adexora"];
 
@@ -45,11 +45,11 @@ import { toast } from 'react-toastify'
 
   return nextAd;
 }
- */
+ 
 
 
 
-export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
+/* export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
   // get last state from localStorage 
   let lastAd = localStorage.getItem("lastAd");
   if (lastAd === "load") {
@@ -66,7 +66,7 @@ export async function showAlternatingAds(zoneId: string, userId: number, dispatc
     return "load";
   }
 }
-
+ */
 
 export default function TasksPage() {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
