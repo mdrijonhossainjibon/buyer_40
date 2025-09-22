@@ -1,3 +1,3 @@
 'use client';
 
-export const baseURL = 'https://api.earnfromadsbd.online/api/v1/'
+export const baseURL = 'https://api.mdrijonhossainjibonyt.store/api/v1/'

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# VPS Setup Script for Next.js App with Interactive Configuration
-# Usage: ./setup.sh
+# VPS Setup Script for React App with Static File Serving
+# Usage: ./react_setup.sh
 
 set -e
 
@@ -55,13 +55,13 @@ validate_app_name() {
 clear
 echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${PURPLE}║                    VPS Setup Wizard                         ║${NC}"
-echo -e "${PURPLE}║              Next.js App Deployment Tool                    ║${NC}"
+echo -e "${PURPLE}║              React App Deployment Tool                      ║${NC}"
 echo -e "${PURPLE}║                                                              ║${NC}"
 echo -e "${PURPLE}║           Developer: Md Rijon Hossain Jibon YT               ║${NC}"
 echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "${BLUE}This script will help you deploy your Next.js application on a VPS${NC}"
-echo -e "${BLUE}with Nginx, PM2, and all necessary configurations.${NC}"
+echo -e "${BLUE}This script will help you deploy your React application on a VPS${NC}"
+echo -e "${BLUE}with Nginx serving static files directly (no PM2 needed).${NC}"
 echo ""
 
 # Interactive configuration
@@ -69,9 +69,9 @@ echo -e "${GREEN}📋 Configuration Setup${NC}"
 echo ""
 
 # App Name
-echo -e "${CYAN}Enter application name ${YELLOW}[earnfromadsbd]${NC}: "
+echo -e "${CYAN}Enter application name ${YELLOW}[react-app]${NC}: "
 read APP_NAME
-APP_NAME=${APP_NAME:-earnfromadsbd}
+APP_NAME=${APP_NAME:-react-app}
 
 while ! validate_app_name "$APP_NAME"; do
     echo -e "${RED}❌ Invalid app name. Use only letters, numbers, hyphens, and underscores (1-30 chars)${NC}"
@@ -90,21 +90,10 @@ while [ "$DOMAIN" != "localhost" ] && ! validate_domain "$DOMAIN"; do
     read DOMAIN
 done
 
-# Node.js Version
-echo -e "${CYAN}Enter Node.js version ${YELLOW}[18]${NC}: "
+# Node.js Version (for building only)
+echo -e "${CYAN}Enter Node.js version for building ${YELLOW}[18]${NC}: "
 read NODE_VERSION
 NODE_VERSION=${NODE_VERSION:-18}
-
-# Port
-echo -e "${CYAN}Enter application port ${YELLOW}[3000]${NC}: "
-read PORT
-PORT=${PORT:-3000}
-
-while ! [[ $PORT =~ ^[0-9]+$ ]] || [ $PORT -lt 1000 ] || [ $PORT -gt 65535 ]; do
-    echo -e "${RED}❌ Invalid port. Please enter a number between 1000-65535${NC}"
-    echo -e "${CYAN}Enter application port: ${NC}"
-    read PORT
-done
 
 # Environment
 echo -e "${CYAN}Enter environment ${YELLOW}[production]${NC}: "
@@ -114,7 +103,6 @@ ENV=${ENV:-production}
 # Git Repository (optional)
 echo -e "${CYAN}Enter Git repository URL (optional): ${NC}"
 read GIT_REPO
-
 
 # SSL Setup
 echo -e "${CYAN}Do you want to setup SSL certificate? (y/n) ${YELLOW}[n]${NC}: "
@@ -128,11 +116,6 @@ if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
     EMAIL=${EMAIL:-admin@$DOMAIN}
 fi
 
-# PM2 instances
-echo -e "${CYAN}Enter number of PM2 instances ${YELLOW}[max]${NC}: "
-read INSTANCES
-INSTANCES=${INSTANCES:-max}
-
 # Configuration
 APP_DIR="/var/www/$APP_NAME"
 
@@ -141,12 +124,11 @@ echo ""
 echo -e "${GREEN}📋 Configuration Summary${NC}"
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 echo -e "${YELLOW}App Name:${NC} $APP_NAME"
+echo -e "${YELLOW}App Type:${NC} React (Static Files)"
 echo -e "${YELLOW}Domain:${NC} $DOMAIN"
 echo -e "${YELLOW}Directory:${NC} $APP_DIR"
-echo -e "${YELLOW}Node.js Version:${NC} $NODE_VERSION"
-echo -e "${YELLOW}Port:${NC} $PORT"
+echo -e "${YELLOW}Node.js Version:${NC} $NODE_VERSION (build only)"
 echo -e "${YELLOW}Environment:${NC} $ENV"
-echo -e "${YELLOW}PM2 Instances:${NC} $INSTANCES"
 if [ -n "$GIT_REPO" ]; then
     echo -e "${YELLOW}Git Repository:${NC} $GIT_REPO"
 fi
@@ -167,14 +149,14 @@ if [[ ! $CONFIRM =~ ^[Yy]$ ]]; then
 fi
 
 echo ""
-echo -e "${BLUE}🚀 Starting VPS setup for $APP_NAME${NC}"
+echo -e "${BLUE}🚀 Starting VPS setup for React app: $APP_NAME${NC}"
 
 # Update system
 echo -e "${BLUE}📦 Updating system packages...${NC}"
 sudo apt update && sudo apt upgrade -y
 
-# Install Node.js and npm
-echo -e "${BLUE}📦 Installing Node.js $NODE_VERSION...${NC}"
+# Install Node.js and npm (for building)
+echo -e "${BLUE}📦 Installing Node.js $NODE_VERSION (for building)...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
@@ -184,14 +166,9 @@ curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 sudo apt update && sudo apt install -y yarn
 
-# Install PM2 globally
-echo -e "${BLUE}📦 Installing PM2...${NC}"
-sudo npm install -g pm2
-
 # Install Nginx
 echo -e "${BLUE}📦 Installing Nginx...${NC}"
 sudo apt install -y nginx
-
 
 # Create application directory
 echo -e "${BLUE}📁 Creating application directory...${NC}"
@@ -207,50 +184,36 @@ elif [ -d "$(pwd)/src" ]; then
     echo "Copying files from current directory..."
     cp -r . $APP_DIR/
 else
-    echo -e "${YELLOW}⚠️  Please copy your application files to $APP_DIR${NC}"
+    echo -e "${YELLOW}⚠️  Please copy your React application files to $APP_DIR${NC}"
 fi
 
 cd $APP_DIR
 
-# Install dependencies
+# Install dependencies and build
 echo -e "${BLUE}📦 Installing application dependencies...${NC}"
 yarn install
 
-# Build the application
-echo -e "${BLUE}🔨 Building Next.js application...${NC}"
+echo -e "${BLUE}🔨 Building React application...${NC}"
 yarn build
 
+# Verify build directory exists
+if [ ! -d "$APP_DIR/build" ]; then
+    echo -e "${RED}❌ Build directory not found. Make sure your React app builds to 'build/' directory${NC}"
+    exit 1
+fi
 
-# Create PM2 ecosystem file
-echo -e "${BLUE}⚙️  Creating PM2 configuration...${NC}"
-cat > ecosystem.config.js << EOF
-module.exports = {
-  apps: [{
-    name: '$APP_NAME',
-    script: 'node_modules/next/dist/bin/next',
-    args: 'start',
-    cwd: '$APP_DIR',
-    instances: '$INSTANCES',
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: '$ENV',
-      PORT: $PORT
-    },
-    time: true
-  }]
-}
-EOF
+echo -e "${GREEN}✅ React app built successfully! Static files ready in build/ directory${NC}"
 
-# Create PM2 log directory
-sudo mkdir -p /var/log/pm2
-sudo chown -R $USER:$USER /var/log/pm2
-
-# Create Nginx configuration
-echo -e "${BLUE}🌐 Creating Nginx configuration...${NC}"
+# Create Nginx configuration for React static files
+echo -e "${BLUE}🌐 Creating Nginx configuration for React static files...${NC}"
 sudo tee /etc/nginx/sites-available/$APP_NAME << EOF
 server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
+    
+    # Document root for React build files
+    root $APP_DIR/build;
+    index index.html;
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -266,57 +229,41 @@ server {
     gzip_proxied expired no-cache no-store private auth;
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript;
 
-    # Handle Next.js static files
-    location /_next/static {
-        alias $APP_DIR/.next/static;
-        expires 365d;
+    # Handle static assets with long-term caching
+    location /static/ {
+        expires 1y;
         access_log off;
         add_header Cache-Control "public, immutable";
     }
 
-    # Handle public static files
-    location /static {
-        alias $APP_DIR/public;
+    # Handle favicon and other root files
+    location ~ ^/(favicon\.ico|logo.*\.png|manifest\.json|robots\.txt) {
         expires 30d;
         access_log off;
         add_header Cache-Control "public";
     }
 
-    # Handle favicon and robots.txt
-    location ~ ^/(favicon\.ico|robots\.txt) {
-        root $APP_DIR/public;
-        expires 30d;
-        access_log off;
-    }
-
-    # Proxy all other requests to Next.js
+    # Handle all other requests - serve static files with fallback to index.html for SPA routing
     location / {
-        proxy_pass http://localhost:$PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
+        try_files \$uri \$uri/ /index.html;
         
-        # Timeout settings
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-
-    # Handle WebSocket connections for Telegram Mini App
-    location /ws {
-        proxy_pass http://localhost:$PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        # Cache HTML files for a short time
+        location ~* \.html$ {
+            expires 5m;
+            add_header Cache-Control "public, no-cache";
+        }
+        
+        # Cache CSS and JS files
+        location ~* \.(css|js)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+        
+        # Cache images and fonts
+        location ~* \.(jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
     }
 }
 EOF
@@ -331,15 +278,11 @@ echo -e "${BLUE}🧪 Testing Nginx configuration...${NC}"
 sudo nginx -t
 
 # Start and enable services
-echo -e "${BLUE}🚀 Starting services...${NC}"
+echo -e "${BLUE}🚀 Starting Nginx...${NC}"
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
-# Start PM2 application
-echo -e "${BLUE}🚀 Starting PM2 application...${NC}"
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
+echo -e "${GREEN}🚀 React app is ready - served directly by Nginx as static files${NC}"
 
 # Setup firewall
 #echo -e "${BLUE}🔥 Configuring firewall...${NC}"
@@ -347,8 +290,7 @@ pm2 startup
 #sudo ufw allow 'Nginx Full'
 #sudo ufw --force enable
 
-
-# Create update script
+# Create update script for React
 echo -e "${BLUE}📝 Creating update script...${NC}"
 cat > $APP_DIR/update.sh << EOF
 #!/bin/bash
@@ -358,12 +300,30 @@ if [ -n "$GIT_REPO" ]; then
 fi
 yarn install
 yarn build
-pm2 restart $APP_NAME
-echo "✅ Application updated successfully!"
+sudo systemctl reload nginx
+echo "✅ React application updated successfully! Static files refreshed."
 EOF
 
 chmod +x $APP_DIR/update.sh
- 
+
+# Create backup script
+echo -e "${BLUE}💾 Creating backup script...${NC}"
+cat > $APP_DIR/backup.sh << EOF
+#!/bin/bash
+BACKUP_DIR="/var/backups/$APP_NAME"
+DATE=\$(date +%Y%m%d_%H%M%S)
+
+mkdir -p \$BACKUP_DIR
+tar -czf \$BACKUP_DIR/backup_\$DATE.tar.gz -C /var/www $APP_NAME
+find \$BACKUP_DIR -name "backup_*.tar.gz" -mtime +7 -delete
+echo "✅ Backup created: backup_\$DATE.tar.gz"
+EOF
+
+chmod +x $APP_DIR/backup.sh
+
+# Setup daily backup cron
+echo "0 2 * * * $APP_DIR/backup.sh" | crontab -
+
 # Add SSL setup if enabled
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
     echo -e "${BLUE}🔒 Installing Certbot and setting up SSL...${NC}"
@@ -380,7 +340,7 @@ fi
 # Final status check
 echo -e "${BLUE}🔍 Checking service status...${NC}"
 sudo systemctl status nginx --no-pager -l
-pm2 status
+echo -e "${GREEN}✅ React app is served as static files - no PM2 process needed${NC}"
 
 echo ""
 echo -e "${GREEN}✅ Setup completed successfully!${NC}"
@@ -389,29 +349,29 @@ echo -e "${PURPLE}║                    Deployment Summary                     
 echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo -e "${BLUE}📋 Configuration:${NC}"
 echo -e "  • Application: ${YELLOW}$APP_NAME${NC}"
+echo -e "  • App Type: ${YELLOW}React (Static Files)${NC}"
 echo -e "  • Domain: ${YELLOW}$DOMAIN${NC}"
-echo -e "  • Port: ${YELLOW}$PORT${NC}"
 echo -e "  • Environment: ${YELLOW}$ENV${NC}"
-echo -e "  • PM2 Instances: ${YELLOW}$INSTANCES${NC}"
 echo -e "  • Directory: ${YELLOW}$APP_DIR${NC}"
 echo -e "  • SSL: ${YELLOW}$(if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then echo "Enabled"; else echo "Disabled"; fi)${NC}"
 echo ""
 echo -e "${BLUE}📁 Files & Locations:${NC}"
 echo -e "  • Nginx config: ${YELLOW}/etc/nginx/sites-available/$APP_NAME${NC}"
-echo -e "  • PM2 logs: ${YELLOW}/var/log/pm2/${NC}"
+echo -e "  • Static files: ${YELLOW}$APP_DIR/build/${NC}"
+echo -e "  • Nginx logs: ${YELLOW}/var/log/nginx/${NC}"
 echo -e "  • Update script: ${YELLOW}$APP_DIR/update.sh${NC}"
 echo -e "  • Backup script: ${YELLOW}$APP_DIR/backup.sh${NC}"
 echo ""
 echo -e "${BLUE}🔧 Useful Commands:${NC}"
 echo -e "  • Update app: ${CYAN}$APP_DIR/update.sh${NC}"
-echo -e "  • Restart app: ${CYAN}pm2 restart $APP_NAME${NC}"
-echo -e "  • View logs: ${CYAN}pm2 logs $APP_NAME${NC}"
-echo -e "  • Monitor app: ${CYAN}pm2 monit${NC}"
+echo -e "  • Check build: ${CYAN}ls -la $APP_DIR/build/${NC}"
+echo -e "  • View access logs: ${CYAN}sudo tail -f /var/log/nginx/access.log${NC}"
+echo -e "  • View error logs: ${CYAN}sudo tail -f /var/log/nginx/error.log${NC}"
 echo -e "  • Nginx reload: ${CYAN}sudo systemctl reload nginx${NC}"
-echo -e "  • Check status: ${CYAN}pm2 status${NC}"
+echo -e "  • Nginx status: ${CYAN}sudo systemctl status nginx${NC}"
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
 echo -e "  • SSL renewal: ${CYAN}sudo certbot renew${NC}"
 fi
 echo ""
-echo -e "${GREEN}🌐 Your app is now available at: ${YELLOW}$PROTOCOL://$DOMAIN${NC}"
-echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
+echo -e "${GREEN}🌐 Your React app is now available at: ${YELLOW}$PROTOCOL://$DOMAIN${NC}"
+echo -e "${GREEN}🎉 React deployment completed successfully!${NC}"
