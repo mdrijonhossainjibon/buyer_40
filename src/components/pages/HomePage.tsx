@@ -172,7 +172,7 @@ export default function HomePage() {
         <div className="mt-8 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <h3 className="text-center text-lg font-semibold mb-3 text-gray-900 dark:text-white">Refer & Earn More!</h3>
           <p className="text-center mb-3 text-gray-700 dark:text-gray-300 leading-relaxed">
-            রেফার বোনাস পেতে লিংকটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় <b>20</b> টাকা.
+            রেফার বোনাস পেতে লিংকটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় <b>5</b> টাকা.
           </p>
           {isLoading ? (
             <Skeleton.Paragraph lineCount={1} animated className="my-2.5" />

@@ -201,7 +201,7 @@ export default function TasksPage() {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 15 BDT by joining our Telegram channel!
+          Earn 7 BDT by joining our Telegram channel!
         </p>
 
       </div>
@@ -235,7 +235,7 @@ export default function TasksPage() {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 15 BDT by subscribing to our YouTube channel!
+          Earn 7 BDT by subscribing to our YouTube channel!
         </p>
 
 

@@ -166,7 +166,7 @@ export default function WithdrawPage() {
                 onChange={(value) => {
                   dispatch(setAmount(value ? value.toString() : ''))
                 }}
-                placeholder="১০০০"
+                placeholder={minWithdraw.toString()}
                 min={minWithdraw}
                 max={user.balanceTK}
                 size="large"
