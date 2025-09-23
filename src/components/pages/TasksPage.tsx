@@ -85,10 +85,7 @@ export default function TasksPage() {
     }
 
     if (user.status === 'suspend') {
-      CustomToast.show({
-        content: 'Your account has been suspended!',
-        duration: 2000,
-      })
+      toast.error('Your account has been suspended!')
       return
     }
 
@@ -99,15 +96,12 @@ export default function TasksPage() {
   }
 
   const openChannel = () => {
-    window.open('https://t.me/earnfromads1', '_blank')
+    window.open('https://t.me/TheAuraEarner', '_blank')
   }
 
   const checkChannel = async () => {
     if (user.telegramBonus && user.telegramBonus > 0) {
-      CustomToast.show({
-        content: 'Already claimed!',
-        duration: 2000,
-      })
+      toast.error('Already claimed!')
       return
     }
     try {

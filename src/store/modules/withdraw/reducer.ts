@@ -9,8 +9,8 @@ const initialState: WithdrawState = {
   isLoading: false,
   error: null,
   successMessage: null,
-  minWithdraw: 1000,
-  requiredReferrals: 20
+  minWithdraw: 200,
+  requiredReferrals: 10
 }
 
 // Reducer
