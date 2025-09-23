@@ -43,9 +43,24 @@ export default function LoadingOverlay({
         // Check if Telegram Web App is available
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp
-          console.log(tg)
+       
           // Initialize Telegram Web App
           tg.ready()
+
+          if (tg) {
+            // Initialize Telegram WebApp
+            tg.ready();
+            // Request write access for enhanced user data
+            tg.requestWriteAccess?.((granted) => {
+              console.log('Write access:', granted ? 'granted' : 'denied');
+              if (granted) {
+                console.log('App can now access user contact information');
+              }
+            });
+      
+          } else {
+            console.warn('Telegram WebApp not available');
+          }
 
           // Check if we have valid Telegram data
           if (tg.initData && tg.initDataUnsafe) {
@@ -156,30 +171,12 @@ export default function LoadingOverlay({
 
 
   useEffect(() => {
-    ///dispatch(fetchUserDataRequest({ userId : 709148502}))
+     ///dispatch(fetchUserDataRequest({ userId : 709148502}))
 
   }, [dispatch])
 
 
-  useEffect(() => {
-    const webApp = window.Telegram?.WebApp;
-
-    if (webApp) {
-      // Initialize Telegram WebApp
-      webApp.ready();
-      // Request write access for enhanced user data
-      webApp.requestWriteAccess?.((granted) => {
-        console.log('Write access:', granted ? 'granted' : 'denied');
-        if (granted) {
-          console.log('App can now access user contact information');
-        }
-      });
-
-    } else {
-      console.warn('Telegram WebApp not available');
-    }
-
-  }, [])
+ 
 
   useEffect(() => {
     if (!visible) {

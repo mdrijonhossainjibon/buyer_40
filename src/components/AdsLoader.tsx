@@ -20,7 +20,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
 
         <Script src='https://adexora.com/cdn/ads.js?id=310' />
 
-        <Script src='//libtl.com/sdk.js' data-zone='9890517' data-sdk='show_9890517' />
+        <Script src='//libtl.com/sdk.js' data-zone='9915087' data-sdk='show_9915087' />
       {children}
     </>
   )
