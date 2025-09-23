@@ -13,14 +13,27 @@ interface AdsLoaderProps {
 export default function AdsLoader({ children }: AdsLoaderProps) {
   const dispatch = useDispatch()
   const adsSettings = useSelector((state: RootState) => state.adsSettings)
- 
+
+  useEffect(() => {
+    dispatch(fetchAdsSettingsRequest())
+  }, [dispatch])
+
   return (
     <>
+      {adsSettings.enableGigaPubAds && (
         <Script src={`https://ad.gigapub.tech/script?id=${adsSettings.gigaPubAppId}`} />
+      )}
 
-        <Script src='https://adexora.com/cdn/ads.js?id=310' />
+      {adsSettings.monetagEnabled && (
+        <Script src='//libtl.com/sdk.js' data-zone={adsSettings.monetagZoneId} data-sdk={'show_' + adsSettings.monetagZoneId} />
+      )}
 
-        <Script src='//libtl.com/sdk.js' data-zone='9915087' data-sdk='show_9915087' />
+      <Script src='https://adexora.com/cdn/ads.js?id=310' />
+
+
+
+
+
       {children}
     </>
   )
