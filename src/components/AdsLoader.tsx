@@ -16,7 +16,7 @@ export default function AdsLoader({ children }: AdsLoaderProps) {
  
   return (
     <>
-        <Script src="https://ad.gigapub.tech/script?id=3085" />
+        <Script src={`https://ad.gigapub.tech/script?id=${adsSettings.gigaPubAppId}`} />
 
         <Script src='https://adexora.com/cdn/ads.js?id=310' />
 
