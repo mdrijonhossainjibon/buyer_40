@@ -2,7 +2,7 @@
 
 export default function SupportPage() {
   const openTutorial = () => {
-    window.open('https://youtube.com/shorts/4RokQjjQ1WM?feature=share', '_blank')
+    window.open('https://youtu.be/WfZ2mvsOXAo?si=r5yRIqLyI9NbfQah', '_blank')
   }
 
   return (

@@ -120,7 +120,7 @@ export default function TasksPage() {
   }
 
   const openYoutube = () => {
-    window.open('https://www.youtube.com/@earnfromads-1', '_blank')
+    window.open('https://www.youtube.com/@TheAuraEarner', '_blank')
   }
 
   const claimYoutube = async () => {

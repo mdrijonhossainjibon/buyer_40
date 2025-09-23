@@ -95,6 +95,34 @@ echo -e "${CYAN}Enter Node.js version for building ${YELLOW}[18]${NC}: "
 read NODE_VERSION
 NODE_VERSION=${NODE_VERSION:-18}
 
+# React Framework Detection
+echo -e "${CYAN}Select React framework ${YELLOW}[auto-detect]${NC}: "
+echo -e "  ${YELLOW}1)${NC} Auto-detect (recommended)"
+echo -e "  ${YELLOW}2)${NC} Vite (uses 'dist' folder)"
+echo -e "  ${YELLOW}3)${NC} Create React App (uses 'build' folder)"
+echo -e "${CYAN}Enter choice (1-3): ${NC}"
+read FRAMEWORK_CHOICE
+FRAMEWORK_CHOICE=${FRAMEWORK_CHOICE:-1}
+
+# Set framework and build directory based on choice
+case $FRAMEWORK_CHOICE in
+    2)
+        FRAMEWORK="Vite"
+        BUILD_DIR="dist"
+        BUILD_COMMAND="yarn build"
+        ;;
+    3)
+        FRAMEWORK="Create React App"
+        BUILD_DIR="build"
+        BUILD_COMMAND="yarn build"
+        ;;
+    *)
+        FRAMEWORK="Auto-detect"
+        BUILD_DIR="auto"
+        BUILD_COMMAND="yarn build"
+        ;;
+esac
+
 # Environment
 echo -e "${CYAN}Enter environment ${YELLOW}[production]${NC}: "
 read ENV
@@ -125,6 +153,10 @@ echo -e "${GREEN}📋 Configuration Summary${NC}"
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 echo -e "${YELLOW}App Name:${NC} $APP_NAME"
 echo -e "${YELLOW}App Type:${NC} React (Static Files)"
+echo -e "${YELLOW}Framework:${NC} $FRAMEWORK"
+if [ "$BUILD_DIR" != "auto" ]; then
+    echo -e "${YELLOW}Build Directory:${NC} $BUILD_DIR"
+fi
 echo -e "${YELLOW}Domain:${NC} $DOMAIN"
 echo -e "${YELLOW}Directory:${NC} $APP_DIR"
 echo -e "${YELLOW}Node.js Version:${NC} $NODE_VERSION (build only)"
@@ -189,20 +221,41 @@ fi
 
 cd $APP_DIR
 
+# Auto-detect framework if needed
+if [ "$BUILD_DIR" = "auto" ]; then
+    echo -e "${BLUE}🔍 Auto-detecting React framework...${NC}"
+    
+    if [ -f "vite.config.js" ] || [ -f "vite.config.ts" ] || grep -q '"vite"' package.json 2>/dev/null; then
+        FRAMEWORK="Vite"
+        BUILD_DIR="dist"
+        echo -e "${GREEN}✅ Detected Vite framework - using 'dist' directory${NC}"
+    elif [ -f "craco.config.js" ] || grep -q '"react-scripts"' package.json 2>/dev/null; then
+        FRAMEWORK="Create React App"
+        BUILD_DIR="build"
+        echo -e "${GREEN}✅ Detected Create React App - using 'build' directory${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Could not auto-detect framework. Defaulting to Create React App (build directory)${NC}"
+        FRAMEWORK="Create React App (Default)"
+        BUILD_DIR="build"
+    fi
+fi
+
 # Install dependencies and build
 echo -e "${BLUE}📦 Installing application dependencies...${NC}"
 yarn install
 
-echo -e "${BLUE}🔨 Building React application...${NC}"
-yarn build
+echo -e "${BLUE}🔨 Building React application ($FRAMEWORK)...${NC}"
+$BUILD_COMMAND
 
 # Verify build directory exists
-if [ ! -d "$APP_DIR/build" ]; then
-    echo -e "${RED}❌ Build directory not found. Make sure your React app builds to 'build/' directory${NC}"
+if [ ! -d "$APP_DIR/$BUILD_DIR" ]; then
+    echo -e "${RED}❌ Build directory '$BUILD_DIR' not found. Build may have failed.${NC}"
+    echo -e "${YELLOW}💡 Available directories:${NC}"
+    ls -la $APP_DIR/ | grep "^d"
     exit 1
 fi
 
-echo -e "${GREEN}✅ React app built successfully! Static files ready in build/ directory${NC}"
+echo -e "${GREEN}✅ React app built successfully! Static files ready in $BUILD_DIR/ directory${NC}"
 
 # Create Nginx configuration for React static files
 echo -e "${BLUE}🌐 Creating Nginx configuration for React static files...${NC}"
@@ -212,7 +265,7 @@ server {
     server_name $DOMAIN www.$DOMAIN;
     
     # Document root for React build files
-    root $APP_DIR/build;
+    root $APP_DIR/$BUILD_DIR;
     index index.html;
 
     # Security headers
@@ -299,31 +352,15 @@ if [ -n "$GIT_REPO" ]; then
     git pull origin main
 fi
 yarn install
-yarn build
+$BUILD_COMMAND
 sudo systemctl reload nginx
-echo "✅ React application updated successfully! Static files refreshed."
+echo "✅ React application updated successfully! Static files refreshed in $BUILD_DIR/ directory."
 EOF
 
 chmod +x $APP_DIR/update.sh
+ 
 
-# Create backup script
-echo -e "${BLUE}💾 Creating backup script...${NC}"
-cat > $APP_DIR/backup.sh << EOF
-#!/bin/bash
-BACKUP_DIR="/var/backups/$APP_NAME"
-DATE=\$(date +%Y%m%d_%H%M%S)
-
-mkdir -p \$BACKUP_DIR
-tar -czf \$BACKUP_DIR/backup_\$DATE.tar.gz -C /var/www $APP_NAME
-find \$BACKUP_DIR -name "backup_*.tar.gz" -mtime +7 -delete
-echo "✅ Backup created: backup_\$DATE.tar.gz"
-EOF
-
-chmod +x $APP_DIR/backup.sh
-
-# Setup daily backup cron
-echo "0 2 * * * $APP_DIR/backup.sh" | crontab -
-
+ 
 # Add SSL setup if enabled
 if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then
     echo -e "${BLUE}🔒 Installing Certbot and setting up SSL...${NC}"
@@ -357,14 +394,14 @@ echo -e "  • SSL: ${YELLOW}$(if [[ $SSL_SETUP =~ ^[Yy]$ ]]; then echo "Enabled
 echo ""
 echo -e "${BLUE}📁 Files & Locations:${NC}"
 echo -e "  • Nginx config: ${YELLOW}/etc/nginx/sites-available/$APP_NAME${NC}"
-echo -e "  • Static files: ${YELLOW}$APP_DIR/build/${NC}"
+echo -e "  • Static files: ${YELLOW}$APP_DIR/$BUILD_DIR/${NC}"
 echo -e "  • Nginx logs: ${YELLOW}/var/log/nginx/${NC}"
 echo -e "  • Update script: ${YELLOW}$APP_DIR/update.sh${NC}"
 echo -e "  • Backup script: ${YELLOW}$APP_DIR/backup.sh${NC}"
 echo ""
 echo -e "${BLUE}🔧 Useful Commands:${NC}"
 echo -e "  • Update app: ${CYAN}$APP_DIR/update.sh${NC}"
-echo -e "  • Check build: ${CYAN}ls -la $APP_DIR/build/${NC}"
+echo -e "  • Check build: ${CYAN}ls -la $APP_DIR/$BUILD_DIR/${NC}"
 echo -e "  • View access logs: ${CYAN}sudo tail -f /var/log/nginx/access.log${NC}"
 echo -e "  • View error logs: ${CYAN}sudo tail -f /var/log/nginx/error.log${NC}"
 echo -e "  • Nginx reload: ${CYAN}sudo systemctl reload nginx${NC}"
