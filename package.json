@@ -22,6 +22,7 @@
     "nodemailer": "^7.0.6",
     "react": "^19.2.0-canary-fa3feba6-20250623",
     "react-dom": "^19.2.0-canary-fa3feba6-20250623",
+    "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "redux": "^5.0.1",

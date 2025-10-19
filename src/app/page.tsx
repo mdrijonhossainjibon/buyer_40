@@ -8,6 +8,7 @@ import Navigation from '@/components/Navigation'
 import HomePage from '@/components/pages/HomePage'
 import TasksPage from '@/components/pages/TasksPage'
 import SupportPage from '@/components/pages/SupportPage'
+import WatchAdsPage from '@/components/pages/WatchAdsPage'
 import WithdrawPage from '@/components/pages/WithdrawPage'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import AccountSuspensionPopup from '@/components/AccountSuspensionPopup'
@@ -65,6 +66,8 @@ export default function Home() {
         return <TasksPage />
       case 'support':
         return <SupportPage />
+      case 'ads':
+        return <WatchAdsPage />
       case 'withdraw':
         return <WithdrawPage />
       default:

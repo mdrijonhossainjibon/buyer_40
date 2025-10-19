@@ -57,10 +57,10 @@ export const authOptions: AuthOptions = {
                 { username: credentials.username },
                 { email: credentials.username }
               ],
-              status: 'active'
+               
             })
-   
-            if (!admin) {
+ 
+          if (!admin) {
               throw new Error('Invalid credentials: User not found or inactive')
             }
   

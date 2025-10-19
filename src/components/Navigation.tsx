@@ -10,6 +10,7 @@ export default function Navigation({ currentPage, setCurrentPage }: NavigationPr
     { id: 'home', icon: 'fas fa-home', label: 'Home' },
     { id: 'support', icon: 'fas fa-headset', label: 'Support' },
     { id: 'tasks', icon: 'fas fa-tasks', label: 'Tasks' },
+    { id: 'ads', icon: 'fas fa-play-circle', label: 'Watch Ads' },
     { id: 'withdraw', icon: 'fas fa-wallet', label: 'Withdraw' },
   ]
 
