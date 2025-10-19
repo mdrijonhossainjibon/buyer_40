@@ -31,7 +31,9 @@ import { getCurrentUser } from '@/lib/getCurrentUser'
 function* fetchUserDataSaga( ) {
   try {
     yield put(setLoading(true))
-    const currentUser  = getCurrentUser()
+    const currentUser  = getCurrentUser();
+
+    console.log(currentUser)
      
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {

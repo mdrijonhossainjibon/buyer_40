@@ -137,6 +137,7 @@ export default function LoadingOverlay({
   // Fetch user data on mount using getCurrentUser
   useEffect(() => {
     const currentUser = getCurrentUser()
+     
     if (currentUser) {
       dispatch(fetchUserDataRequest())
     }
