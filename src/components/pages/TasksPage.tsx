@@ -48,26 +48,7 @@ import { toast } from 'react-toastify'
  
 
 
-
-/* export async function showAlternatingAds(zoneId: string, userId: number, dispatch: any) {
-  // get last state from localStorage 
-  let lastAd = localStorage.getItem("lastAd");
-  if (lastAd === "load") {
-    // last was LoadAds → now showGiga 
-    await window.showGiga?.();
-    dispatch(watchAdRequest(userId));
-    localStorage.setItem("lastAd", "giga");
-    return "giga";
-  } else {
-    // default or last was giga → now LoadAds 
-    await LoadAds(zoneId);
-    dispatch(watchAdRequest(userId));
-    localStorage.setItem("lastAd", "load");
-    return "load";
-  }
-}
- */
-
+ 
 export default function TasksPage() {
   const [isWatchingAd, setIsWatchingAd] = useState(false)
 
@@ -156,8 +137,8 @@ export default function TasksPage() {
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
         <i className="fas fa-video text-5xl mb-4 text-blue-600 dark:text-blue-400"></i>
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Rewarded Ad</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">প্রতিটি বিজ্ঞাপনের জন্য <b>{adsSettings.defaultAdsReward || 0}</b> টাকা আয় করুন।</p>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">অ্যাড দেখে আয় করতে ভেরিফাই করুন!</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">Earn <b>{adsSettings.defaultAdsReward || 0}</b> USDT for each ad.</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">Verify to start earning by watching ads!</p>
 
 
         <button
@@ -168,14 +149,14 @@ export default function TasksPage() {
           watch Ads
         </button>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          পুরস্কার পেতে {adsSettings.minWatchTime || 30} সেকেন্ডের জন্য বিজ্ঞাপনে থাকুন।
+          Stay on the ad for {adsSettings.minWatchTime || 30} seconds to get the reward.
         </p>
       </div>
 
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
         <i className="fab fa-telegram text-5xl mb-4 text-blue-600 dark:text-blue-400"></i>
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Join our Telegram Channel</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">চ্যানেলে জয়েন করুন, তারপর ফিরে এসে &quot;Check &amp; Claim&quot; দিন।</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">Join the channel, then come back and click &quot;Check &amp; Claim&quot;.</p>
         <div className="flex gap-2.5">
           <button className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200" onClick={openChannel}>
             <span>Open Channel</span>
@@ -201,7 +182,7 @@ export default function TasksPage() {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 7 BDT by joining our Telegram channel!
+          Earn 0.007$ USDT by joining our Telegram channel!
         </p>
 
       </div>
@@ -209,7 +190,7 @@ export default function TasksPage() {
       <div className="p-5 rounded-xl text-center mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
         <i className="fab fa-youtube text-5xl mb-4 text-red-600 dark:text-red-400"></i>
         <h3 className="text-xl font-semibold mb-1 text-gray-900 dark:text-white">Subscribe our YouTube</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">Open YouTube এ ক্লিক করুন, সাবস্ক্রাইব করুন, তারপর &quot;Check &amp; Claim&quot; দিন।</p>
+        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">Click Open YouTube, subscribe, then click &quot;Check &amp; Claim&quot;.</p>
         <div className="flex gap-2.5">
           <button className="flex-1 p-3.5 text-base font-bold text-white border-none rounded-lg cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-colors duration-200" onClick={openYoutube}>
             <span>Open YouTube</span>
@@ -235,7 +216,7 @@ export default function TasksPage() {
           </button>
         </div>
         <p className="mt-2.5 text-sm opacity-80 text-gray-600 dark:text-gray-400">
-          Earn 7 BDT by subscribing to our YouTube channel!
+          Earn 0.007$ USDT by subscribing to our YouTube channel!
         </p>
 
 

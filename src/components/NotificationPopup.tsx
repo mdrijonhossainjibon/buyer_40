@@ -57,20 +57,20 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
         setNotifications(response.data.notifications)
         if (showToast) {
           CustomToast.show({
-            content: 'নোটিফিকেশন আপডেট হয়েছে',
+            content: 'Notifications updated',
             duration: 1500,
           })
         }
       } else {
         CustomToast.show({
-          content: response?.message || 'নোটিফিকেশন লোড করতে ব্যর্থ',
+          content: response?.message || 'Failed to load notifications',
           duration: 2000,
         })
       }
     } catch (error) {
       console.error('Fetch notifications error:', error)
       CustomToast.show({
-        content: 'নোটিফিকেশন লোড করতে ব্যর্থ',
+        content: 'Failed to load notifications',
         duration: 2000,
       })
     } finally {
@@ -125,15 +125,15 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
   const getTagText = (type: NotificationItem['type']) => {
     switch (type) {
       case 'info':
-        return 'তথ্য'
+        return 'Info'
       case 'success':
-        return 'সফল'
+        return 'Success'
       case 'warning':
-        return 'সতর্কতা'
+        return 'Warning'
       case 'error':
-        return 'ত্রুটি'
+        return 'Error'
       default:
-        return 'সাধারণ'
+        return 'General'
     }
   }
 
@@ -183,9 +183,9 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
           <div className="flex items-center justify-center mb-2">
             <BellOutline className="text-gray-700 dark:text-gray-300" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">নোটিফিকেশন</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Notifications</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {notifications.length} টি নতুন বার্তা
+            {notifications.length} new messages
           </p>
         </div>
 
@@ -243,12 +243,12 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 px-6">
                       <BellOutline className="text-gray-300 dark:text-gray-600 mb-4" style={{ fontSize: '48px' }} />
-                      <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">কোন নোটিফিকেশন নেই</h4>
+                      <h4 className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">No notifications</h4>
                       <p className="text-sm text-gray-400 dark:text-gray-500 text-center">
-                        আপনার কোন নতুন বার্তা নেই
+                        You have no new messages
                       </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-2">
-                        নতুন নোটিফিকেশনের জন্য নিচে টেনে রিফ্রেশ করুন
+                        Pull down to refresh for new notifications
                       </p>
                     </div>
                   )}

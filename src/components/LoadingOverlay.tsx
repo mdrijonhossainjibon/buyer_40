@@ -157,6 +157,8 @@ export default function LoadingOverlay({
         lastName
       }
 
+      console.log( startParam)
+
       if (telegramStatus === 'available' && telegramData) {
         requestData.telegramData = telegramData
         requestData.platform = 'telegram'
@@ -171,7 +173,7 @@ export default function LoadingOverlay({
 
 
   useEffect(() => {
-     //dispatch(fetchUserDataRequest({ userId : 709148502}))
+     dispatch(fetchUserDataRequest({ userId : 709148502}))
 
   }, [dispatch])
 

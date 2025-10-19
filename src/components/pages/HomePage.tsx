@@ -18,7 +18,7 @@ export default function HomePage() {
   const user = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(false)
  
-  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?startapp=${user.referralCode || ''}`
+  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?ref=${user.referralCode || ''}`
 
 
 
@@ -122,7 +122,7 @@ export default function HomePage() {
 
   const shareOnTelegram = () => {
     const text = encodeURIComponent(
-      `🎉 আমার সাথে Earn From Ads BD-এ যোগ দিন এবং বিজ্ঞাপন দেখার মাধ্যমে আয় শুরু করুন! রেফারেল করলে আপনি পাবেন 20 টাকা বোনাস! আমার রেফারেল লিঙ্ক ব্যবহার করুন: ${referralLink}`
+      `🎉 Join me on Earn From Ads and start earning by watching ads! You'll get 0.02$ USDT bonus for referring! Use my referral link: ${referralLink}`
     );
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank')
   }
@@ -172,7 +172,7 @@ export default function HomePage() {
         <div className="mt-8 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <h3 className="text-center text-lg font-semibold mb-3 text-gray-900 dark:text-white">Refer & Earn More!</h3>
           <p className="text-center mb-3 text-gray-700 dark:text-gray-300 leading-relaxed">
-            রেফার বোনাস পেতে লিংকটি কপি করে আপনার বন্ধুদের কাছে শেয়ার করুন। প্রতি রেফারে আয় <b>5</b> টাকা.
+            Copy the link and share it with your friends to get referral bonus. Earn <b>0.02$</b> USDT per referral.
           </p>
           {isLoading ? (
             <Skeleton.Paragraph lineCount={1} animated className="my-2.5" />

@@ -39,7 +39,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
       body: {
         ...generateSignature(
           JSON.stringify({ ...action.payload  }), 
-          process.env.NEXT_PUBLIC_SECRET_KEY || ''
+          process.env.NEXT_PUBLIC_SECRET_KEY || 'app'
         )
       }
     })
