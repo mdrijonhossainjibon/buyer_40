@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnFromAds BD - App Launch Soon</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Edu+SA+Hand:wght@400..700&family=Great+Vibes&display=swap" rel="stylesheet">
+ 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'edu': ['Edu SA Hand', 'cursive'],
+                        'vibes': ['Great Vibes', 'cursive'],
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { 
+                                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3)' 
+                            },
+                            '100%': { 
+                                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 30px rgba(147, 51, 234, 0.5)' 
+                            }
+                        },
+                        float: {
+                            '0%, 100%': { 
+                                transform: 'translateY(0px) rotate(0deg)' 
+                            },
+                            '50%': { 
+                                transform: 'translateY(-20px) rotate(180deg)' 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+        }
+        .glass {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center text-white overflow-hidden font-sans">
+    <!-- Floating Particles Background -->
+    <div class="fixed inset-0 pointer-events-none z-0" id="particles"></div>
+    
+    <!-- Main Container -->
+    <div class="relative z-10 text-center p-8 max-w-4xl w-full mx-auto">
+        <!-- Logo -->
+        <div class="w-32 h-32 mx-auto mb-8 bg-white/10 rounded-full flex items-center justify-center text-5xl glass border-2 border-white/20 shadow-2xl animate-pulse-slow">
+            <i class="fas fa-coins text-yellow-400"></i>
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 animate-glow font-vibes">EarnFromAds BD</h1>
+        <p class="text-xl md:text-2xl mb-12 text-slate-300 opacity-90 font-edu">App Launch Soon!</p>
+        
+        <!-- Countdown Timer -->
+        <div class="flex justify-center gap-4 md:gap-8 mb-12 flex-wrap" id="countdown">
+            <div class="bg-slate-800/40 glass p-6 rounded-2xl min-w-[100px] border border-slate-600/30 shadow-xl hover:transform hover:-translate-y-2 transition-all duration-300 hover:bg-slate-700/50">
+                <span class="block text-3xl md:text-4xl font-bold mb-2 font-edu text-slate-100" id="days">00</span>
+                <span class="text-sm uppercase tracking-wider text-slate-400 font-edu">Days</span>
+            </div>
+            <div class="bg-slate-800/40 glass p-6 rounded-2xl min-w-[100px] border border-slate-600/30 shadow-xl hover:transform hover:-translate-y-2 transition-all duration-300 hover:bg-slate-700/50">
+                <span class="block text-3xl md:text-4xl font-bold mb-2 font-edu text-slate-100" id="hours">00</span>
+                <span class="text-sm uppercase tracking-wider text-slate-400 font-edu">Hours</span>
+            </div>
+            <div class="bg-slate-800/40 glass p-6 rounded-2xl min-w-[100px] border border-slate-600/30 shadow-xl hover:transform hover:-translate-y-2 transition-all duration-300 hover:bg-slate-700/50">
+                <span class="block text-3xl md:text-4xl font-bold mb-2 font-edu text-slate-100" id="minutes">00</span>
+                <span class="text-sm uppercase tracking-wider text-slate-400 font-edu">Minutes</span>
+            </div>
+            <div class="bg-slate-800/40 glass p-6 rounded-2xl min-w-[100px] border border-slate-600/30 shadow-xl hover:transform hover:-translate-y-2 transition-all duration-300 hover:bg-slate-700/50">
+                <span class="block text-3xl md:text-4xl font-bold mb-2 font-edu text-slate-100" id="seconds">00</span>
+                <span class="text-sm uppercase tracking-wider text-slate-400 font-edu">Seconds</span>
+            </div>
+        </div>
+        
+        <!-- Launch Info -->
+        <div class="bg-slate-800/40 glass p-8 rounded-3xl border border-slate-600/30 shadow-2xl mb-8">
+            <div class="text-xl font-bold mb-4 text-slate-200 font-vibes" id="launch-date">
+                <i class="fas fa-rocket text-blue-400 mr-2"></i>Launching: September 18, 2025 at 12:00 AM
+            </div>
+            <p class="text-lg text-slate-300 leading-relaxed font-edu">Get ready for the ultimate earning experience! Our platform will help you earn money through simple tasks, ad viewing, and referrals.</p>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-slate-800/30 glass p-6 rounded-2xl border border-slate-600/20 shadow-lg hover:bg-slate-700/40 transition-all duration-300 hover:transform hover:scale-105">
+                <div class="text-4xl mb-4 text-red-400">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-slate-200 font-edu">Watch Ads</h3>
+                <p class="text-sm text-slate-400 font-edu">Earn money by watching short advertisements</p>
+            </div>
+            <div class="bg-slate-800/30 glass p-6 rounded-2xl border border-slate-600/20 shadow-lg hover:bg-slate-700/40 transition-all duration-300 hover:transform hover:scale-105">
+                <div class="text-4xl mb-4 text-blue-400">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-slate-200 font-edu">Mobile App</h3>
+                <p class="text-sm text-slate-400 font-edu">Easy-to-use mobile interface for earning on the go</p>
+            </div>
+            <div class="bg-slate-800/30 glass p-6 rounded-2xl border border-slate-600/20 shadow-lg hover:bg-slate-700/40 transition-all duration-300 hover:transform hover:scale-105">
+                <div class="text-4xl mb-4 text-green-400">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-slate-200 font-edu">Referrals</h3>
+                <p class="text-sm text-slate-400 font-edu">Invite friends and earn bonus rewards</p>
+            </div>
+            <div class="bg-slate-800/30 glass p-6 rounded-2xl border border-slate-600/20 shadow-lg hover:bg-slate-700/40 transition-all duration-300 hover:transform hover:scale-105">
+                <div class="text-4xl mb-4 text-emerald-400">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-slate-200 font-edu">Quick Payouts</h3>
+                <p class="text-sm text-slate-400 font-edu">Fast and secure withdrawal to your mobile wallet</p>
+            </div>
+        </div>
+        
+        <!-- Social Links -->
+        <div class="flex justify-center gap-4 flex-wrap">
+            <a href="https://t.me/zikrulislamjuwel" class="inline-flex items-center px-6 py-3 bg-slate-800/40 glass rounded-full text-slate-200 hover:bg-slate-700/50 transition-all duration-300 border border-slate-600/30 hover:transform hover:-translate-y-1 shadow-lg font-edu">
+                <i class="fab fa-telegram-plane text-blue-400 mr-2"></i>Telegram
+            </a>
+            <a href="#" class="inline-flex items-center px-6 py-3 bg-slate-800/40 glass rounded-full text-slate-200 hover:bg-slate-700/50 transition-all duration-300 border border-slate-600/30 hover:transform hover:-translate-y-1 shadow-lg font-edu">
+                <i class="fas fa-envelope text-purple-400 mr-2"></i>Contact
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Set launch date - September 18, 2025 at 12:00 AM (Bangladesh Time)
+        const launchDate = new Date('2025-09-19T00:00:00+06:00').getTime() - (1 * 60 * 60 * 1000)
+        
+        // Update countdown every second
+        const countdownTimer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = launchDate - now;
+            
+            // Calculate time units
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Update display
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            
+            // If countdown is finished
+            if (distance < 0) {
+                clearInterval(countdownTimer);
+                document.getElementById('countdown').innerHTML = '<h2 style="color: #4CAF50;">🎉 App is Now Live! 🎉</h2>';
+                document.querySelector('.launch-info').innerHTML = '<h2>Welcome to EarnFromAds BD!</h2><p>Start earning money now!</p>';
+            }
+        }, 1000);
+        
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute bg-white/10 rounded-full animate-float';
+                
+                // Random size and position
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // Random animation delay and duration
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Initialize particles when page loads
+        window.addEventListener('load', createParticles);
+        
+        // Update launch date display
+        const launchDateElement = document.getElementById('launch-date');
+        const launchDateFormatted = new Date(launchDate).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+        launchDateElement.textContent = `🚀 Launching: ${launchDateFormatted}`;
+    </script>
+</body>
+</html>

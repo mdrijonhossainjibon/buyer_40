@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Future Apps Developer logo - yellow">
+  <!-- Single-color yellow: #FFCC00 -->
+  <defs>
+    <style>
+      .brand { fill: #FFCC00; fill-rule:evenodd; }
+      .text { fill: #FFCC00; font-family: "Montserrat", "Arial", sans-serif; font-weight: 700; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Outer circle -->
+  <circle class="brand" cx="512" cy="512" r="420"/>
+
+  <!-- Phone + rocket icon (simple, single-color silhouette) -->
+  <!-- Phone body -->
+  <g transform="translate(0,-10)">
+    <rect x="328" y="176" rx="36" ry="36" width="368" height="360" class="brand"/>
+    <!-- Phone bottom notch / button -->
+    <rect x="484" y="496" width="56" height="10" rx="5" ry="5" class="brand"/>
+    <!-- Rocket (centered inside phone) - stylized silhouette -->
+    <path class="brand" d="M512 220c-22 0-38 18-38 40v48c0 22 16 40 38 40s38-18 38-40v-48c0-22-16-40-38-40zM490 300c0 0-22 18-34 52-12 34-6 72 14 94 20 22 46 32 46 32s26-10 46-32c20-22 26-60 14-94-12-34-34-52-34-52l-24 16-28-16-4 0zM486 380c0 11 9 20 20 20s20-9 20-20-9-20-20-20-20 9-20 20z"/>
+    <!-- Rocket fins (bottom) -->
+    <path class="brand" d="M472 438c-18 24-36 48-30 64 6 16 30 10 48-6l-18-58zM552 438c18 24 36 48 30 64-6 16-30 10-48-6l18-58z"/>
+    <!-- Rocket flame drops -->
+    <path class="brand" d="M502 492c-6 18-8 34-2 42 6 8 18 10 28 4 10-6 12-22 6-40-6-18-28-8-32-6z"/>
+  </g>
+
+  <!-- Text label (two lines) -->
+  <text class="text" x="512" y="680" font-size="72">FUTURE APPS</text>
+  <text class="text" x="512" y="760" font-size="72">DEVELOPER</text>
+</svg>

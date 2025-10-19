@@ -1,0 +1,35 @@
+{
+  "name": "earnfromadsbd",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ant-design/icons": "5.x",
+    "@redux-devtools/extension": "^3.3.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/mongoose": "^5.11.97",
+    "antd": "^5.27.4",
+    "antd-mobile": "^5.39.0",
+    "auth-fingerprint": "^1.0.20",
+    "mongoose": "^8.18.1",
+    "next": "^15.5.3",
+    "next-auth": "^4.24.11",
+    "nodemailer": "^7.0.6",
+    "react": "^19.2.0-canary-fa3feba6-20250623",
+    "react-dom": "^19.2.0-canary-fa3feba6-20250623",
+    "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5",
+    "redux": "^5.0.1",
+    "redux-saga": "^1.3.0"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.1",
+    "@types/react": "^19.1.13",
+    "typescript": "5.9.2"
+  }
+}
