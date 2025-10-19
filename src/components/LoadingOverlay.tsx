@@ -138,11 +138,7 @@ export default function LoadingOverlay({
   useEffect(() => {
     const currentUser = getCurrentUser()
     if (currentUser) {
-      const userIdValue = typeof currentUser.telegramId === 'number' 
-        ? currentUser.telegramId 
-        : parseInt(currentUser.telegramId)
-      
-      dispatch(fetchUserDataRequest({ userId: userIdValue }))
+      dispatch(fetchUserDataRequest())
     }
   }, [dispatch])
 
@@ -283,24 +279,7 @@ export default function LoadingOverlay({
           }
         </div>
 
-        {/* Error retry button */}
-        {error && userId && (
-          <button
-            onClick={() => {
-              setProgress(0)
-              setDataFetched(false)
-              setTelegramStatus('checking')
-              dispatch(fetchUserDataRequest({
-                userId,
-                username: username || undefined,
-                start_param: startParam || undefined
-              }))
-            }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-          >
-            Retry
-          </button>
-        )}
+      
       </div>
 
       {/* Simple footer */}

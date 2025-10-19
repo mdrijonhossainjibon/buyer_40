@@ -23,13 +23,15 @@ import {
 } from './actions'
 import { baseURL } from '@/lib/api-string'
 import { toast } from 'react-toastify'
+import { getCurrentUser } from '@/lib/getCurrentUser'
 
  
 
 // API call function
-function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
+function* fetchUserDataSaga( ) {
   try {
     yield put(setLoading(true))
+    const currentUser  = getCurrentUser()
      
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
@@ -38,7 +40,7 @@ function* fetchUserDataSaga(action: FetchUserDataRequestAction) {
       method: 'POST',
       body: {
         ...generateSignature(
-          JSON.stringify({ ...action.payload  }), 
+          JSON.stringify({ ...currentUser }), 
           process.env.NEXT_PUBLIC_SECRET_KEY || 'app'
         )
       }

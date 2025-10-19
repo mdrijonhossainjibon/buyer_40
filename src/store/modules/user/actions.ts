@@ -56,9 +56,9 @@ export const clearError = (): ClearErrorAction => ({
 })
 
 // Saga action creators
-export const fetchUserDataRequest = ( payload : { userId : number , start_param ?: string , username ?: string }): FetchUserDataRequestAction => ({
+export const fetchUserDataRequest = (  )  => ({
   type: USER_ACTIONS.FETCH_USER_DATA_REQUEST,
-  payload 
+  
 })
 
 export const fetchUserDataSuccess = (userData: Partial<UserState>): FetchUserDataSuccessAction => ({
