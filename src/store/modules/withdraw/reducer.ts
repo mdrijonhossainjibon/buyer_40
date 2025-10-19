@@ -2,14 +2,14 @@ import { WithdrawState, WithdrawActionTypes, WITHDRAW_ACTIONS } from './types'
 
 // Initial state
 const initialState: WithdrawState = {
-  withdrawMethod: 'Bkash',
+  withdrawMethod: '',
   accountNumber: '',
   amount: '',
   isSubmitting: false,
   isLoading: false,
   error: null,
   successMessage: null,
-  minWithdraw: 200,
+  minWithdraw: 2,
   requiredReferrals: 10
 }
 

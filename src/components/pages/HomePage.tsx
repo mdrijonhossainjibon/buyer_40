@@ -18,7 +18,7 @@ export default function HomePage() {
   const user = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(false)
  
-  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/?ref=${user.referralCode || ''}`
+  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/app?startapp=${user.referralCode || ''}`
 
 
 
