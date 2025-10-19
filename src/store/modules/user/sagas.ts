@@ -81,7 +81,7 @@ function* watchAdSaga(action: WatchAdRequestAction) {
         response.message
       ))
       
-      toast.success(response.message || 'Ad watched successfully! Reward credited.')
+      toast.success('Ad watched successfully! Reward credited.')
     } else {
       yield put(watchAdFailure(response?.message || 'Failed to watch ad'))
       toast.error(response?.message || 'Failed to watch ad')
