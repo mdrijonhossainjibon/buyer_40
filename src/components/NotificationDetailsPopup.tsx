@@ -52,7 +52,7 @@ export default function NotificationDetailsPopup({
       switch (key) {
         case 'bonusAmount':
           displayKey = 'Bonus amount'
-          displayValue = `${value} BDT`
+          displayValue = `${value} USDT`
           break
         case 'registrationTime':
           displayKey = 'Registration time'
@@ -67,7 +67,7 @@ export default function NotificationDetailsPopup({
           break
         case 'extraBonus':
           displayKey = 'Extra bonus'
-          displayValue = `${value} BDT`
+          displayValue = `${value} USDT`
           break
         case 'feastTimeHours':
           displayKey = 'Feast time schedule'
@@ -83,7 +83,7 @@ export default function NotificationDetailsPopup({
           break
         case 'amount':
           displayKey = 'Amount'
-          displayValue = `${value} BDT`
+          displayValue = `${value} USDT`
           break
         case 'withdrawHistoryId':
           displayKey = 'Withdraw ID'
