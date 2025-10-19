@@ -1,7 +1,7 @@
 import { call, put, takeEvery, select } from 'redux-saga/effects'
 import { withdrawAPI } from '@/lib/api/withdraw'
 import { RootState } from '@/store/rootReducer'
-import CustomToast from '@/components/CustomToast'
+ 
 import {
   WITHDRAW_ACTIONS,
   SubmitWithdrawRequestAction,
@@ -16,6 +16,7 @@ import {
   clearForm
 } from './actions'
 import { updateBalance } from '../user/actions'
+import  toast   from 'react-hot-toast'
 
 // Submit withdrawal request saga
 function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): Generator<any, void, any> {
@@ -24,10 +25,8 @@ function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): Generator<any
     yield put(setSubmitting(true))
 
     // Show loading toast
-    CustomToast.show({
-      content: 'উইথড্র অনুরোধ জমা দেওয়া হচ্ছে...',
-      duration: 3000,
-      type: 'loading',
+    toast.loading('Submitting withdrawal request...' ,{
+      duration: 3000
     })
 
     // Call API
@@ -38,10 +37,8 @@ function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): Generator<any
       yield put(submitWithdrawSuccess(response.message || 'Withdrawal request submitted successfully'))
       
       // Show success toast
-      CustomToast.show({
-        content: response.message || 'Withdrawal request submitted successfully.',
-        duration: 3000,
-        position: 'center'
+      toast.success(response.message || 'Withdrawal request submitted successfully.', {
+        duration: 3000
       })
 
       // Update user balance - subtract withdrawn amount from current balance
@@ -58,25 +55,21 @@ function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): Generator<any
       
     } else {
       // Failure
-      yield put(submitWithdrawFailure(response.error || 'উইথড্র অনুরোধে সমস্যা হয়েছে'))
+      yield put(submitWithdrawFailure(response.error || 'Withdrawal request failed'))
       
       // Show error toast
-      CustomToast.show({
-        content: response.error || 'উইথড্র অনুরোধে সমস্যা হয়েছে',
-        duration: 3000,
-        position: 'bottom'
+      toast.error(response.error || 'Withdrawal request failed', {
+        duration: 3000
       })
     }
   } catch (error: any) {
     // Handle unexpected errors
-    const errorMessage = error.message || 'নেটওয়ার্ক সমস্যা! আবার চেষ্টা করুন।'
+    const errorMessage = error.message || 'Network error! Please try again.'
     yield put(submitWithdrawFailure(errorMessage))
     
     // Show error toast
-    CustomToast.show({
-      content: errorMessage,
-      duration: 3000,
-      position: 'bottom'
+    toast.error(errorMessage, {
+      duration: 3000
     })
   } finally {
     // Always reset submitting state
