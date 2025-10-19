@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../store'
 import { fetchUserDataRequest, setLoading } from '../store/modules/user/actions'
+import { getCurrentUser } from '../lib/getCurrentUser'
 
 
 interface LoadingOverlayProps {
@@ -31,7 +32,7 @@ export default function LoadingOverlay({
   const [lastName, setLastName] = useState<string | null>(null)
   const [startParam, setStartParam] = useState<string | null>(null)
 
-  // Telegram Web App detection
+  // Telegram Web App detection using getCurrentUser
   useEffect(() => {
     if (!visible) return
 
@@ -40,98 +41,61 @@ export default function LoadingOverlay({
         setTelegramStatus('checking')
         setLoadingText('Checking Telegram Web App...')
 
-        // Check if Telegram Web App is available
+        // Initialize Telegram WebApp if available
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp
-       
-          // Initialize Telegram Web App
           tg.ready()
 
-          if (tg) {
-            // Initialize Telegram WebApp
-            tg.ready();
-            // Request write access for enhanced user data
-            tg.requestWriteAccess?.((granted) => {
-              console.log('Write access:', granted ? 'granted' : 'denied');
-              if (granted) {
-                console.log('App can now access user contact information');
-              }
-            });
-      
-          } else {
-            console.warn('Telegram WebApp not available');
+          // Request write access for enhanced user data
+          tg.requestWriteAccess?.((granted) => {
+            console.log('Write access:', granted ? 'granted' : 'denied')
+          })
+
+          // Apply Telegram theme if available
+          if (tg.themeParams) {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#000000')
+            document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff')
           }
+        }
 
-          // Check if we have valid Telegram data
-          if (tg.initData && tg.initDataUnsafe) {
-            setTelegramStatus('available')
+        // Use getCurrentUser to get user data
+        const currentUser = getCurrentUser()
 
-            // Extract user data from Telegram
-            const user = tg.initDataUnsafe.user
-            if (user) {
-              setUserId(user.id)
-              setUsername(user.username || `${user.first_name}${user.last_name ? '_' + user.last_name : ''}`)
-              setFirstName(user.first_name || null)
-              setLastName(user.last_name || null)
-            }
+        if (currentUser) {
+          setTelegramStatus('available')
+          
+          // Set user data from getCurrentUser
+          setUserId(typeof currentUser.telegramId === 'number' ? currentUser.telegramId : parseInt(currentUser.telegramId))
+          setUsername(currentUser.telegramUsername || currentUser.username)
+          setFirstName(currentUser.username.split(' ')[0] || null)
+          setLastName(currentUser.username.split(' ').slice(1).join(' ') || null)
+          setStartParam(currentUser.start_param || null)
 
-            // Extract start parameter
-            const startParamValue = tg.initDataUnsafe.start_param
-            if (startParamValue) {
-              setStartParam(startParamValue)
-            }
-
-            setTelegramData({
-              initData: tg.initData,
-              initDataUnsafe: tg.initDataUnsafe,
-              platform: tg.platform,
-              colorScheme: tg.colorScheme,
-              version: (tg as any).isVersionAtLeast?.('6.0') ? '6.0+' : 'legacy',
-              user: user
-            })
-
-            // Apply Telegram theme if available
-            if (tg.themeParams) {
-              document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#000000')
-              document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff')
-            }
-
-          } else {
-            setTelegramStatus('unavailable')
-            console.warn('Telegram Web App found but no init data available')
-          }
-        } else {
-          // Wait a bit more for Telegram to load
-          await new Promise(resolve => setTimeout(resolve, 1000))
-
+          // Set Telegram data
           if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
             const tg = window.Telegram.WebApp
-            tg.ready()
-            setTelegramStatus('available')
-
-            // Try to extract user data even without full init data
-            const user = tg.initDataUnsafe?.user
-            if (user) {
-              setUserId(user.id)
-              setUsername(user.username || `${user.first_name}${user.last_name ? '_' + user.last_name : ''}`)
-              setFirstName(user.first_name || null)
-              setLastName(user.last_name || null)
-            }
-
-            const startParamValue = tg.initDataUnsafe?.start_param
-            if (startParamValue) {
-              setStartParam(startParamValue)
-            }
-
             setTelegramData({
               initData: tg.initData || '',
               initDataUnsafe: tg.initDataUnsafe || {},
               platform: tg.platform || 'unknown',
               colorScheme: tg.colorScheme || 'dark',
-              version: 'detected',
-              user: user
+              version: (tg as any).isVersionAtLeast?.('6.0') ? '6.0+' : 'legacy',
+              user: currentUser
+            })
+          } else {
+            // Development mode or web browser
+            setTelegramData({
+              initData: '',
+              initDataUnsafe: {},
+              platform: 'web',
+              colorScheme: 'dark',
+              version: 'mock',
+              user: currentUser
             })
           }
+        } else {
+          setTelegramStatus('unavailable')
+          console.warn('No user data available from getCurrentUser')
         }
 
       } catch (error) {
@@ -156,9 +120,7 @@ export default function LoadingOverlay({
         firstName,
         lastName
       }
-
-      console.log( startParam)
-
+ 
       if (telegramStatus === 'available' && telegramData) {
         requestData.telegramData = telegramData
         requestData.platform = 'telegram'
@@ -166,15 +128,22 @@ export default function LoadingOverlay({
         requestData.platform = 'web'
       }
 
-      dispatch(fetchUserDataRequest(requestData))
+      
       setDataFetched(true)
     }
   }, [visible, userId, username, startParam, dispatch, dataFetched, telegramStatus, telegramData])
 
 
+  // Fetch user data on mount using getCurrentUser
   useEffect(() => {
-     dispatch(fetchUserDataRequest({ userId : 709148502}))
-
+    const currentUser = getCurrentUser()
+    if (currentUser) {
+      const userIdValue = typeof currentUser.telegramId === 'number' 
+        ? currentUser.telegramId 
+        : parseInt(currentUser.telegramId)
+      
+      dispatch(fetchUserDataRequest({ userId: userIdValue }))
+    }
   }, [dispatch])
 
 
