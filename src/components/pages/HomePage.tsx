@@ -9,7 +9,7 @@ import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
 import { fetchUserDataRequest } from '@/store/modules/user'
 import { getStoredUserData } from '@/lib/localStorage'
- 
+
 
 
 export default function HomePage() {
@@ -17,53 +17,16 @@ export default function HomePage() {
   const botStatus = useSelector((state: RootState) => state.botStatus)
   const user = useSelector((state: RootState) => state.user)
   const [isLoading, setIsLoading] = useState(false)
- 
+
   const referralLink = `https://t.me/${botStatus.botUsername || undefined}/app?startapp=${user.referralCode || ''}`
 
 
 
   const onRefresh = async () => {
     setIsLoading(true)
-    try {
-      
-      // Initialize Telegram WebApp
-      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp
+    dispatch(fetchUserDataRequest())
+    dispatch(fetchBotStatusRequest())
 
-        // Get user data from Telegram
-        const telegramUser = tg.initDataUnsafe?.user
-        if (telegramUser && telegramUser.username) {
-          const userId = telegramUser.id
-          const username = telegramUser.username
-  
-          // Proceed with user data fetch if validation passes
-          dispatch(fetchUserDataRequest({ 
-            userId, 
-            start_param: tg.initDataUnsafe.start_param, 
-            username 
-          }))
-          dispatch(fetchBotStatusRequest())
-        }
-      }
-
-      CustomToast.show({
-        content: 'Refreshed successfully!',
-        position: 'bottom',
-        duration: 1500,
-      })
-    } catch (error) {
-      console.error('Refresh error:', error)
-      CustomToast.show({
-        content: 'Refresh failed. Please try again.',
-        position: 'bottom',
-        duration: 2000,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-
-
- 
   }
 
   const copyReferralLink = async () => {
@@ -212,7 +175,7 @@ export default function HomePage() {
           </small>
         </div>
 
-      
+
 
       </div>
     </PullToRefresh>
