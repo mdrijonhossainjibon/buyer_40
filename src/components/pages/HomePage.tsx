@@ -122,7 +122,7 @@ export default function HomePage() {
 
   const shareOnTelegram = () => {
     const text = encodeURIComponent(
-      `🎉 Join me on Earn From Ads and start earning by watching ads! You'll get 0.02$ USDT bonus for referring! Use my referral link: ${referralLink}`
+      `🎉 Join me on Earn From Ads and start earning by watching ads! You'll get 0.015$ USDT bonus for referring! Use my referral link: ${referralLink}`
     );
     window.open(`https://t.me/share/url?url=${referralLink}&text=${text}`, '_blank')
   }
@@ -172,7 +172,7 @@ export default function HomePage() {
         <div className="mt-8 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <h3 className="text-center text-lg font-semibold mb-3 text-gray-900 dark:text-white">Refer & Earn More!</h3>
           <p className="text-center mb-3 text-gray-700 dark:text-gray-300 leading-relaxed">
-            Copy the link and share it with your friends to get referral bonus. Earn <b>0.02$</b> USDT per referral.
+            Copy the link and share it with your friends to get referral bonus. Earn <b>0.015$</b> USDT per referral.
           </p>
           {isLoading ? (
             <Skeleton.Paragraph lineCount={1} animated className="my-2.5" />
