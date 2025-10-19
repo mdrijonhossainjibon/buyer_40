@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Tag } from 'antd'
 import CustomToast from '@/components/CustomToast'
 import { RootState } from '@/store'
@@ -8,7 +9,7 @@ import {
   claimYoutubeRequest,
   claimChannelRequest
 } from '@/store/modules/user/actions'
-import { toast } from 'react-toastify'
+import { fetchTasksRequest, claimTaskRequest } from '@/store/modules/tasks/actions'
 import { getPlatformStyles } from '@/lib/getPlatformStyles'
 
 
@@ -16,29 +17,21 @@ import { getPlatformStyles } from '@/lib/getPlatformStyles'
 export default function TasksPage() {
  
   const user = useSelector((state: RootState) => state.user);
+  const { tasks: tasksData, isLoading } = useSelector((state: RootState) => state.tasks);
  
   const dispatch = useDispatch();
- 
- 
 
-  // Task data configuration - simplified with auto-detection
-  const tasksData = [
-    {
-      id: 'telegram',
-      platform: 'telegram',
-      title: 'Join Telegram Channel',
-      description: 'Join our Telegram channel and earn rewards',
-      reward: '0.007',
-      link: 'https://t.me/TheAuraEarner',
-      claimed: Boolean(user.telegramBonus && user.telegramBonus > 0)
-    },
-    
-  ]
-
+  // Fetch tasks on component mount
+  useEffect(() => {
+    if (user.userId) {
+      dispatch(fetchTasksRequest(user.userId))
+    }
+  }, [user.userId, dispatch])
 
   const handleClaim = (id: string) => {
-    //dispatch(claimChannelRequest(user.userId))
-    console.log(id)
+    if (user.userId) {
+      dispatch(claimTaskRequest(user.userId, id))
+    }
   }
 
   // Map task data to render format with auto-detected styles
@@ -74,8 +67,13 @@ export default function TasksPage() {
     <div className="block animate-fade-in">
       <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Complete Tasks</h2>
 
-      <div className="space-y-4">
-        {tasks.map((task) => (
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {tasks.map((task) => (
           <div
             key={task.id}
             className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm"
@@ -128,8 +126,9 @@ export default function TasksPage() {
               ))}
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

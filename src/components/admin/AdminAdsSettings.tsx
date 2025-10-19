@@ -269,14 +269,14 @@ export default function AdminAdsSettings() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Default Ad Reward (BDT):
+                Default Ad Reward (USDT):
               </label>
               <Stepper
                 value={defaultAdsReward}
                 onChange={(val) => updateAdsSettings('defaultAdsReward', val)}
-                min={1}
+                min={0.001}
                 max={1000}
-                step={1}
+                step={0.001}
                 disabled={!isEditing || isSaving}
                 style={{
                   '--border': '1px solid #d1d5db',
@@ -284,7 +284,7 @@ export default function AdminAdsSettings() {
                 }}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Current: {defaultAdsReward} BDT
+                Current: {defaultAdsReward} USDT
               </p>
             </div>
 
@@ -295,9 +295,9 @@ export default function AdminAdsSettings() {
               <Stepper
                 value={adsWatchLimit}
                 onChange={(val) => updateAdsSettings('adsWatchLimit', val)}
-                min={1}
-                max={100}
-                step={1}
+                min={0.001}
+                max={100000}
+                step={0.001}
                 disabled={!isEditing || isSaving}
                 style={{
                   '--border': '1px solid #d1d5db',

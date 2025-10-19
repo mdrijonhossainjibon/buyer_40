@@ -6,6 +6,7 @@ import { activitiesReducer } from './modules/activities'
 import { withdrawReducer } from './modules/withdraw'
 import { adminUsersReducer } from './modules/adminUsers'
 import { adminWithdrawalsReducer } from './modules/adminWithdrawals'
+import { tasksReducer } from './modules/tasks'
 
 // Root reducer combining all module reducers
 export const rootReducer = combineReducers({
@@ -15,7 +16,8 @@ export const rootReducer = combineReducers({
   activities: activitiesReducer,
   withdraw: withdrawReducer,
   adminUsers: adminUsersReducer,
-  adminWithdrawals: adminWithdrawalsReducer
+  adminWithdrawals: adminWithdrawalsReducer,
+  tasks: tasksReducer
 })
 
 // Root state type
