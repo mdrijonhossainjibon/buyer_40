@@ -4,6 +4,7 @@ import {
   SetLoadingAction, 
   SetErrorAction, 
   UpdateBalanceAction, 
+  UpdateXPAction,
   UpdateWatchedTodayAction, 
   ClearErrorAction,
   FetchUserDataRequestAction,
@@ -16,12 +17,6 @@ import {
   WatchAdRequestAction,
   WatchAdSuccessAction,
   WatchAdFailureAction,
-  ClaimYoutubeRequestAction,
-  ClaimYoutubeSuccessAction,
-  ClaimYoutubeFailureAction,
-  ClaimChannelRequestAction,
-  ClaimChannelSuccessAction,
-  ClaimChannelFailureAction,
   UserState 
 } from './types'
 
@@ -44,6 +39,11 @@ export const setError = (error: string | null): SetErrorAction => ({
 export const updateBalance = (balance: number): UpdateBalanceAction => ({
   type: USER_ACTIONS.UPDATE_BALANCE,
   payload: balance
+})
+
+export const updateXP = (xp: number): UpdateXPAction => ({
+  type: USER_ACTIONS.UPDATE_XP,
+  payload: xp
 })
 
 export const updateWatchedToday = (count: number): UpdateWatchedTodayAction => ({
@@ -91,7 +91,7 @@ export const clearStoredAccount = (): ClearStoredAccountAction => ({
   type: USER_ACTIONS.CLEAR_STORED_ACCOUNT
 })
 
-// Ad watching and task completion action creators
+// Ad watching action creators
 export const watchAdRequest = (userId: number): WatchAdRequestAction => ({
   type: USER_ACTIONS.WATCH_AD_REQUEST,
   payload: { userId }
@@ -104,35 +104,5 @@ export const watchAdSuccess = (balance: number, watchedToday: number, message: s
 
 export const watchAdFailure = (error: string): WatchAdFailureAction => ({
   type: USER_ACTIONS.WATCH_AD_FAILURE,
-  payload: error
-})
-
-export const claimYoutubeRequest = (userId: number): ClaimYoutubeRequestAction => ({
-  type: USER_ACTIONS.CLAIM_YOUTUBE_REQUEST,
-  payload: { userId }
-})
-
-export const claimYoutubeSuccess = (balance: number, youtubeBonus: number, message: string): ClaimYoutubeSuccessAction => ({
-  type: USER_ACTIONS.CLAIM_YOUTUBE_SUCCESS,
-  payload: { balance, youtubeBonus, message }
-})
-
-export const claimYoutubeFailure = (error: string): ClaimYoutubeFailureAction => ({
-  type: USER_ACTIONS.CLAIM_YOUTUBE_FAILURE,
-  payload: error
-})
-
-export const claimChannelRequest = (userId: number): ClaimChannelRequestAction => ({
-  type: USER_ACTIONS.CLAIM_CHANNEL_REQUEST,
-  payload: { userId }
-})
-
-export const claimChannelSuccess = (balance: number, telegramBonus: number, message: string): ClaimChannelSuccessAction => ({
-  type: USER_ACTIONS.CLAIM_CHANNEL_SUCCESS,
-  payload: { balance, telegramBonus, message }
-})
-
-export const claimChannelFailure = (error: string): ClaimChannelFailureAction => ({
-  type: USER_ACTIONS.CLAIM_CHANNEL_FAILURE,
   payload: error
 })

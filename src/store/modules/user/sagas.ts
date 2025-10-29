@@ -4,9 +4,7 @@ import {
   USER_ACTIONS, 
   FetchUserDataRequestAction,
   ValidateAccountRequestAction,
-  WatchAdRequestAction,
-  ClaimYoutubeRequestAction,
-  ClaimChannelRequestAction
+  WatchAdRequestAction
 } from './types'
 import { 
   fetchUserDataSuccess, 
@@ -15,11 +13,7 @@ import {
   validateAccountFailure,
   setLoading,
   watchAdSuccess,
-  watchAdFailure,
-  claimYoutubeSuccess,
-  claimYoutubeFailure,
-  claimChannelSuccess,
-  claimChannelFailure
+  watchAdFailure
 } from './actions'
 import { baseURL } from '@/lib/api-string'
 import { toast } from 'react-toastify'
@@ -32,9 +26,7 @@ function* fetchUserDataSaga( ) {
   try {
     yield put(setLoading(true))
     const currentUser  = getCurrentUser();
-
-    console.log(currentUser)
-     
+ 
     // Make API call using auth-fingerprint
     const { response } = yield call(API_CALL, {
       baseURL,
@@ -49,10 +41,33 @@ function* fetchUserDataSaga( ) {
     })
     
     if (response && response.success) {
-      // Dispatch success action with user data
-      yield put(fetchUserDataSuccess({
-        ...response.data
-      }))
+      const data = response.data
+      
+      // Map new wallet structure to Redux state
+      const mappedData = {
+        userId: data.userId,
+        username: data.username,
+        referralCount: data.referralCount,
+        watchedToday: data.watchedToday,
+        status: data.status,
+        referralCode: data.referralCode,
+        totalEarned: data.totalEarned || 0,
+        
+        // Legacy XP field for backward compatibility
+        xp: data.wallet?.available?.xp || 0,
+        
+        // New wallet structure
+        wallet: data.wallet || {
+          balances: { xp: 0, usdt: 0, spin: 0 },
+          locked: { xp: 0, usdt: 0, spin: 0 },
+          available: { xp: 0, usdt: 0, spin: 0 },
+          totalEarned: { xp: 0, usdt: 0, spin: 0 },
+          totalSpent: { xp: 0, usdt: 0, spin: 0 }
+        }
+      }
+      
+      // Dispatch success action with mapped user data
+      yield put(fetchUserDataSuccess(mappedData))
     } else {
       toast.error(response?.message || 'Failed to load user data')
     }
@@ -93,72 +108,8 @@ function* watchAdSaga(action: WatchAdRequestAction) {
   }
 }
 
-// Claim YouTube saga
-function* claimYoutubeSaga(action: ClaimYoutubeRequestAction) {
-  try {
-    const { response } = yield call(API_CALL, {
-      baseURL,
-      method: 'POST',
-      url: '/youtube-bonus',
-      body: {
-        ...generateSignature(action.payload.userId.toString(), process.env.NEXT_PUBLIC_SECRET_KEY || '')
-      }
-    })
-
-    if (response && response.success) {
-      yield put(claimYoutubeSuccess(
-        response.data.balance,
-        response.data.youtubeBonus,
-        response.message
-      ))
-      
-      toast.success(response.message || 'YouTube bonus claimed successfully!')
-    } else {
-      yield put(claimYoutubeFailure(response?.message || 'Failed to claim YouTube bonus'))
-      toast.error(response?.message || 'Failed to claim YouTube bonus')
-    }
-  } catch (error: any) {
-    console.error('Claim YouTube failed:', error)
-    yield put(claimYoutubeFailure(error.message || 'Network error occurred'))
-    toast.error('Failed to claim YouTube bonus. Please try again.')
-  }
-}
-
-// Claim channel saga
-function* claimChannelSaga(action: ClaimChannelRequestAction) {
-  try {
-    const { response } = yield call(API_CALL, {
-      baseURL,
-      method: 'POST',
-      url: '/telegram-bonus',
-      body: {
-        ...generateSignature(action.payload.userId.toString(), process.env.NEXT_PUBLIC_SECRET_KEY || '')
-      }
-    })
-
-    if (response && response.success) {
-      yield put(claimChannelSuccess(
-        response.data.balance,
-        response.data.telegramBonus,
-        response.message
-      ))
-      
-      toast.success(response.message || 'Channel bonus claimed successfully!')
-    } else {
-      yield put(claimChannelFailure(response?.message || 'Failed to claim channel bonus'))
-      toast.error(response?.message || 'Failed to claim channel bonus')
-    }
-  } catch (error: any) {
-    console.error('Claim channel failed:', error)
-    yield put(claimChannelFailure(error.message || 'Network error occurred'))
-    toast.error('Failed to claim channel bonus. Please try again.')
-  }
-}
-
 // Root user saga
 export function* userSaga() {
   yield takeEvery(USER_ACTIONS.FETCH_USER_DATA_REQUEST, fetchUserDataSaga)
   yield takeEvery(USER_ACTIONS.WATCH_AD_REQUEST, watchAdSaga)
-  yield takeEvery(USER_ACTIONS.CLAIM_YOUTUBE_REQUEST, claimYoutubeSaga)
-  yield takeEvery(USER_ACTIONS.CLAIM_CHANNEL_REQUEST, claimChannelSaga)
 }

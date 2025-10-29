@@ -1,13 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false, // 👈 disable double render in dev
+  devIndicators: false,
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
     ignoreDuringBuilds: true
   },
 
-  reactStrictMode: false,
-   
+  
+
 }
 
 module.exports = nextConfig

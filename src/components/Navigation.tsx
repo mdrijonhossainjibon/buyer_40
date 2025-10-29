@@ -10,8 +10,10 @@ export default function Navigation({ currentPage, setCurrentPage }: NavigationPr
     { id: 'home', icon: 'fas fa-home', label: 'Home' },
    /*  { id: 'support', icon: 'fas fa-headset', label: 'Support' }, */
     { id: 'tasks', icon: 'fas fa-tasks', label: 'Tasks' },
+    { id: 'spin', icon: 'fas fa-dharmachakra', label: 'Spin' },
+    { id: 'wallet', icon: 'fas fa-wallet', label: 'Wallet' },
     { id: 'ads', icon: 'fas fa-play-circle', label: 'Watch Ads' },
-    { id: 'withdraw', icon: 'fas fa-wallet', label: 'Withdraw' },
+    { id: 'withdraw', icon: 'fas fa-money-check-alt', label: 'Withdraw' },
   ]
 
   return (

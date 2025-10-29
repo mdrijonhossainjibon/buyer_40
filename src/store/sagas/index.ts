@@ -1,3 +1,5 @@
+"use client"
+
 import { all, fork } from 'redux-saga/effects'
 import { userSaga } from '../modules/user'
 import { botStatusSaga } from '../modules/botStatus'
@@ -7,6 +9,9 @@ import { withdrawSaga } from '../modules/withdraw'
 import { adminUsersSaga } from '../modules/adminUsers'
 import { adminWithdrawalsSaga } from '../modules/adminWithdrawals'
 import { tasksSaga } from '../modules/tasks'
+import { spinWheelSaga } from '../modules/spinWheel'
+import { converterSaga } from '../modules/converter/sagas'
+import { socketSaga } from '../modules/socket'
 
 // Root saga that combines all module sagas
 export function* rootSaga() {
@@ -18,6 +23,9 @@ export function* rootSaga() {
     fork(withdrawSaga),
     fork(adminUsersSaga),
     fork(adminWithdrawalsSaga),
-    fork(tasksSaga)
+    fork(tasksSaga),
+    fork(spinWheelSaga),   
+    fork(socketSaga),
+    fork(converterSaga)
   ])
 }

@@ -16,21 +16,26 @@
     "antd": "^5.27.4",
     "antd-mobile": "^5.39.0",
     "auth-fingerprint": "^1.0.20",
+    "cryptocurrency-icons": "^0.18.1",
     "mongoose": "^8.18.1",
     "next": "^15.5.3",
     "next-auth": "^4.24.11",
     "nodemailer": "^7.0.6",
     "react": "^19.2.0-canary-fa3feba6-20250623",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^19.2.0-canary-fa3feba6-20250623",
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "redux": "^5.0.1",
-    "redux-saga": "^1.3.0"
+    "redux-saga": "^1.3.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.13",
+    "@types/react-copy-to-clipboard": "^5.0.7",
     "typescript": "5.9.2"
   }
 }

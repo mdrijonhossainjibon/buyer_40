@@ -1,17 +1,31 @@
+// Wallet interfaces
+export interface WalletBalances {
+  xp: number
+  usdt: number
+  spin: number
+}
+
+export interface Wallet {
+  balances: WalletBalances
+  locked: WalletBalances
+  available: WalletBalances
+  totalEarned: WalletBalances
+  totalSpent: WalletBalances
+}
+
 // User state interface
 export interface UserState {
   userId: number | null
-  balanceTK: number
+  xp: number // Legacy field for backward compatibility
   referralCount: number
   watchedToday: number
-  telegramBonus: number
-  youtubeBonus: number
   status: 'active' | 'suspend';
-  referralCode : string;
+  referralCode: string
   isLoading: boolean
   error: string | null
   username: string
-  dailyAdLimit: number
+  totalEarned: number
+  wallet: Wallet
 }
 
 // Action types
@@ -20,6 +34,7 @@ export const USER_ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
   UPDATE_BALANCE: 'UPDATE_BALANCE',
+  UPDATE_XP: 'UPDATE_XP',
   UPDATE_WATCHED_TODAY: 'UPDATE_WATCHED_TODAY',
   CLEAR_ERROR: 'CLEAR_ERROR',
   // Saga actions
@@ -31,16 +46,10 @@ export const USER_ACTIONS = {
   VALIDATE_ACCOUNT_SUCCESS: 'VALIDATE_ACCOUNT_SUCCESS',
   VALIDATE_ACCOUNT_FAILURE: 'VALIDATE_ACCOUNT_FAILURE',
   CLEAR_STORED_ACCOUNT: 'CLEAR_STORED_ACCOUNT',
-  // Ad watching and task completion actions
+  // Ad watching actions
   WATCH_AD_REQUEST: 'WATCH_AD_REQUEST',
   WATCH_AD_SUCCESS: 'WATCH_AD_SUCCESS',
-  WATCH_AD_FAILURE: 'WATCH_AD_FAILURE',
-  CLAIM_YOUTUBE_REQUEST: 'CLAIM_YOUTUBE_REQUEST',
-  CLAIM_YOUTUBE_SUCCESS: 'CLAIM_YOUTUBE_SUCCESS',
-  CLAIM_YOUTUBE_FAILURE: 'CLAIM_YOUTUBE_FAILURE',
-  CLAIM_CHANNEL_REQUEST: 'CLAIM_CHANNEL_REQUEST',
-  CLAIM_CHANNEL_SUCCESS: 'CLAIM_CHANNEL_SUCCESS',
-  CLAIM_CHANNEL_FAILURE: 'CLAIM_CHANNEL_FAILURE'
+  WATCH_AD_FAILURE: 'WATCH_AD_FAILURE'
 } as const
 
 // Action interfaces
@@ -64,6 +73,12 @@ export interface SetErrorAction {
 
 export interface UpdateBalanceAction {
   type: typeof USER_ACTIONS.UPDATE_BALANCE
+  payload: number
+  [key: string]: any
+}
+
+export interface UpdateXPAction {
+  type: typeof USER_ACTIONS.UPDATE_XP
   payload: number
   [key: string]: any
 }
@@ -122,7 +137,7 @@ export interface ClearStoredAccountAction {
   [key: string]: any
 }
 
-// Ad watching and task completion action interfaces
+// Ad watching action interfaces
 export interface WatchAdRequestAction {
   type: typeof USER_ACTIONS.WATCH_AD_REQUEST
   payload: { userId: number }
@@ -141,47 +156,12 @@ export interface WatchAdFailureAction {
   [key: string]: any
 }
 
-export interface ClaimYoutubeRequestAction {
-  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_REQUEST
-  payload: { userId: number }
-  [key: string]: any
-}
-
-export interface ClaimYoutubeSuccessAction {
-  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_SUCCESS
-  payload: { balance: number, youtubeBonus: number, message: string }
-  [key: string]: any
-}
-
-export interface ClaimYoutubeFailureAction {
-  type: typeof USER_ACTIONS.CLAIM_YOUTUBE_FAILURE
-  payload: string
-  [key: string]: any
-}
-
-export interface ClaimChannelRequestAction {
-  type: typeof USER_ACTIONS.CLAIM_CHANNEL_REQUEST
-  payload: { userId: number }
-  [key: string]: any
-}
-
-export interface ClaimChannelSuccessAction {
-  type: typeof USER_ACTIONS.CLAIM_CHANNEL_SUCCESS
-  payload: { balance: number, telegramBonus: number, message: string }
-  [key: string]: any
-}
-
-export interface ClaimChannelFailureAction {
-  type: typeof USER_ACTIONS.CLAIM_CHANNEL_FAILURE
-  payload: string
-  [key: string]: any
-}
-
 export type UserActionTypes = 
   | SetUserDataAction
   | SetLoadingAction
   | SetErrorAction
   | UpdateBalanceAction
+  | UpdateXPAction
   | UpdateWatchedTodayAction
   | ClearErrorAction
   | FetchUserDataRequestAction
@@ -194,9 +174,3 @@ export type UserActionTypes =
   | WatchAdRequestAction
   | WatchAdSuccessAction
   | WatchAdFailureAction
-  | ClaimYoutubeRequestAction
-  | ClaimYoutubeSuccessAction
-  | ClaimYoutubeFailureAction
-  | ClaimChannelRequestAction
-  | ClaimChannelSuccessAction
-  | ClaimChannelFailureAction

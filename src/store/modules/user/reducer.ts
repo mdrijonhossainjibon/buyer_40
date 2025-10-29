@@ -3,17 +3,22 @@ import { UserState, UserActionTypes, USER_ACTIONS } from './types'
 // Initial state
 const initialState: UserState = {
   userId: null,
-  balanceTK: 0,
+  xp: 0,
   referralCount: 0,
   watchedToday: 0,
-  telegramBonus: 0,
-  youtubeBonus: 0,
   isLoading: true,
   status: 'active',
   referralCode: '',
   username: '',
-  dailyAdLimit: 0,
-  error: null
+  totalEarned: 0,
+  error: null,
+  wallet: {
+    balances: { xp: 0, usdt: 0, spin: 0 },
+    locked: { xp: 0, usdt: 0, spin: 0 },
+    available: { xp: 0, usdt: 0, spin: 0 },
+    totalEarned: { xp: 0, usdt: 0, spin: 0 },
+    totalSpent: { xp: 0, usdt: 0, spin: 0 }
+  }
 }
 
 // User reducer
@@ -42,7 +47,34 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
     case USER_ACTIONS.UPDATE_BALANCE:
       return {
         ...state,
-        balanceTK: action.payload
+        wallet: {
+          ...state.wallet,
+          balances: {
+            ...state.wallet.balances,
+            usdt: action.payload
+          },
+          available: {
+            ...state.wallet.available,
+            usdt: action.payload
+          }
+        }
+      }
+    
+    case USER_ACTIONS.UPDATE_XP:
+      return {
+        ...state,
+        xp: action.payload,
+        wallet: {
+          ...state.wallet,
+          balances: {
+            ...state.wallet.balances,
+            xp: action.payload
+          },
+          available: {
+            ...state.wallet.available,
+            xp: action.payload
+          }
+        }
       }
     
     case USER_ACTIONS.UPDATE_WATCHED_TODAY:
@@ -118,7 +150,17 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
     case USER_ACTIONS.WATCH_AD_SUCCESS:
       return {
         ...state,
-        balanceTK: action.payload.balance,
+        wallet: {
+          ...state.wallet,
+          balances: {
+            ...state.wallet.balances,
+            usdt: action.payload.balance
+          },
+          available: {
+            ...state.wallet.available,
+            usdt: action.payload.balance
+          }
+        },
         watchedToday: action.payload.watchedToday,
         isLoading: false,
         error: null
@@ -130,53 +172,8 @@ export const userReducer = (state = initialState, action: UserActionTypes): User
         isLoading: false,
         error: action.payload
       }
-
-    // YouTube claim actions
-    case USER_ACTIONS.CLAIM_YOUTUBE_REQUEST:
-      return {
-        ...state,
-        error: null
-      }
+ 
     
-    case USER_ACTIONS.CLAIM_YOUTUBE_SUCCESS:
-      return {
-        ...state,
-        balanceTK: action.payload.balance,
-        youtubeBonus: action.payload.youtubeBonus,
-        isLoading: false,
-        error: null
-      }
-    
-    case USER_ACTIONS.CLAIM_YOUTUBE_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload
-      }
-
-    // Channel claim actions
-    case USER_ACTIONS.CLAIM_CHANNEL_REQUEST:
-      return {
-        ...state,
-        isLoading: false,
-        error: null
-      }
-    
-    case USER_ACTIONS.CLAIM_CHANNEL_SUCCESS:
-      return {
-        ...state,
-        balanceTK: action.payload.balance,
-        telegramBonus: action.payload.telegramBonus,
-        isLoading: false,
-        error: null
-      }
-    
-    case USER_ACTIONS.CLAIM_CHANNEL_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload
-      }
     
     default:
       return state
