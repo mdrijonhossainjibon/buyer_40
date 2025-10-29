@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { PullToRefresh, Toast } from 'antd-mobile'
+import { PullToRefresh  } from 'antd-mobile'
 import { RootState } from '@/store'
 import { fetchSpinConfigRequest, purchaseTicketRequest } from '@/store/modules/spinWheel'
 import { fetchUserDataRequest } from '@/store/modules/user'
+import { toast } from 'react-toastify'
 
 export default function PurchaseTicketsPage() {
   const dispatch = useDispatch()
@@ -14,7 +15,7 @@ export default function PurchaseTicketsPage() {
   const [quantity, setQuantity] = useState(1)
 
   const totalCost = quantity * (spinWheel.ticketPrice || 100)
-  const canAfford = user.xp >= totalCost
+  const canAfford = user.wallet.available.xp >= totalCost
 
   useEffect(() => {
     if (user.userId) {
@@ -31,10 +32,7 @@ export default function PurchaseTicketsPage() {
 
   const handlePurchase = () => {
     if (!canAfford) {
-      Toast.show({
-        content: `❌ Insufficient XP! You need ${totalCost} XP`,
-        position: 'bottom',
-      })
+      toast.error(`❌ Insufficient XP! You need ${totalCost} XP`)
       return
     }
 
@@ -59,7 +57,7 @@ export default function PurchaseTicketsPage() {
                 </div>
                 <p className="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Your XP</p>
               </div>
-              <p className="text-2xl font-black text-purple-600 dark:text-purple-400">{user.xp || 0}</p>
+              <p className="text-2xl font-black text-purple-600 dark:text-purple-400">{user.wallet.available.xp || 0}</p>
             </div>
 
             <div className="bg-gradient-to-br from-yellow-50 to-orange-100 dark:from-yellow-900/20 dark:to-orange-800/20 rounded-xl p-3 border border-yellow-200 dark:border-yellow-800 shadow-md">

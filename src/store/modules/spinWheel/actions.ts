@@ -2,6 +2,7 @@ import {
   SPIN_WHEEL_ACTIONS,
   SpinPrize,
   SpinResult,
+  UserTicketsInfo,
   SetPrizesAction,
   SetSpinResultAction,
   SetSpinningAction,
@@ -15,12 +16,16 @@ import {
   SetSpinTicketsAction,
   SetTicketPriceAction,
   SetPurchasingAction,
+  SetUserTicketsInfoAction,
   SetErrorAction,
   ClearErrorAction,
   ClearSpinResultAction,
   FetchSpinConfigRequestAction,
   FetchSpinConfigSuccessAction,
   FetchSpinConfigFailureAction,
+  FetchUserTicketsRequestAction,
+  FetchUserTicketsSuccessAction,
+  FetchUserTicketsFailureAction,
   SpinWheelRequestAction,
   SpinWheelSuccessAction,
   SpinWheelFailureAction,
@@ -101,6 +106,11 @@ export const setPurchasing = (isPurchasing: boolean): SetPurchasingAction => ({
   payload: isPurchasing
 })
 
+export const setUserTicketsInfo = (info: UserTicketsInfo | null): SetUserTicketsInfoAction => ({
+  type: SPIN_WHEEL_ACTIONS.SET_USER_TICKETS_INFO,
+  payload: info
+})
+
 export const setError = (error: string | null): SetErrorAction => ({
   type: SPIN_WHEEL_ACTIONS.SET_ERROR,
   payload: error
@@ -147,6 +157,21 @@ export const fetchSpinConfigSuccess = (
 
 export const fetchSpinConfigFailure = (error: string): FetchSpinConfigFailureAction => ({
   type: SPIN_WHEEL_ACTIONS.FETCH_SPIN_CONFIG_FAILURE,
+  payload: error
+})
+
+export const fetchUserTicketsRequest = (userId: number): FetchUserTicketsRequestAction => ({
+  type: SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_REQUEST,
+  payload: { userId }
+})
+
+export const fetchUserTicketsSuccess = (info: UserTicketsInfo): FetchUserTicketsSuccessAction => ({
+  type: SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_SUCCESS,
+  payload: info
+})
+
+export const fetchUserTicketsFailure = (error: string): FetchUserTicketsFailureAction => ({
+  type: SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_FAILURE,
   payload: error
 })
 

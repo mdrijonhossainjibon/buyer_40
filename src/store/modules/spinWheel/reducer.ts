@@ -21,6 +21,7 @@ const initialState: SpinWheelState = {
   spinTickets: 0,
   ticketPrice: 100,
   isPurchasing: false,
+  userTicketsInfo: null,
   error: null
 }
 
@@ -107,6 +108,12 @@ export const spinWheelReducer = (
         isPurchasing: action.payload
       }
 
+    case SPIN_WHEEL_ACTIONS.SET_USER_TICKETS_INFO:
+      return {
+        ...state,
+        userTicketsInfo: action.payload
+      }
+
     case SPIN_WHEEL_ACTIONS.SET_ERROR:
       return {
         ...state,
@@ -149,6 +156,29 @@ export const spinWheelReducer = (
       }
 
     case SPIN_WHEEL_ACTIONS.FETCH_SPIN_CONFIG_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload
+      }
+
+    case SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      }
+
+    case SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_SUCCESS:
+      return {
+        ...state,
+        userTicketsInfo: action.payload,
+        spinTickets: action.payload.ticketCount,
+        isLoading: false,
+        error: null
+      }
+
+    case SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_FAILURE:
       return {
         ...state,
         isLoading: false,

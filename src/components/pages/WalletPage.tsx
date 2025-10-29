@@ -11,7 +11,9 @@ export default function WalletPage() {
   const spinWheelState = useSelector((state: RootState) => state.spinWheel)
   
   const [showDepositPopup, setShowDepositPopup] = useState(false)
-  const [showWithdrawPopup, setShowWithdrawPopup] = useState(false)
+  const [showWithdrawPopup, setShowWithdrawPopup] = useState(false);
+
+  
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
@@ -59,8 +61,8 @@ export default function WalletPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900 dark:text-white">{(userState.balanceTK || 0).toFixed(2)}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">≈ ${(userState.balanceTK || 0).toFixed(2)}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{(userState.wallet.available.usdt || 0).toFixed(2)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">≈ ${(userState.wallet.available.usdt || 0).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -78,7 +80,7 @@ export default function WalletPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900 dark:text-white">{userState.xp || 0}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{userState.wallet.available.xp|| 0}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Points</p>
                     </div>
                   </div>
@@ -97,7 +99,7 @@ export default function WalletPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900 dark:text-white">{spinWheelState.spinTickets || 0}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{userState.wallet.available.spin || 0}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Tickets</p>
                     </div>
                   </div>

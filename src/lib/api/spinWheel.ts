@@ -60,6 +60,19 @@ export interface SpinWithTicketResponse {
   error?: string
 }
 
+export interface UserTicketsResponse {
+  success: boolean
+  data?: {
+    userId: number
+    ticketCount: number
+    totalPurchased: number
+    totalSpins: number
+    totalWinnings: number
+    lastPurchaseDate: string
+  }
+  error?: string
+}
+
 export class SpinWheelAPI {
   /**
    * Get spin wheel configuration and user's spin status
@@ -245,6 +258,42 @@ export class SpinWheelAPI {
       return {
         success: false,
         error: error.message || 'Failed to unlock extra spin'
+      }
+    }
+  }
+
+  /**
+   * Get user's ticket information
+   */
+  static async getUserTickets(userId: number): Promise<UserTicketsResponse> {
+    const params = generateSignature(
+      JSON.stringify({ userId }),
+      process.env.NEXT_PUBLIC_SECRET_KEY || ''
+    )
+    
+    try {
+      const response = await API_CALL({
+        baseURL,
+        url: `/spin-wheel/user-tickets/${userId}`,
+        method: 'GET',
+        params
+      })
+
+      if (response.status === 200 && response.response?.success) {
+        return {
+          success: true,
+          data: response.response.data
+        }
+      } else {
+        return {
+          success: false,
+          error: response.response?.message || 'Failed to fetch user tickets'
+        }
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch user tickets'
       }
     }
   }

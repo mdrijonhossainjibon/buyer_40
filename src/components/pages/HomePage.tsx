@@ -8,6 +8,7 @@ import { RootState } from '@/store'
 import { fetchBotStatusRequest } from '@/store/modules/botStatus'
 import { fetchAdsSettingsRequest } from '@/store/modules/adsSettings'
 import { fetchUserDataRequest } from '@/store/modules/user'
+import { fetchUserTicketsRequest } from '@/store/modules/spinWheel'
 import ReferralPage from './ReferralPage'
 import SpinWheelPage from './SpinWheelPage'
 import WatchAdsPage from './WatchAdsPage'
@@ -42,6 +43,9 @@ export default function HomePage() {
     dispatch(fetchUserDataRequest())
     dispatch(fetchBotStatusRequest())
     dispatch(fetchAdsSettingsRequest())
+    if (user.userId) {
+      dispatch(fetchUserTicketsRequest(user.userId))
+    }
     setTimeout(() => setIsLoading(false), 1000)
   }
 
@@ -50,6 +54,12 @@ export default function HomePage() {
     dispatch(fetchBotStatusRequest())
     dispatch(fetchAdsSettingsRequest())
   }, [dispatch])
+
+  useEffect(() => {
+    if (user.userId) {
+      dispatch(fetchUserTicketsRequest(user.userId))
+    }
+  }, [dispatch, user.userId])
 
   // Quick action cards data
   const quickActions = [
@@ -243,7 +253,9 @@ export default function HomePage() {
                 {isLoading ? (
                   <Skeleton.Title animated className="w-10 h-4" />
                 ) : (
-                  <p className="text-sm font-bold text-orange-700 dark:text-orange-300">{spinWheel.spinTickets || 0}</p>
+                  <p className="text-sm font-bold text-orange-700 dark:text-orange-300">
+                    {spinWheel.userTicketsInfo?.ticketCount ?? spinWheel.spinTickets ?? 0}
+                  </p>
                 )}
               </div>
             </div>
@@ -418,9 +430,8 @@ export default function HomePage() {
         visible={showPurchaseTicketsPopup}
         onMaskClick={() => setShowPurchaseTicketsPopup(false)}
         bodyStyle={{
-          borderTopLeftRadius: '16px',
-          borderTopRightRadius: '16px',
-          height: '90vh',
+          
+          height: '100vh',
           backgroundColor: 'var(--adm-color-background)',
         }}
       >

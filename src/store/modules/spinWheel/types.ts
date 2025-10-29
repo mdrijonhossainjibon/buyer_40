@@ -14,6 +14,16 @@ export interface SpinResult {
   label: string
 }
 
+// User tickets info interface
+export interface UserTicketsInfo {
+  userId: number
+  ticketCount: number
+  totalPurchased: number
+  totalSpins: number
+  totalWinnings: number
+  lastPurchaseDate: string | null
+}
+
 // Spin wheel state interface
 export interface SpinWheelState {
   prizes: SpinPrize[]
@@ -32,6 +42,7 @@ export interface SpinWheelState {
   spinTickets: number
   ticketPrice: number
   isPurchasing: boolean
+  userTicketsInfo: UserTicketsInfo | null
   error: string | null
 }
 
@@ -50,6 +61,7 @@ export const SPIN_WHEEL_ACTIONS = {
   SET_SPIN_TICKETS: 'SET_SPIN_TICKETS',
   SET_TICKET_PRICE: 'SET_TICKET_PRICE',
   SET_PURCHASING: 'SET_PURCHASING',
+  SET_USER_TICKETS_INFO: 'SET_USER_TICKETS_INFO',
   SET_ERROR: 'SET_SPIN_ERROR',
   CLEAR_ERROR: 'CLEAR_SPIN_ERROR',
   CLEAR_SPIN_RESULT: 'CLEAR_SPIN_RESULT',
@@ -57,6 +69,9 @@ export const SPIN_WHEEL_ACTIONS = {
   FETCH_SPIN_CONFIG_REQUEST: 'FETCH_SPIN_CONFIG_REQUEST',
   FETCH_SPIN_CONFIG_SUCCESS: 'FETCH_SPIN_CONFIG_SUCCESS',
   FETCH_SPIN_CONFIG_FAILURE: 'FETCH_SPIN_CONFIG_FAILURE',
+  FETCH_USER_TICKETS_REQUEST: 'FETCH_USER_TICKETS_REQUEST',
+  FETCH_USER_TICKETS_SUCCESS: 'FETCH_USER_TICKETS_SUCCESS',
+  FETCH_USER_TICKETS_FAILURE: 'FETCH_USER_TICKETS_FAILURE',
   SPIN_WHEEL_REQUEST: 'SPIN_WHEEL_REQUEST',
   SPIN_WHEEL_SUCCESS: 'SPIN_WHEEL_SUCCESS',
   SPIN_WHEEL_FAILURE: 'SPIN_WHEEL_FAILURE',
@@ -147,6 +162,12 @@ export interface SetTicketPriceAction {
 export interface SetPurchasingAction {
   type: typeof SPIN_WHEEL_ACTIONS.SET_PURCHASING
   payload: boolean
+  [key: string]: any
+}
+
+export interface SetUserTicketsInfoAction {
+  type: typeof SPIN_WHEEL_ACTIONS.SET_USER_TICKETS_INFO
+  payload: UserTicketsInfo | null
   [key: string]: any
 }
 
@@ -280,6 +301,24 @@ export interface SpinWithTicketFailureAction {
   [key: string]: any
 }
 
+export interface FetchUserTicketsRequestAction {
+  type: typeof SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_REQUEST
+  payload: { userId: number }
+  [key: string]: any
+}
+
+export interface FetchUserTicketsSuccessAction {
+  type: typeof SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_SUCCESS
+  payload: UserTicketsInfo
+  [key: string]: any
+}
+
+export interface FetchUserTicketsFailureAction {
+  type: typeof SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_FAILURE
+  payload: string
+  [key: string]: any
+}
+
 export type SpinWheelActionTypes = 
   | SetPrizesAction
   | SetSpinResultAction
@@ -297,6 +336,9 @@ export type SpinWheelActionTypes =
   | FetchSpinConfigRequestAction
   | FetchSpinConfigSuccessAction
   | FetchSpinConfigFailureAction
+  | FetchUserTicketsRequestAction
+  | FetchUserTicketsSuccessAction
+  | FetchUserTicketsFailureAction
   | SpinWheelRequestAction
   | SpinWheelSuccessAction
   | SpinWheelFailureAction
@@ -306,6 +348,7 @@ export type SpinWheelActionTypes =
   | SetSpinTicketsAction
   | SetTicketPriceAction
   | SetPurchasingAction
+  | SetUserTicketsInfoAction
   | PurchaseTicketRequestAction
   | PurchaseTicketSuccessAction
   | PurchaseTicketFailureAction

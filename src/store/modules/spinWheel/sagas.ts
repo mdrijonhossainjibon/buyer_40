@@ -4,6 +4,7 @@ import { SpinWheelAPI } from '@/lib/api/spinWheel'
 import {
   SPIN_WHEEL_ACTIONS,
   FetchSpinConfigRequestAction,
+  FetchUserTicketsRequestAction,
   SpinWheelRequestAction,
   UnlockExtraSpinRequestAction,
   PurchaseTicketRequestAction,
@@ -12,6 +13,8 @@ import {
 import {
   fetchSpinConfigSuccess,
   fetchSpinConfigFailure,
+  fetchUserTicketsSuccess,
+  fetchUserTicketsFailure,
   spinWheelSuccess,
   spinWheelFailure,
   unlockExtraSpinSuccess,
@@ -207,9 +210,32 @@ function* spinWithTicketSaga(action: SpinWithTicketRequestAction): Generator<any
   }
 }
 
+// Fetch user tickets saga
+function* fetchUserTicketsSaga(action: FetchUserTicketsRequestAction): Generator<any, void, any> {
+  try {
+    const { userId } = action.payload
+
+    if (!userId) {
+      yield put(fetchUserTicketsFailure('User ID is required'))
+      return
+    }
+
+    const response = yield call(SpinWheelAPI.getUserTickets, userId)
+
+    if (response.success && response.data) {
+      yield put(fetchUserTicketsSuccess(response.data))
+    } else {
+      yield put(fetchUserTicketsFailure(response.error || 'Failed to fetch user tickets'))
+    }
+  } catch (error: any) {
+    yield put(fetchUserTicketsFailure(error.message || 'An error occurred'))
+  }
+}
+
 // Root saga
 export function* spinWheelSaga() {
   yield takeLatest(SPIN_WHEEL_ACTIONS.FETCH_SPIN_CONFIG_REQUEST, fetchSpinConfigSaga)
+  yield takeLatest(SPIN_WHEEL_ACTIONS.FETCH_USER_TICKETS_REQUEST, fetchUserTicketsSaga)
   yield takeLatest(SPIN_WHEEL_ACTIONS.SPIN_WHEEL_REQUEST, performSpinSaga)
   yield takeLatest(SPIN_WHEEL_ACTIONS.UNLOCK_EXTRA_SPIN_REQUEST, unlockExtraSpinSaga)
   yield takeLatest(SPIN_WHEEL_ACTIONS.PURCHASE_TICKET_REQUEST, purchaseTicketSaga)
