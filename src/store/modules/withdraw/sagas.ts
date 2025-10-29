@@ -43,7 +43,7 @@ function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): Generator<any
 
       // Update user balance - subtract withdrawn amount from current balance
       const currentState: RootState = yield select()
-      const currentBalance = currentState.user.balanceTK
+      const currentBalance = currentState.user.wallet.available.usdt
       const withdrawnAmount = action.payload.amount
       const remainingBalance = currentBalance - withdrawnAmount
       
