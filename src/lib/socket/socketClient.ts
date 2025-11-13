@@ -5,6 +5,7 @@
 
 import { io, Socket } from 'socket.io-client';
 import { generateSignature } from 'auth-fingerprint';
+import { baseURL } from 'lib/api-string';
 
 // Socket.IO event types
 export enum SocketEvents {
@@ -110,7 +111,7 @@ export class SocketClient {
     }
 
  
-    const socketUrl = this.config.url ||  'http://localhost:5000';
+    const socketUrl = this.config.url ||  baseURL?.split('/api/v1')[0];
 
     this.socket = io(socketUrl, {
       autoConnect: this.config.autoConnect,
