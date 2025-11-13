@@ -71,7 +71,7 @@ function* performSpinSaga(action: SpinWheelRequestAction): Generator<any, void, 
   const currentUser = getCurrentUser();
   const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
   
-  const { response } = yield call(API_CALL, {
+  const { response } : any = yield call(API_CALL, {
     baseURL,
     url: '/spin-wheel/spin',
     method: 'POST',
