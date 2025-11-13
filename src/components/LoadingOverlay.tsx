@@ -1,30 +1,31 @@
- 
+
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { socketConnectRequest, socketSendMessage ,  RootState } from 'modules'
+import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
 import { getCurrentUser } from 'lib/getCurrentUser';
 
 
 
 export default function LoadingOverlay({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch()
-   const { isLoading, userId } = useSelector((state: RootState) => state.user)
+  const { isLoading, userId } = useSelector((state: RootState) => state.user)
   const [progress, setProgress] = useState(0);
   const currentUser = getCurrentUser();
 
   useEffect(() => {
     dispatch(socketConnectRequest());
-  }, [dispatch  ]);
+  }, [dispatch]);
 
 
-  useEffect(()=>{
-  setTimeout(() => {
-      console.log(currentUser)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      console.log(window.Telegram?.WebApp?.initDataUnsafe)
+    }
       if (currentUser?.telegramId) {
         dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
       }
-    }, 5000);
-  } ,[ dispatch , currentUser ])
+ 
+  }, [dispatch, currentUser])
 
 
   if (!userId) {
@@ -144,7 +145,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
 
         </div>
 
-     {/*    <style jsx>{`
+        {/*    <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translate(0, 0) scale(1); }
           50% { transform: translate(20px, 20px) scale(1.1); }
