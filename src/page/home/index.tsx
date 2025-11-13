@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { PullToRefresh, Skeleton  } from 'antd-mobile'
  
@@ -40,7 +40,7 @@ export default function HomePage() {
   const adsSettings = useSelector((state : RootState)=> state.adsSettings);
   const watchads = useSelector((state : RootState)=> state.watchAds);
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading] = useState(false)
   
 
   const onRefresh = async () => {

@@ -11,7 +11,6 @@ import {
   setFromAmount,
   setToAmount,
   swapCurrencies,
-  resetForm,
   fetchRatesRequest,
   convertRequest,
   setShowSuccessPopup,
@@ -116,7 +115,7 @@ export default function CoinConverterPage() {
     const totalImpact = baseImpact + balanceImpact + (fromAmount / 50000) * 2
     
     return Math.min(totalImpact, 15) // Cap at 15%
-  }, [currentRate, fromAmount, selectedFromCurrency])
+  }, [currentRate, fromAmount, selectedFromCurrency, getUserBalance])
 
   // Calculate converted amount
   const handleFromAmountChange = (value: number) => {
@@ -178,13 +177,13 @@ export default function CoinConverterPage() {
     const userBalance = getUserBalance(selectedFromCurrency)
     if (fromAmount > userBalance) return false
     return true
-  }, [currentRate, fromAmount, selectedFromCurrency])
+  }, [currentRate, fromAmount, selectedFromCurrency, getUserBalance])
 
   // Get currency color
-  const getCurrencyColor = (currency: CurrencyType) => {
-    const option = currencyOptions.find((o) => o.value === currency)
-    return option?.color || 'gray'
-  }
+  // const getCurrencyColor = (currency: CurrencyType) => {
+  //   const option = currencyOptions.find((o) => o.value === currency)
+  //   return option?.color || 'gray'
+  // }
 
   // Handle success popup close
   const handleSuccessClose = () => {

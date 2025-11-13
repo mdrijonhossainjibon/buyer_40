@@ -30,7 +30,6 @@ type CryptoPrices = {
 export default function WithdrawHistoryPopup() {
   const dispatch = useDispatch()
   const ui = useSelector((state: RootState) => state.ui)
-  const user = useSelector((state: RootState) => state.user)
   const withdrawHistory = useSelector((state: RootState) => state.withdrawHistory)
 
   const { showWithdrawHistoryPopup } = ui
@@ -104,10 +103,10 @@ export default function WithdrawHistoryPopup() {
     })
   }
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text)
-    
-  }
+  // const copyToClipboard = (text: string, label: string) => {
+  //   navigator.clipboard.writeText(text)
+  //   
+  // }
   
   // Convert USDT amount to coin amount
   const getCoinAmount = (usdtAmount: number, coinSymbol?: string): string => {

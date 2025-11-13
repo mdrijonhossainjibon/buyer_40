@@ -6,22 +6,62 @@ import { getCurrentUser } from 'lib/getCurrentUser';
 import WebApp from '@twa-dev/sdk';
 
 
-export default function LoadingOverlay({ children }: { children: React.ReactNode }) {
-  const dispatch = useDispatch()
-  const { isLoading, userId } = useSelector((state: RootState) => state.user)
-  const [progress, setProgress] = useState(0);
-  const currentUser = getCurrentUser();
+interface TelegramWebAppParams {
+  [key: string]: string | Record<string, any>;
+}
 
-    const [initData, setInitData] = useState<any>(null);
+const useTelegramParams = (): TelegramWebAppParams => {
+  const [params, setParams] = useState<TelegramWebAppParams>({});
 
-      useEffect(() => {
-    WebApp.ready();
-    setInitData(WebApp.initDataUnsafe);
+  useEffect(() => {
+    try {
+      // Get the hash part after "#"
+      const hash = window.location.hash.substring(1); // remove '#'
+
+      // Convert encoded params into a usable format
+      const searchParams = new URLSearchParams(hash);
+
+      const parsedParams: TelegramWebAppParams = {};
+
+      searchParams.forEach((value, key) => {
+        // Try decoding JSON-like values (like user info)
+        try {
+          const decoded = decodeURIComponent(value);
+          if (decoded.startsWith('{') || decoded.startsWith('%7B')) {
+            parsedParams[key] = JSON.parse(
+              decodeURIComponent(decoded.replace(/\\u0022/g, '"'))
+            );
+          } else {
+            parsedParams[key] = decoded;
+          }
+        } catch {
+          parsedParams[key] = value;
+        }
+      });
+
+      setParams(parsedParams);
+    } catch (err) {
+      console.error('Error parsing Telegram WebApp params:', err);
+    }
   }, []);
 
+  return params;
+};
 
 
-   console.log(initData)
+
+
+export default function LoadingOverlay({ children }: { children: React.ReactNode }) {
+  const dispatch = useDispatch()
+  const { userId } = useSelector((state: RootState) => state.user)
+  const [progress] = useState(0);
+  const currentUser = getCurrentUser();
+
+  
+  const params = useTelegramParams();
+
+
+  console.log(decodeTgWebAppData(params.tgWebAppData as string))
 
   useEffect(() => {
     dispatch(socketConnectRequest());

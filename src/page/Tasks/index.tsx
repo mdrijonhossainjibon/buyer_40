@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
  
 import { useSelector, useDispatch } from 'react-redux'
  
@@ -31,14 +31,14 @@ export default function TasksPage() {
   }
 
   // Calculate statistics
-  const stats = useMemo(() => {
-    const total = tasksData.length
-    const completed = tasksData.filter(t => t.claimed).length
-    const pending = total - completed
-    const totalRewards = tasksData.reduce((sum, t) => sum + (t.claimed ? parseFloat(t.reward) : 0), 0)
-    
-    return { total, completed, pending, totalRewards }
-  }, [tasksData])
+  // const stats = useMemo(() => {
+  //   const total = tasksData.length
+  //   const completed = tasksData.filter(t => t.claimed).length
+  //   const pending = total - completed
+  //   const totalRewards = tasksData.reduce((sum, t) => sum + (t.claimed ? parseFloat(t.reward) : 0), 0)
+  //   
+  //   return { total, completed, pending, totalRewards }
+  // }, [tasksData])
 
    
 
