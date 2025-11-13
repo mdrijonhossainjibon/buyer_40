@@ -1,0 +1,72 @@
+/**
+ * Socket Redux Action Types
+ */
+
+export const SOCKET_ACTIONS = {
+  // Connection actions
+  SOCKET_CONNECT_REQUEST: 'SOCKET_CONNECT_REQUEST',
+  SOCKET_DISCONNECT_REQUEST: 'SOCKET_DISCONNECT_REQUEST',
+  SOCKET_CONNECTED: 'SOCKET_CONNECTED',
+  SOCKET_DISCONNECTED: 'SOCKET_DISCONNECTED',
+  SOCKET_ERROR: 'SOCKET_ERROR',
+  
+  // Message actions
+  SOCKET_SEND_MESSAGE: 'SOCKET_SEND_MESSAGE',
+  
+  // Room actions
+  SOCKET_JOIN_ROOM: 'SOCKET_JOIN_ROOM',
+  SOCKET_LEAVE_ROOM: 'SOCKET_LEAVE_ROOM',
+  
+  // Event actions (from server)
+  SOCKET_BALANCE_UPDATE: 'SOCKET_BALANCE_UPDATE',
+  SOCKET_XP_UPDATE: 'SOCKET_XP_UPDATE',
+  SOCKET_USER_STATUS_UPDATE: 'SOCKET_USER_STATUS_UPDATE',
+  SOCKET_WITHDRAWAL_STATUS_UPDATE: 'SOCKET_WITHDRAWAL_STATUS_UPDATE',
+  SOCKET_WITHDRAWAL_APPROVED: 'SOCKET_WITHDRAWAL_APPROVED',
+  SOCKET_WITHDRAWAL_REJECTED: 'SOCKET_WITHDRAWAL_REJECTED',
+  SOCKET_TASK_COMPLETED: 'SOCKET_TASK_COMPLETED',
+  SOCKET_TASK_REWARD_CLAIMED: 'SOCKET_TASK_REWARD_CLAIMED',
+  SOCKET_SPIN_RESULT: 'SOCKET_SPIN_RESULT',
+  SOCKET_SPIN_TICKETS_UPDATE: 'SOCKET_SPIN_TICKETS_UPDATE',
+  SOCKET_NEW_NOTIFICATION: 'SOCKET_NEW_NOTIFICATION',
+  SOCKET_ADMIN_WITHDRAWAL_REQUEST: 'SOCKET_ADMIN_WITHDRAWAL_REQUEST',
+  SOCKET_ADMIN_USER_UPDATE: 'SOCKET_ADMIN_USER_UPDATE',
+} as const
+
+// Action interfaces
+export interface SocketConnectRequestAction {
+  type: typeof SOCKET_ACTIONS.SOCKET_CONNECT_REQUEST
+}
+
+export interface SocketDisconnectRequestAction {
+  type: typeof SOCKET_ACTIONS.SOCKET_DISCONNECT_REQUEST
+}
+
+export interface SocketSendMessageAction {
+  type: typeof SOCKET_ACTIONS.SOCKET_SEND_MESSAGE
+  payload: {
+    event: string
+    data: any
+  }
+}
+
+export interface SocketJoinRoomAction {
+  type: typeof SOCKET_ACTIONS.SOCKET_JOIN_ROOM
+  payload: {
+    room: string
+  }
+}
+
+export interface SocketLeaveRoomAction {
+  type: typeof SOCKET_ACTIONS.SOCKET_LEAVE_ROOM
+  payload: {
+    room: string
+  }
+}
+
+export type SocketActionTypes =
+  | SocketConnectRequestAction
+  | SocketDisconnectRequestAction
+  | SocketSendMessageAction
+  | SocketJoinRoomAction
+  | SocketLeaveRoomAction
