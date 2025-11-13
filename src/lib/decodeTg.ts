@@ -8,7 +8,7 @@ interface TelegramWebAppData {
 }
 
 
-const decodeTgWebAppData = (encoded: string): TelegramWebAppData => {
+export const decodeTgWebAppData = (encoded: string): TelegramWebAppData => {
   const params = new URLSearchParams(encoded);
   const result: TelegramWebAppData = {};
 

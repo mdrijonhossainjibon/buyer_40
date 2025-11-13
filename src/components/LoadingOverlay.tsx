@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
 import { getCurrentUser } from 'lib/getCurrentUser';
 import WebApp from '@twa-dev/sdk';
+import { decodeTgWebAppData } from 'lib/decodeTg';
 
 
 interface TelegramWebAppParams {
@@ -61,7 +62,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const params = useTelegramParams();
 
 
-  console.log(decodeTgWebAppData(params.tgWebAppData as string))
+  console.log(decodeTgWebAppData)
 
   useEffect(() => {
     dispatch(socketConnectRequest());
