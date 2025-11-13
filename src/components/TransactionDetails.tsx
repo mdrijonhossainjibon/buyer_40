@@ -38,7 +38,7 @@ interface TransactionDetailsPopupProps {
   transaction: WithdrawTransaction | null
 }
 
-export default function TransactionDetailsPopup({
+export default function TransactionDetails({
   visible,
   onClose,
   transaction

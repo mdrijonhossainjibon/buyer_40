@@ -110,7 +110,7 @@ export class SocketClient {
     }
 
  
-    const socketUrl = this.config.url || process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+    const socketUrl = this.config.url ||  'http://localhost:5000';
 
     this.socket = io(socketUrl, {
       autoConnect: this.config.autoConnect,

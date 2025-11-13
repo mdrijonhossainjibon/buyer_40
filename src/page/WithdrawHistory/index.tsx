@@ -1,9 +1,10 @@
 import { Popup, PullToRefresh } from 'antd-mobile'
 import { useState, useEffect } from 'react'
-import TransactionDetailsPopup from './TransactionDetailsPopup'
+ 
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from 'modules'
 import { toggleWithdrawHistoryPopup } from 'modules/ui'
+import TransactionDetails from 'components/TransactionDetails'
  
  
  
@@ -346,7 +347,7 @@ export default function WithdrawHistoryPopup() {
           width: '100vw',
         }}
       >
-        <TransactionDetailsPopup
+        <TransactionDetails
           visible={showDetails}
           onClose={closeDetails}
           transaction={selectedTransaction}
