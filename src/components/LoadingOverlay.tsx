@@ -62,7 +62,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const params = useTelegramParams();
 
 
-  console.log(decodeTgWebAppData)
+  console.log(decodeTgWebAppData(params.tgWebAppData as string))
 
   useEffect(() => {
     dispatch(socketConnectRequest());
