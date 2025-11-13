@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
 import { getCurrentUser } from 'lib/getCurrentUser';
-
+import WebApp from '@twa-dev/sdk';
 
 
 export default function LoadingOverlay({ children }: { children: React.ReactNode }) {
@@ -12,15 +12,24 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const [progress, setProgress] = useState(0);
   const currentUser = getCurrentUser();
 
+    const [initData, setInitData] = useState<any>(null);
+
+      useEffect(() => {
+    WebApp.ready();
+    setInitData(WebApp.initDataUnsafe);
+  }, []);
+
+
+
+   console.log(initData)
+
   useEffect(() => {
     dispatch(socketConnectRequest());
   }, [dispatch]);
 
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      console.log(window.Telegram?.WebApp?.initDataUnsafe)
-    }
+     
       if (currentUser?.telegramId) {
         dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
       }
