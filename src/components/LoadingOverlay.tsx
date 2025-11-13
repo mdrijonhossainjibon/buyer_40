@@ -14,12 +14,17 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
 
   useEffect(() => {
     dispatch(socketConnectRequest());
-    setTimeout(() => {
+  }, [dispatch  ]);
+
+
+  useEffect(()=>{
+  setTimeout(() => {
+      console.log(currentUser)
       if (currentUser?.telegramId) {
         dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
       }
     }, 5000);
-  }, [dispatch]);
+  } ,[ dispatch , currentUser ])
 
 
   if (!userId) {
