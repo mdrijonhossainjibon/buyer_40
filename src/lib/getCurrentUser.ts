@@ -30,3 +30,32 @@ export function getCurrentUser() {
   
  
 }
+
+
+
+export function getTelegramUser() {
+    const hash = window.location.hash.substring(1); // remove '#'
+
+      // Convert encoded params into a usable format
+      const searchParams = new URLSearchParams(hash);
+
+      const parsedParams: any = {};
+
+      searchParams.forEach((value, key) => {
+        // Try decoding JSON-like values (like user info)
+        try {
+          const decoded = decodeURIComponent(value);
+          if (decoded.startsWith('{') || decoded.startsWith('%7B')) {
+            parsedParams[key] = JSON.parse(
+              decodeURIComponent(decoded.replace(/\\u0022/g, '"'))
+            );
+          } else {
+            parsedParams[key] = decoded;
+          }
+        } catch {
+          parsedParams[key] = value;
+        }
+      });
+
+      return parsedParams;
+}

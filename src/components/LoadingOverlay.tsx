@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
-import { getCurrentUser } from 'lib/getCurrentUser';
+import { getCurrentUser, getTelegramUser } from 'lib/getCurrentUser';
 import WebApp from '@twa-dev/sdk';
 import { decodeTgWebAppData } from 'lib/decodeTg';
 
@@ -59,7 +59,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const currentUser = getCurrentUser();
 
   
-  const params = useTelegramParams();
+  const params = getTelegramUser()
 
 
   console.log(decodeTgWebAppData(params.tgWebAppData as string))
