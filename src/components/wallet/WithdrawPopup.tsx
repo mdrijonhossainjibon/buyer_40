@@ -38,6 +38,7 @@ import WithdrawProcessingPopup from './WithdrawProcessingPopup'
 import WithdrawSuccessPopup from './WithdrawSuccessPopup'
 import WithdrawFailurePopup from './WithdrawFailurePopup'
 import { fetchCryptoCoinsRequest } from 'modules/cryptoCoins'
+import CryptoIcon from 'components/CryptoIcons'
 
 interface WithdrawPopupProps {
   visible: boolean
@@ -431,11 +432,7 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
                   className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={selectedCoin.icon} 
-                      alt={selectedCoin.name} 
-                      className="w-7 h-7 rounded-full"
-                    />
+                  <CryptoIcon symbol={selectedCoin.symbol}  />
                     <div className="flex flex-col items-start">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         {selectedCoin.symbol}
@@ -617,7 +614,8 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
                         <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                           {selectedCoin.symbol}
                         </span>
-                        <img src={selectedCoin.icon} alt={selectedCoin.symbol} className="w-5 h-5 rounded-full" />
+                        
+                         <CryptoIcon symbol={selectedCoin.symbol}  className="w-5 h-5 rounded-full"    />
                       </div>
                     </div>
                     {withdrawAmount && selectedCoin.symbol.toUpperCase() !== 'USDT' && (

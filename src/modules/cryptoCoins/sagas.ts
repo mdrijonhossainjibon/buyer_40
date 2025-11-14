@@ -13,16 +13,16 @@ import {
 // Worker saga: fetch crypto coins
 function* fetchCryptoCoinsSaga(action: FetchCryptoCoinsRequestAction) {
   try {
-    const { response } = yield call(API_CALL, {
+    const {  success, data , message  } = yield call(API_CALL, {
       baseURL,
       url: '/crypto-coins',
       method: 'GET'
     })
     
-    if (response && response.success && response.data) {
-      yield put(fetchCryptoCoinsSuccess(response.data))
+    if (success && data) {
+      yield put(fetchCryptoCoinsSuccess(data))
     } else {
-      yield put(fetchCryptoCoinsFailure(response?.message || 'Failed to fetch crypto coins'))
+      yield put(fetchCryptoCoinsFailure(message || 'Failed to fetch crypto coins'))
     }
   } catch (error: any) {
     yield put(fetchCryptoCoinsFailure(error.message || 'Network error while fetching crypto coins'))

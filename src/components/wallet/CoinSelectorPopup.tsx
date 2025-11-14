@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Popup, SearchBar } from 'antd-mobile'
 import { CloseOutline, CheckOutline } from 'antd-mobile-icons'
+import CryptoIcon from 'components/CryptoIcons'
 
 type Network = {
   id: string
@@ -101,25 +102,20 @@ export default function CoinSelectorPopup({
                     onSelect(coin)
                     onClose()
                   }}
-                  className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-                    selectedCoin?.id === coin.id
+                  className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${selectedCoin?.id === coin.id
                       ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-500'
                       : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 flex-1">
                     {/* Coin Icon */}
                     <div className="relative flex-shrink-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        selectedCoin?.id === coin.id
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedCoin?.id === coin.id
                           ? 'bg-white dark:bg-gray-800'
                           : 'bg-white dark:bg-gray-700'
-                      }`}>
-                        <img 
-                          src={coin.icon} 
-                          alt={coin.name} 
-                          className="w-7 h-7 rounded-full"
-                        />
+                        }`}>
+
+                        <CryptoIcon symbol={coin.id} className="w-7 h-7 rounded-full" />
                       </div>
                       {selectedCoin?.id === coin.id && (
                         <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">

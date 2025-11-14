@@ -65,8 +65,8 @@ export default function CoinConverterPage() {
 
   // Currency options with labels and icons
   const currencyOptions: { value: CurrencyType; label: string; icon: string; color: string; bgColor: string }[] = [
-    { value: 'xp', label: 'XP', icon: '/svg/color/xp.svg', color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
-    { value: 'usdt', label: 'USDT', icon: '/svg/color/usdt.svg', color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30' }
+    { value: 'xp', label: 'XP', icon: '/xp.svg', color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+    { value: 'usdt', label: 'USDT', icon: '/usdt.svg', color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30' }
   ]
 
   // Get user balance for selected currency
