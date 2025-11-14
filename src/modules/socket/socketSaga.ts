@@ -4,12 +4,13 @@ import { eventChannel, EventChannel } from 'redux-saga'
 import { call, put, take, fork, cancel, cancelled, select } from 'redux-saga/effects'
 import { Task } from 'redux-saga'
 import { getSocketClient, SocketEvents, SocketClient } from 'lib/socket/socketClient';
-//import { updateXP, updateBalance, fetchUserDataSuccess } from '../user/actions'
-//import { withdrawalStatusUpdate } from '../withdraw/actions'
+ 
  
 import { getCurrentUser } from 'lib/getCurrentUser';
 import {  Toast  } from 'antd-mobile';
-import { fetchUserDataSuccess } from 'modules/user';
+import { fetchUserDataSuccess, updateBalance, updateXP } from 'modules/user';
+import { withdrawalStatusUpdate } from 'modules/withdraw';
+import toast from 'react-hot-toast';
 
  
 /**
@@ -118,13 +119,13 @@ function* watchSocketEvents(socketChannel: EventChannel<any>): Generator<any, vo
  
         case 'XP_UPDATE':
           if(event.payload.telegramId === currentUser?.telegramId){
-              //yield put(updateXP(event.payload.xp))
+               yield put(updateXP(event.payload.xp))
           }
         
           break
         case 'BALANCE_UPDATE':
              if(event.payload.telegramId === currentUser?.telegramId){
-              //yield put(updateBalance(event.payload.usdt))
+             yield put(updateBalance(event.payload.usdt))
           }
          
           break
@@ -136,10 +137,12 @@ function* watchSocketEvents(socketChannel: EventChannel<any>): Generator<any, vo
         case 'WITHDRAWAL_STATUS_UPDATE':
           // Dispatch withdrawal status update to withdraw reducer
           console.log('[SocketSaga] Withdrawal status update:', event.payload)
-          //yield put(withdrawalStatusUpdate(event.payload))
+          yield put(withdrawalStatusUpdate(event.payload))
           break
          case 'AUTH:LOGIN' :
              yield put(fetchUserDataSuccess(event.payload.user));
+              
+             toast.success('AUTH:SUCCESS')
           break; 
 
         default:

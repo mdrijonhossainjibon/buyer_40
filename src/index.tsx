@@ -6,7 +6,7 @@ import store from './store';
 import App from './App';
 import './index.css';
 import AdsLoader from 'components/AdsLoader';
-
+import { Toaster } from 'react-hot-toast';
 // Patch antd-mobile to work with React 18
 unstableSetRender(
   (node: React.ReactNode, container: Element | DocumentFragment) => {
@@ -33,9 +33,45 @@ const root = createRoot(container);
 // Render the app
 root.render(
   <Provider store={store}>
-     
     <AdsLoader>
       <App />
     </AdsLoader>
+    <Toaster
+      position="top-center"
+      reverseOrder={false}
+      gutter={8}
+      toastOptions={{
+        duration: 3000,
+        style: {
+          background: '#363636',
+          color: '#fff',
+          fontWeight: '600',
+          borderRadius: '12px',
+          padding: '16px',
+          fontSize: '14px',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+        },
+        success: {
+          duration: 3000,
+          iconTheme: {
+            primary: '#10B981',
+            secondary: '#fff',
+          },
+        },
+        error: {
+          duration: 4000,
+          iconTheme: {
+            primary: '#EF4444',
+            secondary: '#fff',
+          },
+        },
+        loading: {
+          iconTheme: {
+            primary: '#8B5CF6',
+            secondary: '#fff',
+          },
+        },
+      }}
+    />
   </Provider>
 );
