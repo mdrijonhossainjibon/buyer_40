@@ -1,3 +1,5 @@
+import { decodeTgWebAppData } from "./decodeTg";
+
 // Mock Telegram WebApp data for development
 export const mockTelegramUser = {
   telegramId: 5252587410,
@@ -8,28 +10,6 @@ export const mockTelegramUser = {
 };
 
 // Get current user from Telegram WebApp or mock data
-export function getCurrentUser() {
-  // If in development mode, always return mock data
-  if (process.env.NODE_ENV === 'development') {
-    return mockTelegramUser;
-  }
-  
-  // In production, get data from Telegram WebApp
-  if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user) {
-    const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-    const start_param = window.Telegram.WebApp.initDataUnsafe?.start_param;
-    return {
-      telegramId: tgUser.id,
-      username: tgUser.first_name + (tgUser.last_name ? ` ${tgUser.last_name}` : ''),
-      telegramUsername: tgUser.username || `user${tgUser.id}`,
-      profilePicUrl: tgUser.photo_url,
-      start_param,
-  
-    };
-  }
-  
- 
-}
 
 
 
@@ -58,4 +38,31 @@ export function getTelegramUser() {
       });
 
       return parsedParams;
+}
+
+export function getCurrentUser() {
+   const params = getTelegramUser();
+   const startParam = new URLSearchParams(window.location.search);
+   const start_param = startParam.get("tgWebAppStartParam");
+
+
+   const { user } = decodeTgWebAppData(params.tgWebAppData as string);
+   
+
+  // In production, get data from Telegram WebApp
+  
+  if (user) {
+     return {
+      telegramId: user.id,
+      username: user.first_name + (user.last_name ? ` ${user.last_name}` : ''),
+      telegramUsername: user.username || `user${user.id}`,
+      profilePicUrl: user.photo_url,
+      start_param,
+  
+    };
+  }
+ 
+  return mockTelegramUser;
+    
+   
 }

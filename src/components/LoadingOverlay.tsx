@@ -57,12 +57,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const { userId } = useSelector((state: RootState) => state.user)
   const [progress] = useState(0);
   const currentUser = getCurrentUser();
-
   
-  const params = getTelegramUser()
-
-
-  console.log(decodeTgWebAppData(params.tgWebAppData as string))
 
   useEffect(() => {
     dispatch(socketConnectRequest());
@@ -70,12 +65,10 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
 
 
   useEffect(() => {
-     
-      if (currentUser?.telegramId) {
-        dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
-      }
- 
-  }, [dispatch, currentUser])
+    setTimeout(() => {
+     dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
+    }, 3000);
+  }, [dispatch ])
 
 
   if (!userId) {
