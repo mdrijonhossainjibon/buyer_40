@@ -45,35 +45,9 @@ function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator
     })
   }
 }
-
-// Update ads settings saga
-function* updateAdsSettingsSaga(action: UpdateAdsSettingsRequestAction): Generator<any, void, any> {
-  const { response } = yield call(API_CALL, {
-    baseURL,
-    url: '/ads/settings',
-    method: 'PUT',
-    body: JSON.stringify(action.payload)
-  })
-  
-  if (response && response.success && response.data) {
-    yield put(updateAdsSettingsSuccess(response.data))
-    
-    Toast.show({
-      content: 'Ad settings saved successfully',
-      duration: 2000
-    })
-  } else {
-    yield put(updateAdsSettingsFailure(response?.error || 'Failed to save settings'))
-    
-    Toast.show({
-      content: response?.error || 'Failed to save settings',
-      duration: 3000
-    })
-  }
-}
-
+ 
 // Watcher saga
 export function* adsSettingsSaga() {
   yield takeEvery(ADS_SETTINGS_ACTIONS.FETCH_ADS_SETTINGS_REQUEST, fetchAdsSettingsSaga)
-  yield takeEvery(ADS_SETTINGS_ACTIONS.UPDATE_ADS_SETTINGS_REQUEST, updateAdsSettingsSaga)
+ 
 }

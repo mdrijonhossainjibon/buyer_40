@@ -25,7 +25,7 @@ export function* rootSaga() {
         fork(converterSocketSaga),
         fork(withdrawSaga),
         fork(watchCryptoCoins),
-fork(tasksSaga),
+        fork(tasksSaga),
     ])
 }
 
@@ -34,4 +34,3 @@ export * from './app';
 export * from './socket';
 export * from './converter';
 export * from './withdraw';
- 

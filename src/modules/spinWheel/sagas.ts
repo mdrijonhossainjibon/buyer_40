@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects'
- 
+
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { baseURL } from 'lib/api-string'
 import { getCurrentUser } from 'lib/getCurrentUser'
@@ -29,40 +29,41 @@ import {
   setTicketPrice
 } from './actions'
 import { updateXP } from '../user/actions'
+import toast from 'react-hot-toast'
 
 
 // Fetch spin configuration saga
 function* fetchSpinConfigSaga(action: FetchSpinConfigRequestAction): Generator<any, void, any> {
-  const currentUser  = getCurrentUser();
-  const { hash , signature , timestamp  } =  generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-  const { response } = yield call(API_CALL, {
+  const currentUser = getCurrentUser();
+  const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
+  const { success, data, error, message } = yield call(API_CALL, {
     baseURL,
     url: `/spin-wheel/config`,
     method: 'GET',
-    params : { hash , signature , timestamp }
+    params: { hash, signature, timestamp }
   })
 
-  if (response && response.success && response.data) {
+  if (success && data) {
     yield put(
       fetchSpinConfigSuccess(
-        response.data.prizes,
-        response.data.canSpin,
-        response.data.nextSpinTime,
-        response.data.spinsToday,
-        response.data.maxSpinsPerDay,
-        response.data.freeSpinsUsed,
-        response.data.maxFreeSpins,
-        response.data.extraSpinsUnlocked,
-        response.data.extraSpinsUsed || 0,
-        response.data.maxExtraSpins,
-        response.data.spinTickets || 0,
-        response.data.ticketPrice || 100
+        data.prizes,
+        data.canSpin,
+        data.nextSpinTime,
+        data.spinsToday,
+        data.maxSpinsPerDay,
+        data.freeSpinsUsed,
+        data.maxFreeSpins,
+        data.extraSpinsUnlocked,
+        data.extraSpinsUsed || 0,
+        data.maxExtraSpins,
+        data.spinTickets || 0,
+        data.ticketPrice || 100
       )
     )
-    yield put(setTicketPrice(response.data.ticketPrice || 100))
+    yield put(setTicketPrice(data.ticketPrice || 100))
   } else {
-    yield put(fetchSpinConfigFailure(response?.error || 'Failed to fetch spin configuration'))
-    //toast.error(response?.error || 'Failed to fetch spin configuration')
+    yield put(fetchSpinConfigFailure(error || 'Failed to fetch spin configuration'))
+    toast.error(error || 'Failed to fetch spin configuration')
   }
 }
 
@@ -70,22 +71,22 @@ function* fetchSpinConfigSaga(action: FetchSpinConfigRequestAction): Generator<a
 function* performSpinSaga(action: SpinWheelRequestAction): Generator<any, void, any> {
   const currentUser = getCurrentUser();
   const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-  
-  const { response } : any = yield call(API_CALL, {
+
+  const { success, data, error, message }: any = yield call(API_CALL, {
     baseURL,
     url: '/spin-wheel/spin',
     method: 'POST',
     body: { hash, signature, timestamp }
   })
 
-  if (response && response.success && response.data) {
-    const { result,  nextSpinTime, spinsToday, freeSpinsUsed, extraSpinsUnlocked, extraSpinsUsed } = response.data
+  if (success && data) {
+    const { result, nextSpinTime, spinsToday, freeSpinsUsed, extraSpinsUnlocked, extraSpinsUsed } = data
 
     yield put(spinWheelSuccess(result, nextSpinTime, spinsToday, freeSpinsUsed, extraSpinsUnlocked, extraSpinsUsed))
- 
+
   } else {
-    yield put(spinWheelFailure(response?.message || 'Failed to spin the wheel'))
-    //toast.error(response?.messager || 'Failed to spin the wheel')
+    yield put(spinWheelFailure(message || 'Failed to spin the wheel'))
+    toast.error(message || 'Failed to spin the wheel')
   }
 }
 
@@ -97,30 +98,30 @@ function* purchaseTicketSaga(action: PurchaseTicketRequestAction): Generator<any
 
   //toast.loading('Purchasing spin ticket...', { id: 'purchase-ticket' })
 
-  const { response } = yield call(API_CALL, {
+  const { success, data, error, message } = yield call(API_CALL, {
     baseURL,
     url: '/spin-wheel/purchase-ticket',
     method: 'POST',
     body: { hash, signature, timestamp, quantity }
   })
 
-  if (response && response.success && response.data) {
+  if (success && data) {
     yield put(
       purchaseTicketSuccess(
-        response.data.totalTickets || response.data.spinTickets,
-        response.data.remainingBalance || response.data.newXP
+        data.totalTickets || data.spinTickets,
+        data.remainingBalance || data.newXP
       )
     )
 
     // Update user XP if provided
-    if (response.data.remainingBalance !== undefined) {
-      yield put(updateXP(response.data.remainingBalance))
+    if (data.remainingBalance !== undefined) {
+      yield put(updateXP(data.remainingBalance))
     }
 
-    //toast.success(`🎟️ ${response.data.message || 'Ticket purchased successfully!'}`, { id: 'purchase-ticket' })
+    //toast.success(`🎟️ ${data.message || 'Ticket purchased successfully!'}`, { id: 'purchase-ticket' })
   } else {
-    yield put(purchaseTicketFailure(response?.error || 'Failed to purchase ticket'))
-    //toast.error(response?.error || 'Failed to purchase ticket', { id: 'purchase-ticket' })
+    yield put(purchaseTicketFailure(error || 'Failed to purchase ticket'))
+    toast.error(error || 'Failed to purchase ticket', { id: 'purchase-ticket' })
   }
 }
 
@@ -129,21 +130,21 @@ function* spinWithTicketSaga(action: SpinWithTicketRequestAction): Generator<any
   const currentUser = getCurrentUser();
   const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
 
-  const { response } = yield call(API_CALL, {
+  const { success, data, error, message } = yield call(API_CALL, {
     baseURL,
     url: '/spin-wheel/spin-with-ticket',
     method: 'POST',
     body: { hash, signature, timestamp }
   })
 
-  if (response && response.success && response.data) {
-    const { result, spinTickets } = response.data
+  if (success && data) {
+    const { result, spinTickets } = data
 
     yield put(spinWithTicketSuccess(result, spinTickets))
- 
+
   } else {
-    yield put(spinWithTicketFailure(response?.error || 'Failed to spin with ticket'))
-    //toast.error(response?.error || 'Failed to spin with ticket')
+    yield put(spinWithTicketFailure(error || 'Failed to spin with ticket'))
+    toast.error(error || 'Failed to spin with ticket')
   }
 }
 
@@ -152,18 +153,18 @@ function* fetchUserTicketsSaga(action: FetchUserTicketsRequestAction): Generator
   const currentUser = getCurrentUser();
   const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
 
-  const { response } = yield call(API_CALL, {
+  const { success, data, error, message } = yield call(API_CALL, {
     baseURL,
     url: `/spin-wheel/user-tickets/`,
     method: 'GET',
-    params : { hash , signature , timestamp }
- 
+    params: { hash, signature, timestamp }
+
   })
 
-  if (response && response.success && response.data) {
-    yield put(fetchUserTicketsSuccess(response.data))
+  if (success && data) {
+    yield put(fetchUserTicketsSuccess(data))
   } else {
-    yield put(fetchUserTicketsFailure(response?.error || 'Failed to fetch user tickets'))
+    yield put(fetchUserTicketsFailure(error || 'Failed to fetch user tickets'))
   }
 }
 

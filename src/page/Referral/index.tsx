@@ -4,22 +4,25 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { PullToRefresh, Skeleton, Popup, Toast } from 'antd-mobile'
 import { RootState } from 'modules'
- 
- 
- 
+import { fetchBotStatusRequest } from 'modules/botStatus'
 
-
+ 
 
 export default function ReferralPage() {
   const dispatch = useDispatch()
   const botStatus = useSelector((state: RootState) => state.botStatus)
   const user = useSelector((state: RootState) => state.user)
-  const [isLoading, setIsLoading] = useState(false)
-  const [showSharePopup, setShowSharePopup] = useState(false)
+  const [showSharePopup, setShowSharePopup] = useState(false);
 
-  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/app?startapp=${user.referralCode || ''}`
+  const referralLink = `https://t.me/${botStatus.botUsername || undefined}/app?startapp=${user.referralCode || ''}`;
+
+  useEffect(() => {
+    dispatch(fetchBotStatusRequest());
+  }, [dispatch]);
+
 
   const onRefresh = async () => {
+    dispatch(fetchBotStatusRequest());
    
   }
 
@@ -88,14 +91,14 @@ export default function ReferralPage() {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank')
     setShowSharePopup(false)
   }
- 
+
   return (
     <PullToRefresh onRefresh={onRefresh}>
       <div className="pb-4 animate-fade-in">
         {/* Header Stats */}
         <div className="mx-4 mb-5">
-          
-          
+
+
           <div className="grid grid-cols-2 gap-3 mt-5">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-3 border border-blue-200 dark:border-blue-800 shadow-md">
               <div className="flex items-center gap-2 mb-1">
@@ -104,7 +107,7 @@ export default function ReferralPage() {
                 </div>
                 <p className="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Total Referrals</p>
               </div>
-              {isLoading ? (
+              {botStatus.isLoading ? (
                 <Skeleton.Title animated className="w-16 h-6" />
               ) : (
                 <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{botStatus.referralCount}</p>
@@ -130,14 +133,14 @@ export default function ReferralPage() {
               <i className="fas fa-link text-blue-500"></i>
               Your Referral Link
             </h3>
-            {isLoading ? (
+            {botStatus.isLoading ? (
               <Skeleton.Paragraph lineCount={1} animated />
             ) : (
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-dashed border-gray-300 dark:border-gray-600 mb-3">
                 <p className="text-xs text-gray-600 dark:text-gray-400 break-all font-mono">{referralLink}</p>
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={copyReferralLink}

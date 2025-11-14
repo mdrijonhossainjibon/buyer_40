@@ -20,7 +20,7 @@ function* fetchBotStatusSaga(action: FetchBotStatusRequestAction) {
 
     const currentUser = getCurrentUser();
     
-    const { response } = yield call(API_CALL, {
+    const { success, message, data, error } = yield call(API_CALL, {
       baseURL,
       method: 'POST',
       url: '/bot_status',
@@ -29,10 +29,10 @@ function* fetchBotStatusSaga(action: FetchBotStatusRequestAction) {
       }
     })
 
-    if (response && response.success) {
-      yield put(fetchBotStatusSuccess(response.data))
+    if (success) {
+      yield put(fetchBotStatusSuccess(data))
     } else {
-      yield put(fetchBotStatusFailure(response?.message || 'Failed to get bot status'))
+      yield put(fetchBotStatusFailure(message || 'Failed to get bot status'))
     }
     
    

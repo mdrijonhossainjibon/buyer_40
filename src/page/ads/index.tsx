@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { LoadAds } from 'lib/ads';
 import { RootState } from 'modules';
 import { watchAdRequest } from 'modules/watchAds';
+import toast from 'react-hot-toast';
 
  
 
@@ -74,7 +75,7 @@ export default function WatchAdsPage() {
 
   const watchAds = async () => {
     if (watchAd.watchedToday >= (adsSettings.adsWatchLimit || 5000)) {
-      //toast.error('Daily ad limit reached!')
+      toast.error('Daily ad limit reached!')
       return
     }
   
@@ -84,8 +85,10 @@ export default function WatchAdsPage() {
     try {
        showAlternatingAds(adsSettings.monetagZoneId).then(() => {
         // Dispatch ad watch request
-        dispatch(watchAdRequest())
-       })
+       dispatch(watchAdRequest())
+       })  
+
+         
  
     } catch (error) {
       console.error('Ad error:', error)
@@ -102,11 +105,9 @@ export default function WatchAdsPage() {
   const isLimitReached = (watchAd.watchedToday || 0) >= (adsSettings.adsWatchLimit || 5000)
   const canWatchAd = !isWatchingAd && !isLimitReached && user.status !== 'suspend' && countdown === 0
 
-  // XP and Referral calculations
-  const xpPerAd = 10 // XP earned per ad watched
+  // XP calculations
+  const xpPerAd = adsSettings.defaultAdsReward || 3// XP earned per ad watched
   const totalXpEarned = (watchAd.watchedToday || 0) * xpPerAd
-  const referralCount = user.referralCount || 0
-  const referralEarnings = user.referralEarnings || 0
 
 
 
@@ -167,16 +168,16 @@ export default function WatchAdsPage() {
           <p className="text-[10px] text-gray-500 dark:text-gray-400">+{xpPerAd} per ad</p>
         </div>
 
-        {/* Referral Earnings Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-100 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 transition-all group">
+        {/* Total Ads Watched Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all group">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-5 h-5 rounded bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <i className="fas fa-users text-orange-600 dark:text-orange-400 text-[10px]"></i>
+            <div className="w-5 h-5 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <i className="fas fa-eye text-blue-600 dark:text-blue-400 text-[10px]"></i>
             </div>
-            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Referral</span>
+            <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Ads</span>
           </div>
-          <p className="text-lg font-bold text-gray-900 dark:text-white mb-0.5">{referralEarnings.toFixed(2)}</p>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400">{referralCount} friends</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-white mb-0.5">{watchAd.watchedToday || 0}</p>
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">watched today</p>
         </div>
 
         {/* Today's Earnings */}

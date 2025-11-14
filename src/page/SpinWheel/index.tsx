@@ -132,12 +132,12 @@ export default function SpinWheelPage() {
 
     if (hasFreeSpin || hasExtraSpin) {
 
-       await showAlternatingAds(adsSettings?.monetagZoneId);
+        await showAlternatingAds(adsSettings?.monetagZoneId);
       setShowResult(false)
       dispatch(spinWheelRequest(user.userId))
     } else if (spinTickets > 0) {
 
-       await showAlternatingAds(adsSettings?.monetagZoneId);
+        await showAlternatingAds(adsSettings?.monetagZoneId);
       setShowResult(false)
       dispatch(spinWithTicketRequest(user.userId))
     }

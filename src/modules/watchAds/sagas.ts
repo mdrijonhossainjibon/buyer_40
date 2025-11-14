@@ -1,5 +1,5 @@
 import { call, put, takeLatest, select } from 'redux-saga/effects'
- 
+
 import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { baseURL } from 'lib/api-string'
 import {
@@ -15,83 +15,72 @@ import {
 } from './actions'
 
 import { getCurrentUser } from 'lib/getCurrentUser';
+import toast from 'react-hot-toast'
 
 /**
  * Watch Ad Saga - Socket-based
  */
 function* watchAdSaga(action: WatchAdRequestAction): Generator<any, void, any> {
-  try {
 
-    const currentUser = getCurrentUser();
 
-    const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
+  const currentUser = getCurrentUser();
 
-    // Call HTTP API to watch ad
-    const { response , status } = yield call(API_CALL, {
-      baseURL,
-      url: '/ads/watch',
-      method: 'POST',
-      body: { hash, signature, timestamp }
-    })
+  const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
 
-    if (status === 200 && response?.success) {
-      const data = response.data
-      yield put(watchAdSuccess(
-        data.watchedToday,
-        data.nextAdTime,
-        data.message
-      ))
+  // Call HTTP API to watch ad
+  const { success, data, error, message } = yield call(API_CALL, {
+    baseURL,
+    url: '/ads/watch',
+    method: 'POST',
+    body: { hash, signature, timestamp }
+  })
 
-      //toast.success(response.message)
-    } 
-    if(status === 409 && response.data){
-       yield put(watchAdSuccess(
-        response.data.watchedToday,
-        response.data.nextAdTime,
-        response.data.message
-      ))
-      //toast.error(response.message)
-    }
-    
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to watch ad'
-    yield put(watchAdFailure(errorMessage))
-    //toast.error(errorMessage)
+  if (success) {
+
+    yield put(watchAdSuccess(
+      data.watchedToday,
+      data.nextAdTime,
+      data.message
+    ))
+
+    toast.success(message)
   }
+
+
 }
+
+
 
 /**
  * Fetch Ad Status Saga
  */
 function* fetchAdStatusSaga(action: FetchAdStatusRequestAction): Generator<any, void, any> {
-  try {
-    const currentUser = getCurrentUser();
 
-    const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-    
-    // Call HTTP API to fetch ad status
-    const { response, status } = yield call(API_CALL, {
-      baseURL,
-      url: '/ads/status',
-      method: 'GET',
-      params: { hash, signature, timestamp }
-    })
+  const currentUser = getCurrentUser();
 
-    if (status === 200 && response?.success) {
-      const data = response.data
-      yield put(fetchAdStatusSuccess(
-        data.watchedToday,
-        data.maxAdsPerDay,
-        data.canWatchAd,
-        data.nextAdTime
-      ))
-    } else {
-      throw new Error(response?.message || 'Failed to fetch ad status')
-    }
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch ad status'
+  const { hash, signature, timestamp } = generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
+
+  // Call HTTP API to fetch ad status
+  const { success, data, error, message } = yield call(API_CALL, {
+    baseURL,
+    url: '/ads/status',
+    method: 'GET',
+    params: { hash, signature, timestamp }
+  })
+
+  if (success) {
+
+    yield put(fetchAdStatusSuccess(
+      data.watchedToday,
+      data.maxAdsPerDay,
+      data.canWatchAd,
+      data.nextAdTime
+    ))
+  } else {
+    const errorMessage =  error.message || 'Failed to fetch ad status'
     yield put(fetchAdStatusFailure(errorMessage))
   }
+
 }
 
 /**

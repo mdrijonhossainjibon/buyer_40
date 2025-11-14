@@ -14,19 +14,19 @@ import { getCurrentUser } from 'lib/getCurrentUser';
 function* fetchWithdrawHistorySaga(action: FetchWithdrawHistoryRequestAction): Generator<any, void, any> {
   const currentUser  = getCurrentUser();
   const { hash , signature , timestamp  } =  generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-  const { response } = yield call(API_CALL, {
+  const {  success , data , error , message } = yield call(API_CALL, {
     baseURL,
     url: `/withdraw/history`,
     method: 'GET', 
     params : { hash , signature , timestamp }
   })
 
-  if (response && response.success && response.data) {
+  if (  success && data) {
     // Success
-    yield put(fetchWithdrawHistorySuccess(response.data))
+    yield put(fetchWithdrawHistorySuccess(data))
   } else {
     // Failure
-    const errorMessage = response?.error || 'Failed to fetch withdrawal history'
+    const errorMessage =  error || 'Failed to fetch withdrawal history'
     yield put(fetchWithdrawHistoryFailure(errorMessage))
      
   }

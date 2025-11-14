@@ -13,24 +13,25 @@ import {
   claimTaskFailure
 } from './actions'
 import { getCurrentUser } from 'lib/getCurrentUser';
+import toast from 'react-hot-toast'
 
 // Fetch tasks saga
 function* fetchTasksSaga(): Generator<any, void, any> {
   const currentUser  = getCurrentUser();
   const { hash , signature , timestamp  } =  generateSignature(JSON.stringify({ ...currentUser }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-  const { response } = yield call(API_CALL, {
+  const {  success , data , error , message } = yield call(API_CALL, {
     baseURL,
     url: `/tasks/`,
     method: 'GET',
     params : { hash , signature , timestamp }
   })
 
-  if (response && response.success && response.data) {
-    yield put(fetchTasksSuccess(response.data))
+  if (success && data) {
+    yield put(fetchTasksSuccess(data))
 
   } else {
-    yield put(fetchTasksFailure(response?.error || 'Failed to fetch tasks'))
-    //toast.error(response?.error || 'Failed to fetch tasks')
+    yield put(fetchTasksFailure(error || 'Failed to fetch tasks'))
+     toast.error(error || 'Failed to fetch tasks')
   }
 }
 
@@ -39,22 +40,22 @@ function* claimTaskSaga(action: ClaimTaskRequestAction): Generator<any, void, an
   const {   taskId } = action.payload
  const currentUser  = getCurrentUser();
  const { hash , signature , timestamp  } =  generateSignature(JSON.stringify({ ...currentUser , taskId }), process.env.NEXT_PUBLIC_SECRET_KEY || 'app')
-  const { response } = yield call(API_CALL, {
+  const { success , data , error , message } = yield call(API_CALL, {
     baseURL,
     url: '/tasks/claim',
     method: 'POST',
     body: JSON.stringify({  hash , signature , timestamp })
   })
 
-  if (response && response.success && response.data) {
-    const reward = response.data.reward
+  if (success && data) {
+    const reward = data.reward
     
     yield put(claimTaskSuccess(taskId, reward))
     
-    //.success(response.message)
+    toast.success(message)
   } else {
-    yield put(claimTaskFailure(response?.error || 'Failed to claim task'))
-    //toast.error(response?.error || response?.data?.error || 'Failed to claim task')
+    yield put(claimTaskFailure(error || 'Failed to claim task'))
+    toast.error(error || data?.error || 'Failed to claim task')
   }
 }
 
