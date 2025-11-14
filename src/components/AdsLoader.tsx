@@ -15,14 +15,16 @@ interface AdsLoaderProps {
 export default function AdsLoader({ children }: AdsLoaderProps) {
     const dispatch = useDispatch()
     const adsSettings = useSelector((state: RootState) => state.adsSettings)
-   console.log(adsSettings)
+    console.log(adsSettings)
     useEffect(() => {
         dispatch(fetchAdsSettingsRequest())
     }, [dispatch])
 
     return (
         <>
-           <AdScriptLoader zoneId={adsSettings.monetagZoneId} scriptId={`ad-script-${adsSettings.monetagZoneId}`} />
+            <AdScriptLoader type='libtl' zoneId={adsSettings.monetagZoneId} scriptId={`ad-script-${adsSettings.monetagZoneId}`} />
+            <AdScriptLoader type='gigapub' zoneId={adsSettings.gigaPubAppId} scriptId={`ad-script-${adsSettings.gigaPubAppId}`} />
+            <AdScriptLoader type='adexora' zoneId={adsSettings.monetagZoneId} scriptId={`ad-script-310`} />
             {children}
         </>
     )

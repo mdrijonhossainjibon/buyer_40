@@ -1,32 +1,42 @@
 import { useEffect } from "react";
 
 interface Props {
+  type: "libtl" | "gigapub" | "adexora";
   zoneId: string;
   scriptId: string; // unique for removing/reloading
 }
 
-export default function AdScriptLoader({ zoneId, scriptId }: Props) {
+export default function AdScriptLoader({ type, zoneId, scriptId }: Props) {
   useEffect(() => {
     if (!zoneId) return;
 
-    // Remove existing script
-    const oldScript = document.getElementById(scriptId);
-    if (oldScript) oldScript.remove();
+    // Remove previous script (avoid duplicate ads)
+    const old = document.getElementById(scriptId);
+    if (old) old.remove();
 
-    // Create new script
     const script = document.createElement("script");
     script.id = scriptId;
-    script.src = "//libtl.com/sdk.js";
-    script.dataset.zone = zoneId;
-    script.dataset.sdk = `show_${zoneId}`;
     script.async = true;
+
+    // Select correct script URL
+    if (type === "libtl") {
+      script.src = "//libtl.com/sdk.js";
+      script.dataset.zone = zoneId;
+      script.dataset.sdk = `show_${zoneId}`;
+    }
+
+    if (type === "gigapub") {
+      script.src = `https://ad.gigapub.tech/script?id=${zoneId}`;
+    }
+
+    if (type === "adexora") {
+      script.src = `https://adexora.com/cdn/ads.js?id=310`;
+    }
 
     document.body.appendChild(script);
 
-    return () => {
-      script.remove();
-    };
-  }, [zoneId]);
+    return () => script.remove();
+  }, [zoneId, type]);
 
-  return <div id={`ad-container-${zoneId}`}></div>;
+  return <div id={`ad-container-${scriptId}`} />;
 }
