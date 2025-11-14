@@ -18,14 +18,17 @@ import { Toast } from 'antd-mobile';
 
 // Fetch ads settings saga
 function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator<any, void, any> {
-  const { response } = yield call(API_CALL, {
+  const { success, message, data, error } = yield call(API_CALL, {
     baseURL,
     url: '/ads/settings',
     method: 'GET'
   })
   
-  if (response && response.success && response.data) {
-    yield put(fetchAdsSettingsSuccess(response.data))
+ 
+
+
+  if (success && data) {
+    yield put(fetchAdsSettingsSuccess(data))
     
     if (action.payload?.showToast) {
       Toast.show({
@@ -34,10 +37,10 @@ function* fetchAdsSettingsSaga(action: FetchAdsSettingsRequestAction): Generator
       })
     }
   } else {
-    yield put(fetchAdsSettingsFailure(response?.error || 'Failed to fetch ads settings'))
+    yield put(fetchAdsSettingsFailure(error || 'Failed to fetch ads settings'))
     
     Toast.show({
-      content: response?.error || 'Failed to load settings',
+      content: error || 'Failed to load settings',
       duration: 3000
     })
   }

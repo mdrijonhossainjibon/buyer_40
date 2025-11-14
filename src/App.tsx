@@ -15,6 +15,7 @@ import SpinWheelPage from "page/SpinWheel";
 import TasksPage from "page/Tasks";
 import CoinConverterPage from "page/sawp";
 import PurchaseTicketsPage from "page/PurchaseTickets";
+import Navigation from "components/Navigation";
  
  
 
@@ -52,6 +53,7 @@ const App: React.FC = () => {
                <WithdrawHistoryPopup />
               <HomePage />
             </main>
+             <Navigation />
           </div>
         </LoadingOverlay>
       </div>

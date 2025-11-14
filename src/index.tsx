@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import App from './App';
 import './index.css';
+import AdsLoader from 'components/AdsLoader';
 
 // Patch antd-mobile to work with React 18
 unstableSetRender(
@@ -32,6 +33,9 @@ const root = createRoot(container);
 // Render the app
 root.render(
   <Provider store={store}>
-    <App />
+     
+    <AdsLoader>
+      <App />
+    </AdsLoader>
   </Provider>
 );
