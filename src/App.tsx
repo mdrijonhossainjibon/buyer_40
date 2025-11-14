@@ -1,7 +1,7 @@
 import { CountdownTimer } from "components/CountdownTimer";
 import LoadingOverlay from "components/LoadingOverlay";
 import { RootState } from "modules";
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from 'components/Header'
 import HomePage from "page/home";
@@ -15,14 +15,24 @@ import SpinWheelPage from "page/SpinWheel";
 import TasksPage from "page/Tasks";
 import CoinConverterPage from "page/sawp";
 import PurchaseTicketsPage from "page/PurchaseTickets";
-import { generateSignature } from "auth-fingerprint";
+ 
  
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
   const ui = useSelector((state: RootState) => state.ui);
 
-  console.log(generateSignature('app' , 'app'))
+   useLayoutEffect(() => {
+    // Check if document element has dark class and sync with state
+    const hasDarkClass = document.documentElement.classList.contains('dark')
+
+    if (hasDarkClass) {
+      document.documentElement.setAttribute('data-prefers-color-scheme', 'dark')
+    }
+    else {
+      document.documentElement.setAttribute('data-prefers-color-scheme', 'light')
+    }
+  }, []);
 
   return (
     <>
