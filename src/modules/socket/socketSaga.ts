@@ -10,6 +10,7 @@ import { getCurrentUser } from 'lib/getCurrentUser';
 import { Toast } from 'antd-mobile';
 import { fetchUserDataSuccess, updateBalance, updateXP } from 'modules/user';
 import { withdrawalStatusUpdate } from 'modules/withdraw';
+import { fetchAllActions } from 'modules/app/actions';
 import toast from 'react-hot-toast';
 import { socketSendMessage } from './actions';
 
@@ -149,6 +150,7 @@ function* watchSocketEvents(socketChannel: EventChannel<any>): Generator<any, vo
         case 'AUTH:LOGIN':
           yield put(fetchUserDataSuccess(event.payload.user));
           Toast.show({ content: 'AUTH:SUCCESS' });
+          yield put(fetchAllActions())
           break;
         case 'AUTH:ERROR':
           Toast.show({ content: 'AUTH:ERROR' });

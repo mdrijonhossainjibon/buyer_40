@@ -46,15 +46,6 @@ export default function WithdrawProcessingPopup({ visible, onClose }: { visible:
         setCurrentStep(1)
         setProgress(50)
         setStatusMessage('Processing withdrawal on blockchain...')
-        
-        // Auto-advance to step 2 after a moment to show progression
-        setTimeout(() => {
-          if (withdraw.withdrawalStatus === 'processing') {
-            setCurrentStep(2)
-            setProgress(75)
-            setStatusMessage('Transaction sent to blockchain...')
-          }
-        }, 2000)
         break
 
       case 'completed':

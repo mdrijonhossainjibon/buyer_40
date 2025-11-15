@@ -1,3 +1,3 @@
 'use client';
 
-export const baseURL =  'https://api.earnfromadsbd.online/api/v1'
+export const baseURL =  'https://api.earnfromadsbd.online/api/v1' // 'http://192.168.110.3:5000/api/v1/' 

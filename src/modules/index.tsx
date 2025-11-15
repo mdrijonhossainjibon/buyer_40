@@ -10,6 +10,7 @@ import { converterSocketSaga } from './converter';
 import { withdrawSaga } from './withdraw';
 import { watchCryptoCoins } from './cryptoCoins';
 import { tasksSaga } from './tasks';
+import { appSaga } from './app/sagas';
 
 
 
@@ -26,11 +27,13 @@ export function* rootSaga() {
         fork(withdrawSaga),
         fork(watchCryptoCoins),
         fork(tasksSaga),
+        fork(appSaga),
     ])
 }
 
 
 export * from './app';
+export * from './app/actions';
 export * from './socket';
 export * from './converter';
 export * from './withdraw';

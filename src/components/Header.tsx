@@ -10,15 +10,12 @@ import { RootState } from 'modules'
  
 
 export default function Header( ) {
-   
-  const [showNotificationPopup, setShowNotificationPopup] = useState(false)
+    
   const user = useSelector((state: RootState) => state.user);
   const [photoUrl, setPhotoUrl] = useState<string>("https://picsum.photos/60/60?random=1");
    
 
-  const dispatch = useDispatch()
-  
-  
+ 
   // Function to format numbers with K, M, B suffixes
   const formatNumber = (num: number): string => {
     if (num >= 1000000000) {

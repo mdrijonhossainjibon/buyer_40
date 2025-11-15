@@ -1,4 +1,5 @@
 import { Popup } from 'antd-mobile'
+import CryptoIcon from 'components/CryptoIcons'
 import { useState } from 'react'
 
 
@@ -89,7 +90,8 @@ export default function WithdrawConfirmationPopup({
             <div className="text-center">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">You are withdrawing</p>
               <div className="flex items-center justify-center gap-2 mb-2">
-                <img src={selectedCoin.icon} alt={selectedCoin.symbol} className="w-8 h-8 rounded-full" />
+                 
+                <CryptoIcon symbol={selectedCoin.id} className="w-8 h-8 rounded-full" />
                 <span className="text-3xl font-bold text-gray-900 dark:text-white">{withdrawAmount}</span>
                 <span className="text-xl font-semibold text-gray-600 dark:text-gray-400">{selectedCoin.symbol}</span>
               </div>

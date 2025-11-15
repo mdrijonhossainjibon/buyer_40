@@ -1,6 +1,6 @@
 import { call, put, takeLatest, delay } from 'redux-saga/effects'
 import { SagaIterator } from 'redux-saga';
- import { API_CALL, generateSignature } from 'auth-fingerprint'
+import { API_CALL, generateSignature } from 'auth-fingerprint'
 import { baseURL } from 'lib/api-string';
 import {
   WITHDRAW_ACTIONS,
@@ -15,7 +15,8 @@ import {
   toggleProcessing,
 } from './actions'
 import { getCurrentUser } from 'lib/getCurrentUser';
- 
+import toast from 'react-hot-toast';
+
 
 // Coin to CoinGecko ID mapping
 const COINGECKO_ID_MAP: { [key: string]: string } = {
@@ -61,37 +62,28 @@ function* submitWithdrawSaga(action: SubmitWithdrawRequestAction): SagaIterator 
     // Get current user for authentication
     const currentUser = getCurrentUser()
     const { hash, signature, timestamp } = generateSignature(
-      JSON.stringify({ ...currentUser , ...action.payload}), 
+      JSON.stringify({ ...currentUser, ...action.payload }),
       process.env.NEXT_PUBLIC_SECRET_KEY || 'app'
     )
-    
-    // Show loading toast
-    ////const toastId = toast.loading('Withdrawal Processing...')
-    
+
+   
+
     // Make API call to submit withdrawal using API_CALL
-    const { response , status } = yield call(API_CALL, {
+    const { success, data, error, message } = yield call(API_CALL, {
       baseURL,
       url: '/withdraw/submit',
       method: 'POST',
-      body: { 
-        hash, 
-        signature, 
-        timestamp 
+      body: {
+        hash,
+        signature,
+        timestamp
       }
     })
- 
-    if(status === 200 && response){
-      // Delay for 5 seconds before processing
-      yield delay(5000)
-      
-      // Dismiss loading toast
-      //toast.dismiss(toastId)
-      
+
+    if (success && data) {
       yield put(toggleProcessing(true))
-    } else {
-      //toast.dismiss(toastId)
-    }
- 
+    } 
+
   } catch (error: any) {
     yield put(submitWithdrawFailure(error.message || 'Failed to submit withdrawal'))
   }

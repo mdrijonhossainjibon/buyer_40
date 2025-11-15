@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
-import { getCurrentUser, getTelegramUser } from 'lib/getCurrentUser';
+import { socketConnectRequest ,   RootState } from 'modules'
+ 
 import WebApp from '@twa-dev/sdk';
  
 
@@ -14,7 +14,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   const dispatch = useDispatch()
   const { userId } = useSelector((state: RootState) => state.user)
   const [progress] = useState(0);
-  const currentUser = getCurrentUser();
+ 
   
 
   useEffect(() => {

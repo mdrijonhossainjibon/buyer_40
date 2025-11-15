@@ -105,7 +105,8 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
     dispatch(toggleProcessing(false))
   }, [dispatch])
   
-  
+
+ 
   
   
   // Fetch crypto coins from Redux on component mount
@@ -681,10 +682,10 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
               <div className="pb-6 sticky bottom-0 bg-white dark:bg-gray-900 pt-4 -mx-4 px-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleWithdraw}
-                  disabled={loading || !withdrawAddress || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                  disabled={isSubmitting || !withdrawAddress || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
                   className="w-full py-4 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
                 >
-                  {loading ? (
+                  {isSubmitting ? (
                     <>
                       <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -753,7 +754,7 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
         visible={showConfirmation}
         onClose={() => dispatch(toggleConfirmation(false))}
         onConfirm={handleConfirmWithdraw}
-        loading={loading}
+        loading={isSubmitting}
         selectedCoin={selectedCoin}
         selectedNetwork={selectedNetwork}
         withdrawAddress={withdrawAddress}

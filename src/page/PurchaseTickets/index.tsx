@@ -7,22 +7,10 @@ import { PullToRefresh  } from 'antd-mobile'
 import { fetchSpinConfigRequest, purchaseTicketRequest } from 'modules/spinWheel'
  
 import { RootState } from 'modules'
-//import { toast } from 'react-toastify'
+import { formatNumber } from 'lib/formatNumber'
+ 
 
-// Format number with K, M, B suffixes
-const formatNumber = (num: number): string => {
-  if (num >= 1000000000) {
-    return (num / 1000000000).toFixed(2) + 'B'
-  }
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(2) + 'M'
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(2) + 'K'
-  }
-  return num.toFixed(2)
-}
-
+ 
 export default function PurchaseTicketsPage() {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.user)
@@ -31,18 +19,9 @@ export default function PurchaseTicketsPage() {
 
   const totalCost = quantity * (spinWheel.ticketPrice || 100)
   const canAfford = user.wallet.available.xp >= totalCost
-
-  useEffect(() => {
-    if (user.userId) {
-      dispatch(fetchSpinConfigRequest(user.userId))
-    }
-  }, [dispatch, user.userId])
-
+ 
   const onRefresh = async () => {
-    if (user.userId) {
-      //dispatch(fetchUserDataRequest())
-      dispatch(fetchSpinConfigRequest(user.userId))
-    }
+    
   }
 
   const handlePurchase = () => {
