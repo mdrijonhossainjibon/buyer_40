@@ -2,11 +2,10 @@ import { decodeTgWebAppData } from "./decodeTg";
 
 // Mock Telegram WebApp data for development
 export const mockTelegramUser = {
-  telegramId: 5252587410,
+  telegramId: 5252587411,
   username: 'Md Rijon Hossain Jibon YT',
   telegramUsername: 'MdRijonHossainJibon',
   profilePicUrl: 'https://t.me/i/userpic/320/NzPzP-8sLLNQZkSxzx-VauBHAcE6hnGyFyDg6LxoA28.svg',
-  start_param: 'UID7952eeE'
 };
 
 // Get current user from Telegram WebApp or mock data
@@ -45,9 +44,9 @@ export function getCurrentUser() {
    const startParam = new URLSearchParams(window.location.search);
    const start_param = startParam.get("tgWebAppStartParam");
 
-
    const { user } = decodeTgWebAppData(params.tgWebAppData as string);
-   
+    
+   console.log(start_param)
 
   // In production, get data from Telegram WebApp
   
@@ -58,11 +57,17 @@ export function getCurrentUser() {
       telegramUsername: user.username || `user${user.id}`,
       profilePicUrl: user.photo_url,
       start_param,
-  
     };
   }
  
-  return mockTelegramUser;
-    
-   
+  // Only use mock data in development mode
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      ...mockTelegramUser,
+      start_param,
+    };
+  }
+
+  // In production, if no user data is available, return null or throw error
+  throw new Error('No Telegram user data available in production mode');
 }

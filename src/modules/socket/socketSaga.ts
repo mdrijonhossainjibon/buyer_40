@@ -1,18 +1,19 @@
 "use client";
 
 import { eventChannel, EventChannel } from 'redux-saga'
-import { call, put, take, fork, cancel, cancelled, select } from 'redux-saga/effects'
+import { call, put, take, fork, cancel, cancelled, select, delay } from 'redux-saga/effects'
 import { Task } from 'redux-saga'
 import { getSocketClient, SocketEvents, SocketClient } from 'lib/socket/socketClient';
- 
- 
+
+
 import { getCurrentUser } from 'lib/getCurrentUser';
-import {  Toast  } from 'antd-mobile';
+import { Toast } from 'antd-mobile';
 import { fetchUserDataSuccess, updateBalance, updateXP } from 'modules/user';
 import { withdrawalStatusUpdate } from 'modules/withdraw';
 import toast from 'react-hot-toast';
+import { socketSendMessage } from './actions';
 
- 
+
 /**
  * Create event channel for Socket.IO events
  */
@@ -53,16 +54,20 @@ function createSocketChannel(socket: SocketClient): EventChannel<any> {
     socket.on(SocketEvents.SPIN_TICKETS_UPDATE, (data: any) => {
       emit({ type: 'SPIN_TICKETS_UPDATE', payload: data })
     })
- 
-  
+
+
     // Connection events
     socket.on('internal:connect', (data: any) => {
       emit({ type: 'CONNECTED', payload: data })
     })
 
-     socket.on('auth:response', (data: any) => {
-       emit({ type: 'AUTH:LOGIN', payload: data })
-    })
+    socket.on('auth:response', (data: any) => {
+      emit({ type: 'AUTH:LOGIN', payload: data })
+    });
+
+    socket.on('auth:error', (data: any) => {
+      emit({ type: 'AUTH:ERROR', payload: data })
+    });
 
     socket.on('internal:disconnect', (data: any) => {
       emit({ type: 'DISCONNECTED', payload: data })
@@ -72,7 +77,7 @@ function createSocketChannel(socket: SocketClient): EventChannel<any> {
       emit({ type: 'ERROR', payload: data })
     })
 
-     
+
 
     // Cleanup function
     return () => {
@@ -99,35 +104,37 @@ function* watchSocketEvents(socketChannel: EventChannel<any>): Generator<any, vo
   try {
     while (true) {
       const event = yield take(socketChannel)
-       const currentUser = getCurrentUser();
+      const currentUser = getCurrentUser();
       console.log('[SocketSaga] Received event:', event.type, event.payload)
 
       switch (event.type) {
         case 'CONNECTED':
           console.log('[SocketSaga] Socket connected:', event.payload.socketId)
-           Toast.show({ content : 'AUTH:LOGIN' , icon : 'loading' } )
+          Toast.show({ content: 'AUTH:LOGIN', icon: 'loading' });
+          yield delay(3000);
+          yield put(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })))
           break
 
         case 'DISCONNECTED':
           console.log('[SocketSaga] Socket disconnected:', event.payload.reason)
-         Toast.show({ content : 'Disconnected' , icon : 'fail' } )
+          Toast.show({ content: 'Disconnected' })
           break
 
         case 'ERROR':
           console.error('[SocketSaga] Socket error:', event.payload.error)
           break
- 
+
         case 'XP_UPDATE':
-          if(event.payload.telegramId === currentUser?.telegramId){
-               yield put(updateXP(event.payload.xp))
+          if (event.payload.telegramId === currentUser?.telegramId) {
+            yield put(updateXP(event.payload.xp))
           }
-        
+
           break
         case 'BALANCE_UPDATE':
-             if(event.payload.telegramId === currentUser?.telegramId){
-             yield put(updateBalance(event.payload.usdt))
+          if (event.payload.telegramId === currentUser?.telegramId) {
+            yield put(updateBalance(event.payload.usdt))
           }
-         
+
           break
         case 'USER_STATUS_UPDATE':
           // Dispatch user status update action
@@ -139,12 +146,13 @@ function* watchSocketEvents(socketChannel: EventChannel<any>): Generator<any, vo
           console.log('[SocketSaga] Withdrawal status update:', event.payload)
           yield put(withdrawalStatusUpdate(event.payload))
           break
-         case 'AUTH:LOGIN' :
-             yield put(fetchUserDataSuccess(event.payload.user));
-              
-             toast.success('AUTH:SUCCESS')
-          break; 
-
+        case 'AUTH:LOGIN':
+          yield put(fetchUserDataSuccess(event.payload.user));
+          Toast.show({ content: 'AUTH:SUCCESS' });
+          break;
+        case 'AUTH:ERROR':
+          Toast.show({ content: 'AUTH:ERROR' });
+          break;
         default:
           console.log('[SocketSaga] Unhandled event:', event.type)
       }
@@ -164,7 +172,7 @@ export function* initializeSocketSaga(): Generator<any, void, any> {
   let socketTask: Task | null = null
 
   try {
-     
+
     // Get socket client instance
     const socketClient: SocketClient = yield call(getSocketClient)
 
@@ -191,7 +199,7 @@ export function* initializeSocketSaga(): Generator<any, void, any> {
 
     const socketClient = getSocketClient()
     socketClient.disconnect()
-    
+
     console.log('[SocketSaga] Socket connection closed')
   }
 }
@@ -202,7 +210,7 @@ export function* initializeSocketSaga(): Generator<any, void, any> {
 export function* sendSocketMessageSaga(action: { type: string; payload: { event: string; data: any } }): Generator<any, void, any> {
   try {
     const socketClient = getSocketClient()
-    
+
     if (!socketClient.isConnected()) {
       console.warn('[SocketSaga] Socket not connected, cannot send message')
       return

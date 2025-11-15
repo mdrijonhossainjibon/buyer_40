@@ -4,51 +4,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { socketConnectRequest, socketSendMessage, RootState } from 'modules'
 import { getCurrentUser, getTelegramUser } from 'lib/getCurrentUser';
 import WebApp from '@twa-dev/sdk';
-import { decodeTgWebAppData } from 'lib/decodeTg';
+ 
 
-
-interface TelegramWebAppParams {
-  [key: string]: string | Record<string, any>;
-}
-
-const useTelegramParams = (): TelegramWebAppParams => {
-  const [params, setParams] = useState<TelegramWebAppParams>({});
-
-  useEffect(() => {
-    try {
-      // Get the hash part after "#"
-      const hash = window.location.hash.substring(1); // remove '#'
-
-      // Convert encoded params into a usable format
-      const searchParams = new URLSearchParams(hash);
-
-      const parsedParams: TelegramWebAppParams = {};
-
-      searchParams.forEach((value, key) => {
-        // Try decoding JSON-like values (like user info)
-        try {
-          const decoded = decodeURIComponent(value);
-          if (decoded.startsWith('{') || decoded.startsWith('%7B')) {
-            parsedParams[key] = JSON.parse(
-              decodeURIComponent(decoded.replace(/\\u0022/g, '"'))
-            );
-          } else {
-            parsedParams[key] = decoded;
-          }
-        } catch {
-          parsedParams[key] = value;
-        }
-      });
-
-      setParams(parsedParams);
-    } catch (err) {
-      console.error('Error parsing Telegram WebApp params:', err);
-    }
-  }, []);
-
-  return params;
-};
-
+ 
 
 
 
@@ -64,12 +22,7 @@ export default function LoadingOverlay({ children }: { children: React.ReactNode
   }, [dispatch]);
 
 
-  useEffect(() => {
-    setTimeout(() => {
-     dispatch(socketSendMessage('auth:user', JSON.stringify({ ...currentUser })));
-    }, 3000);
-  }, [dispatch ])
-
+   
 
   if (!userId) {
     return (
