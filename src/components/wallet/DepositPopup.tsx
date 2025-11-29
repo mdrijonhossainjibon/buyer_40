@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Popup, Toast } from 'antd-mobile'
 import { CloseOutline, DownOutline } from 'antd-mobile-icons'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { QRCode } from 'antd'
 import { CopyOutlined } from '@ant-design/icons'
 import CoinSelectorPopup from './CoinSelectorPopup'
@@ -218,6 +217,7 @@ export default function DepositPopup({ visible, onClose, loading = false }: Depo
   }, [selectedCoin, selectedNetwork])
 
   const handleCopy = () => {
+    navigator.clipboard.writeText(depositAddress)
     setCopied(true)
     Toast.show({
       icon: 'success',
@@ -228,6 +228,7 @@ export default function DepositPopup({ visible, onClose, loading = false }: Depo
   }
 
   const handleCopyMemo = () => {
+    navigator.clipboard.writeText(depositMemo)
     setCopiedMemo(true)
     Toast.show({
       icon: 'success',
@@ -358,12 +359,10 @@ export default function DepositPopup({ visible, onClose, loading = false }: Depo
                         : depositAddress
                       }
                     </div>
-                    <CopyToClipboard text={depositAddress} onCopy={handleCopy}>
-                      <button className="flex items-center gap-1.5 px-3 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-semibold rounded transition-all shadow-sm whitespace-nowrap">
-                        <CopyOutlined className="text-sm" />
-                        {copied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </CopyToClipboard>
+                    <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-semibold rounded transition-all shadow-sm whitespace-nowrap">
+                      <CopyOutlined className="text-sm" />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -375,12 +374,10 @@ export default function DepositPopup({ visible, onClose, loading = false }: Depo
                     <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Memo/Tag (Required)
                     </span>
-                    <CopyToClipboard text={depositMemo} onCopy={handleCopyMemo}>
-                      <button className="flex items-center gap-2 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-all">
-                        <CopyOutlined />
-                        {copiedMemo ? 'Copied!' : 'Copy'}
-                      </button>
-                    </CopyToClipboard>
+                    <button onClick={handleCopyMemo} className="flex items-center gap-2 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-all">
+                      <CopyOutlined />
+                      {copiedMemo ? 'Copied!' : 'Copy'}
+                    </button>
                   </div>
                   <div className="bg-white dark:bg-gray-950 rounded-lg p-4 break-all text-sm text-gray-900 dark:text-white font-mono border border-gray-200 dark:border-gray-700">
                     {depositMemo}
