@@ -101,8 +101,8 @@ fi
 # Build React app
 # -----------------------------
 echo -e "${GREEN}🔨 Installing dependencies and building React app...${NC}"
-npm install
-npm run build
+yarn install
+yarn  build
 
 # -----------------------------
 # Configure Nginx
@@ -130,4 +130,4 @@ sudo systemctl reload nginx
 echo ""
 echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
 echo "Your React app is now live at: http://$DOMAIN"
-echo "To update in the future: cd $APP_DIR && git pull && npm install && npm run build && sudo systemctl reload nginx"
+echo "To update in the future: cd $APP_DIR && git pull && yarn install && yarn build && sudo systemctl reload nginx"
