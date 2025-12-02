@@ -37,6 +37,7 @@ import WithdrawConfirmationPopup from './WithdrawConfirmationPopup'
 import WithdrawProcessingPopup from './WithdrawProcessingPopup'
 import WithdrawSuccessPopup from './WithdrawSuccessPopup'
 import WithdrawFailurePopup from './WithdrawFailurePopup'
+import WithdrawComingSoon, { useWithdrawAvailability } from './WithdrawComingSoon'
 import { fetchCryptoCoinsRequest } from 'modules/cryptoCoins'
 import CryptoIcon from 'components/CryptoIcons'
 
@@ -69,6 +70,7 @@ type WalletBalances = {
 // Helper functions moved to Redux reducer
 
 export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPopupProps) {
+  const { isAvailable } = useWithdrawAvailability()
   const dispatch = useDispatch()
   
   // Memoized selectors to prevent unnecessary re-renders
@@ -377,6 +379,11 @@ export default function WithdrawPopup({ visible, onClose, loading }: WithdrawPop
         </div>
       </Popup>
     )
+  }
+
+  // Show Coming Soon if not available (not on available days)
+  if (!isAvailable) {
+    return <WithdrawComingSoon visible={visible} onClose={onClose} />
   }
 
   return (
